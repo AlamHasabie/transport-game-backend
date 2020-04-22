@@ -9,6 +9,7 @@ app.get('/',(req,res)=>{
 
 io.on('connection',(socket)=>{
     console.log("An user connected");
+    console.log(socket.id);
     socket.on('chat message',(msg)=>{
         console.log('message: ' + msg);
         io.emit('chat message', msg);
@@ -16,6 +17,27 @@ io.on('connection',(socket)=>{
     socket.on('disconnect',()=>{
         console.log("User disconnect");
     });
+
+
+    /* PLAYER EVENT GROUP */
+    // Player movement
+    socket.on('player movement',(data)=>{
+        // TODO : Update game state
+        io.broadcast('player movement',data);
+
+    });
+    // Fund change
+    socket.on('fund change',(data)=>{
+        // TODO : Update game state
+        io.broadcast('fund update',{
+            "player" : 1,
+            "fund" : 400
+        });
+    });
+
+
+
+
 });
 
 http.listen(3000,()=>{
