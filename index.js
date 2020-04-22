@@ -9,6 +9,7 @@ app.get('/',(req,res)=>{
 
 io.on('connection',(socket)=>{
     console.log("An user connected");
+    console.log(socket.id);
     socket.on('chat message',(msg)=>{
         console.log('message: ' + msg);
         io.emit('chat message', msg);
@@ -34,7 +35,7 @@ io.on('connection',(socket)=>{
         });
     });
 
-    
+
 
 
 });
