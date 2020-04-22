@@ -17,12 +17,18 @@ io.on('connection',(socket)=>{
         console.log("User disconnect");
     });
 
-    // Get player event
-    // Emit to all players
+
+    // Player movement
+
+    socket.on('player movement',(data)=>{
+        console.log(data)
+        io.broadcast('player movement',data);
+
+    })
     socket.on('player position',(data)=>{
         console.log(data);
         io.emit('player position',data);
-    })
+    });
 });
 
 http.listen(3000,()=>{
