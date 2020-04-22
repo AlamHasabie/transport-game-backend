@@ -16,6 +16,12 @@ io.on('connection',(socket)=>{
     socket.on('disconnect',()=>{
         console.log("User disconnect");
     });
+
+    // Get player event
+    // Emit to all players
+    socket.on('player movement',(data)=>{
+        io.emit('player movement',data);
+    })
 });
 
 http.listen(3000,()=>{
