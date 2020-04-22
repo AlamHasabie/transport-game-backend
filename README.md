@@ -4,10 +4,12 @@ NodeJS backend for Transport Game.
 
 
 
-Socket Events and Emits
+## Events
 
-1. Player Movement : should be sent when a player moves. 
 
+### Player Events
+#### Player Movement
+Should be sent when a player moves. 
 Client
 ```json
 io.emit("player movement",{
@@ -15,7 +17,6 @@ io.emit("player movement",{
     "destSquare" : 20
 })
 ```
-
 Server sends broadcast with same data
 ```json
 io.brodcast("player movement",{
@@ -23,3 +24,26 @@ io.brodcast("player movement",{
     "destSquare" : 20
 })
 ```
+
+#### Fund Change
+Should be sent whenever the amount of fund a player has changes. 
+The player and the change should be sent
+Client
+```json
+io.emit("fund change",{
+    "player" : 1,
+    "change" : -20
+})
+```
+
+Server emits fund held by the player (not the change)
+```json
+io.emit("fund update",{
+    "player" : 1,
+    "fund" : 400
+});
+```
+
+
+
+

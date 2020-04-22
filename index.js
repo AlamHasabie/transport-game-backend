@@ -18,17 +18,25 @@ io.on('connection',(socket)=>{
     });
 
 
+    /* PLAYER EVENT GROUP */
     // Player movement
-
     socket.on('player movement',(data)=>{
-        console.log(data)
+        // TODO : Update game state
         io.broadcast('player movement',data);
 
-    })
-    socket.on('player position',(data)=>{
-        console.log(data);
-        io.emit('player position',data);
     });
+    // Fund change
+    socket.on('fund change',(data)=>{
+        // TODO : Update game state
+        io.broadcast('fund update',{
+            "player" : 1,
+            "fund" : 400
+        });
+    });
+
+    
+
+
 });
 
 http.listen(3000,()=>{
