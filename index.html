@@ -26,7 +26,12 @@
             $('form').submit(function(e) {  
                 e.preventDefault(); // prevents page reloading
                 socket.emit('chat message', $('#m').val());
-                $('#m').val('');
+                socket.emit('player position',{
+                  "Player 1" : 23,
+                  "Player 2" : 24,
+                  "Player 3" : 16,
+                  "Player 4" : 19
+                });
                 return false;
             });
 

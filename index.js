@@ -19,8 +19,9 @@ io.on('connection',(socket)=>{
 
     // Get player event
     // Emit to all players
-    socket.on('player movement',(data)=>{
-        io.emit('player movement',data);
+    socket.on('player position',(data)=>{
+        console.log(data);
+        io.emit('player position',data);
     })
 });
 
