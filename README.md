@@ -106,10 +106,10 @@ When a playing player lands on a question space, the server needs to be mentione
 ```js
 io.emit("question space")
 ```
-In turn , the server will send a private emit about question if the player doesn't hold any question cards.<br/>
+In turn , the server will emit about question if the player doesn't hold any question cards.<br/>
 **Server**
 ```js
-io.to(socketId).emit("question",{
+io.emit("question",{
     "question_id" : 3,
     "question" : "What is the answer of the universe ?"
 )}
@@ -117,7 +117,7 @@ io.to(socketId).emit("question",{
 If player holds a question card, then the socket will send an information that the player holds it already.<br/>
 **Server**
 ```js
-io.to(socketId).emit("holds question already");
+io.emit("holds question already");
 ```
 *Note : the description above can be implemented client-side, but it is safer to also do it in server*
 
@@ -127,10 +127,10 @@ When a player lands on a key space, it should notify the server.<br/>
 ```js
 io.emit("key space").
 ```
-In turn, the server will send a private emit containing two keys.<br/>
+In turn, the server will emit with data containing two keys.<br/>
 **Server**
 ```js
-io.to(socketId).emit("key",{
+io.emit("key",{
     [{
         "key_id" : 42,
         "answer" : "It's 42"
@@ -151,7 +151,7 @@ io.emit("answer",{
     "key_id" : 66
 }
 ```
-Should client decides to not answer, the client should notify the server.<br/>
+Should client decided to not answer, the client should notify the server.<br/>
 **Server**
 ```js
 io.emit("no answer")
@@ -166,4 +166,4 @@ io.emit("response",{
     "response" : true
 })
 ```
-If player answers correctly, then server will also emit fund change event (refers to previous section)
+If player answers correctly, then server will also emit fund change event.
