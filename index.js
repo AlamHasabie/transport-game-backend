@@ -6,24 +6,28 @@ const fs = require('fs');
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 var bodyParser = require('body-parser');
+var crypto = require("crypto");
 
 // Global gamestate
 // First defined as empty object
 global.gameState = {};
 
+// Mapping from token to user information
+// User information includes :
+// username , gameroom , role in the designated game room
+global.userInfo = {};
+
 
 app.use(bodyParser.urlencoded());
-
-app.use(bodyParser.urlencoded());
-
 app.get('/',(req,res)=>{
-    res.sendFile(__dirname + '/index.html');
-
+    res.render('index.ejs');
 });
+// For testing purpose only
+app.set('view engine', 'ejs');
 
 
-/** To join a room , simply send a post request with room-name and spectator*/
-/** The page should directly call for socket joining*/
+/** To join a room , simply send a post request with username, room-name and spectator */
+/** Username had to be unique for all users */
 
 app.post('/game',(req,res)=>{
     
@@ -43,67 +47,38 @@ app.post('/game',(req,res)=>{
             res.send("Forbidden : full gameroom");
             return;
         }
-
-        addnewmembertoroom(roomname,role);
-        res.statusCode = 200;
-        res.send("OK");
-
     } else {
-
         createnewroom(roomname);
-        if(role=="spectator"){
-            gameState[roomname].spectator = 1;
-        }
-        
-        if(role=="player"){
-            gameState[roomname].player = 1;
-        }
-
-        console.log(gameState);
-        res.statusCode = 200;
-        res.send("OK. Room created.");
     }
+    
+    // Generate token
+    var id = crypto.randomBytes(20).toString('hex');
+    while(userInfo.hasOwnProperty(id)){
+        id = crypto.randomBytes(20).toString('hex');
+    }
+
+    // Add user info
+    userInfo[id] = {
+        roomname : roomname,
+        role : role
+    }
+
+    res.statusCode = 200;
+    res.render('game',{
+        token : id
+    });
 });
 
 
 /** To join a room , simply send a post request with room-name and spectator*/
 /** The page should directly call for socket joining*/
-/** Assume that only validated user would be able to connect to the application  */
+/** Assume that only validated user would be able to connect to the application , */
+/** Means that the room exists */
 io.on('connection',(socket)=>{
 
-    
-
-    console.log(socket.id);
-
-
-    socket.on('chat message',(msg)=>{
-        console.log('message: ' + msg);
-        io.emit('chat message', msg);
-    })
-    socket.on('disconnect',()=>{
-        console.log("User disconnect");
-    });
-
-
-    /* PLAYER EVENT GROUP */
-    // Player movement
-    socket.on('player movement',(data)=>{
-        // TODO : Update game state
-        io.broadcast('player movement',data);
-
-    });
-    // Fund change
-    socket.on('fund change',(data)=>{
-        // TODO : Update game state
-        io.broadcast('fund update',{
-            "player" : 1,
-            "fund" : 400
-        });
-    });
-
-
-
-
+    var token = socket.handshake.query.token;
+    var user = userInfo[token];
+    console.log(user);
 });
 
 http.listen(3000,()=>{
@@ -125,12 +100,13 @@ function addnewmembertoroom(roomname , role){
 function createnewroom(roomname){
     let new_room_data = {
         state : 0,
-        members : 0,
         player : 0,
         spectator : 0,
         player_socket : [],
         spectator_socket : [],
         taken_questions : [],
+        player_order : [],
+        current_player : null,
         event_pointer : 0,
         reward_pointer : 0,
         key_pointer : 0,
@@ -139,4 +115,14 @@ function createnewroom(roomname){
     }
 
     gameState[roomname] = new_room_data;
+}
+
+function addnewplayerstatus(roomname){
+    let new_player_data = {
+        money : 0,
+        square : 0,
+        question_card_held : null
+    }
+
+    gameState[roomname].player_status.push(new_player_data);
 }
