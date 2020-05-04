@@ -7,6 +7,10 @@ var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 var bodyParser = require('body-parser');
 
+// Global gamestate
+// First defined as empty object
+global.gameState = {};
+
 
 app.use(bodyParser.urlencoded());
 
@@ -23,37 +27,36 @@ app.post('/game',(req,res)=>{
     console.log(req.body);
     
     /**Check if game room exist */
-    var roomstatefile = path.join(__dirname , roomstatepath, req.body["room"] + ".json");
-    fs.access(roomstatefile,(err)=>{
-        if(err){
-            // Create new room with empty state
-            let empty_data = {
-                room : req.body["room"],
-                members : 0,
-                player : 0,
-                spectator : 0,
-                player_socket : [],
-                spectator_socket : [],
-                taken_questions : [],
-                event_pointer : 0,
-                reward_pointer : 0,
-                key_pointer : 0,
-                player_status : []
-            }
+    if(gameState.hasOwnProperty(req.body["room"])){
 
-            fs.writeFile(roomstatefile,JSON.stringify(empty_data),err=>{
-                if(err) return console.log(err);
-                res.statusCode = 200;
-                res.send("Good !");
-            });
-        } else {
-            // Check if room full
-            // Is full , then player role denied entry
-            // If
+        // If role is a player , reserve the place
+        console.log(gameState);
+        res.statusCode = 200;
+        res.send("Room exists");
+
+    } else {
+
+        // Create new room with empty state
+        let empty_data = {
+            members : 0,
+            player : 0,
+            spectator : 0,
+            player_socket : [],
+            spectator_socket : [],
+            taken_questions : [],
+            event_pointer : 0,
+            reward_pointer : 0,
+            key_pointer : 0,
+            question_pointer : 0,
+            player_status : []
         }
 
-    })
-})
+        gameState[req.body["room"]] = empty_data;
+        console.log(gameState);
+        res.statusCode = 200;
+        res.send("Room created");
+    }
+});
 
 io.on('connection',(socket)=>{
 
