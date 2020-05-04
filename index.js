@@ -7,12 +7,84 @@ var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 var bodyParser = require('body-parser');
 
+// Global gamestate
+// First defined as empty object
+global.gameState = {};
+
+
+app.use(bodyParser.urlencoded());
 
 app.use(bodyParser.urlencoded());
 
 app.get('/',(req,res)=>{
     res.sendFile(__dirname + '/index.html');
 
+});
+
+
+/** To join a room , simply send a post request with room-name and spectator*/
+/** The page should directly call for socket joining*/
+
+app.post('/game',(req,res)=>{
+    console.log(req.body);
+    
+    /**Check if game room exist */
+    if(gameState.hasOwnProperty(req.body["room"])){
+
+        // Check if there's still room for a new player to join
+        if(req.body["role"]=="player"){
+            if(gameState[req.body["room"]].player>=4){
+                res.statusCode = 403;
+                res.send("Forbidden : full gameroom");
+            } else {
+                gameState[req.body["room"]].player = gameState[req.body["room"]].player + 1;
+                res.statusCode = 200;
+                res.send("Ok");
+
+            }
+
+        } else if (req.body["role"]=="spectator"){
+            gameState[req.body["room"]].spectator = gameState[req.body["room"]].spectator + 1;
+            res.statusCode = 200;
+            res.send("Ok");
+        } else {
+            res.statusCode = 400;
+            res.send("Bad request , role not defined");
+        }
+
+        console.log(gameState);
+
+    } else {
+
+        // Create new room with empty state
+        // Reserve the place
+        let new_room_data = {
+            members : 0,
+            player : 0,
+            spectator : 0,
+            player_socket : [],
+            spectator_socket : [],
+            taken_questions : [],
+            event_pointer : 0,
+            reward_pointer : 0,
+            key_pointer : 0,
+            question_pointer : 0,
+            player_status : []
+        }
+
+        if(req.body["role"]=="spectator"){
+            new_room_data.spectator = 1;
+        }
+        
+        if(req.body["player"]=="player"){
+            new_room_data.player = 1;
+        }
+
+        gameState[req.body["room"]] = empty_data;
+        console.log(gameState);
+        res.statusCode = 200;
+        res.send("Room created");
+    }
 });
 
 
