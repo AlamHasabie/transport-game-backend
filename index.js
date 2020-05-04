@@ -26,64 +26,42 @@ app.get('/',(req,res)=>{
 /** The page should directly call for socket joining*/
 
 app.post('/game',(req,res)=>{
-    console.log(req.body);
     
-    /**Check if game room exist */
-    if(gameState.hasOwnProperty(req.body["room"])){
+    var roomname = req.body["room"];
+    var role = req.body["role"];
+    
+    if(gameState.hasOwnProperty(roomname)){
 
-        // Check if there's still room for a new player to join
-        if(req.body["role"]=="player"){
-            if(gameState[req.body["room"]].player>=4){
-                res.statusCode = 403;
-                res.send("Forbidden : full gameroom");
-            } else {
-                gameState[req.body["room"]].player = gameState[req.body["room"]].player + 1;
-                res.statusCode = 200;
-                res.send("Ok");
-
-            }
-
-        } else if (req.body["role"]=="spectator"){
-            gameState[req.body["room"]].spectator = gameState[req.body["room"]].spectator + 1;
-            res.statusCode = 200;
-            res.send("Ok");
-        } else {
+        if(!(role=="player"||role=="spectator")){
             res.statusCode = 400;
-            res.send("Bad request , role not defined");
+            res.send("Bad request, role not defined");
+            return;
         }
 
-        console.log(gameState);
+        if(role=="player"&&gameState[roomname].player>=4){
+            res.statusCode = 403;
+            res.send("Forbidden : full gameroom");
+            return;
+        }
+
+        addnewmembertoroom(roomname,role);
+        res.statusCode = 200;
+        res.send("OK");
 
     } else {
 
-        // Create new room with empty state
-        // Reserve the place
-        let new_room_data = {
-            members : 0,
-            player : 0,
-            spectator : 0,
-            player_socket : [],
-            spectator_socket : [],
-            taken_questions : [],
-            event_pointer : 0,
-            reward_pointer : 0,
-            key_pointer : 0,
-            question_pointer : 0,
-            player_status : []
-        }
-
-        if(req.body["role"]=="spectator"){
-            new_room_data.spectator = 1;
+        createnewroom(roomname);
+        if(role=="spectator"){
+            gameState[roomname].spectator = 1;
         }
         
-        if(req.body["player"]=="player"){
-            new_room_data.player = 1;
+        if(role=="player"){
+            gameState[roomname].player = 1;
         }
 
-        gameState[req.body["room"]] = new_room_data;
         console.log(gameState);
         res.statusCode = 200;
-        res.send("Room created");
+        res.send("OK. Room created.");
     }
 });
 
@@ -134,3 +112,30 @@ http.listen(3000,()=>{
 
 /**Utils */
 /**This part is created so that function can be more modular in the future */
+
+function addnewmembertoroom(roomname , role){
+    if(role=="player"){
+        gameState[roomname].player = gameState[roomname].player + 1;
+    } else if (role=="spectator"){
+        gameState[roomname].spectator = gameState[roomname].spectator + 1;
+    }
+}
+
+function createnewroom(roomname){
+    let new_room_data = {
+        state : 0,
+        members : 0,
+        player : 0,
+        spectator : 0,
+        player_socket : [],
+        spectator_socket : [],
+        taken_questions : [],
+        event_pointer : 0,
+        reward_pointer : 0,
+        key_pointer : 0,
+        question_pointer : 0,
+        player_status : []
+    }
+
+    gameState[roomname] = new_room_data;
+}
