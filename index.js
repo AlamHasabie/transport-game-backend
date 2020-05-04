@@ -68,10 +68,11 @@ app.post('/game',(req,res)=>{
 
 /** To join a room , simply send a post request with room-name and spectator*/
 /** The page should directly call for socket joining*/
+/** Assume that only validated user would be able to connect to the application  */
 io.on('connection',(socket)=>{
 
     
-    console.log("An user connected");
+
     console.log(socket.id);
 
 
