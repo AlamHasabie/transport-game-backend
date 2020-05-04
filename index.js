@@ -80,7 +80,7 @@ app.post('/game',(req,res)=>{
             new_room_data.player = 1;
         }
 
-        gameState[req.body["room"]] = empty_data;
+        gameState[req.body["room"]] = new_room_data;
         console.log(gameState);
         res.statusCode = 200;
         res.send("Room created");
@@ -90,43 +90,6 @@ app.post('/game',(req,res)=>{
 
 /** To join a room , simply send a post request with room-name and spectator*/
 /** The page should directly call for socket joining*/
-
-app.post('/game',(req,res)=>{
-    console.log(req.body);
-    
-    /**Check if game room exist */
-    var roomstatefile = path.join(__dirname , roomstatepath, req.body["room"] + ".json");
-    fs.access(roomstatefile,(err)=>{
-        if(err){
-            // Create new room with empty state
-            let empty_data = {
-                room : req.body["room"],
-                members : 0,
-                player : 0,
-                spectator : 0,
-                player_socket : [],
-                spectator_socket : [],
-                taken_questions : [],
-                event_pointer : 0,
-                reward_pointer : 0,
-                key_pointer : 0,
-                player_status : []
-            }
-
-            fs.writeFile(roomstatefile,JSON.stringify(empty_data),err=>{
-                if(err) return console.log(err);
-                res.statusCode = 200;
-                res.send("Good !");
-            });
-        } else {
-            // Check if room full
-            // Is full , then player role denied entry
-            // If
-        }
-
-    })
-})
-
 io.on('connection',(socket)=>{
 
     
