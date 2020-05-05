@@ -99,7 +99,7 @@ io.on('connection',(socket)=>{
     }
 
     /** Add token to player ready list */
-    gameState[room].player_ready.push(token);
+    gameState[room].player_ready.add(token);
 
 
     
@@ -116,19 +116,25 @@ io.on('connection',(socket)=>{
 
     socket.on('ready',function(msg){
         // Remove from ready list
-        gameState[room].player_ready = gameState[room].player_ready.
-            filter(function(item){
-                return item!=token;
-            });
-        if(gameState[room].player_ready.length==0){
-            gameState[room].state = 1;
+        gameState[room].player_ready.delete(token);
+
+        // Add to turn determination list
+        gameState[room].player_order.push(token);
+        if(gameState[room].player_ready.size==0){
+            gameState[room].state = "ready";
             io.to(room).emit("game ready"); 
+            console.log(gameState[room]);
         } else {
             io.to(room).emit("player ready",{
                 username : username
             })
         } 
     });
+
+    /** Second step, when game is in ready state */
+    /** Assume legal actions taken by all clients */
+    /** We can fix this one later */
+
 });
 
 http.listen(3000,()=>{
@@ -140,10 +146,10 @@ http.listen(3000,()=>{
 /**This part is created so that function can be more modular in the future */
 function createnewroom(roomname){
     let new_room_data = {
-        state : 0,
+        state : "prepare",
         player : 0,
-        player_ready : [],
-        taken_questions : [],
+        player_ready : new Set(),
+        taken_questions : new Set(),
         player_order : [],
         current_player : null,
         event_pointer : 0,
