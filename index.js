@@ -7,11 +7,13 @@ var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 var bodyParser = require('body-parser');
 var crypto = require("crypto");
-var questions = require('./assets/questions.json');
-var answers = require('./assets/answers.json');
 
-// Global gamestate
-// First defined as empty object
+/** Assets library  */
+const questions = require('./assets/questions.json');
+const answers = require('./assets/answers.json');
+const rewards = require('./assets/rewards.json');
+
+
 global.gameState = {};
 
 // Mapping from token to user information
@@ -100,18 +102,20 @@ io.on('connection',(socket)=>{
         question_answered : 0
     }
 
-    /** Add token to player ready list */
+    /** Add token to player ready set */
     gameState[room].player_ready.add(token);
 
 
     
     if(role=="player"){
         io.to(room).emit("player join",{
+            token : token,
             username : username,
             status : gameState[room].player_status[token]
         })
     } else {
         io.to(room).emit('spectator join',{
+            token : token,
             username : username
         });
     }
@@ -128,7 +132,7 @@ io.on('connection',(socket)=>{
             console.log(gameState[room]);
         } else {
             io.to(room).emit("player ready",{
-                username : username
+                token : token
             })
         } 
     });
@@ -136,6 +140,34 @@ io.on('connection',(socket)=>{
     /** Second step, when game is in ready state */
     /** Assume legal actions taken by all clients */
     /** We can fix this one later */
+
+
+    socket.on('draw reward',function(msg){
+
+
+        if(gameState[room].player_status.hasOwnProperty(token)){
+            // TODO : Check if this player has the turn
+
+            //if(global.gameState[room].current_player == token){
+                var reward = rewards[gameState[room].reward_pointer];
+
+
+                gameState[room].player_status[token].money += reward.nominal;
+                gameState[room].reward_pointer = (gameState[room].reward_pointer + 1)%rewards.length;
+
+                io.to(room).emit("cash change",{
+                    token : token,
+                    cash_amount : gameState[room].player_status[token].money
+                });
+
+                io.to(room).emit("reward",{
+                    token : token,
+                    text : reward.text
+                });
+            }
+        //}
+        // Else ignore the invalid request (not from current player)
+    })
 
 });
 
