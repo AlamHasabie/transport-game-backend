@@ -1,6 +1,19 @@
 # transport-game-backend
 NodeJS backend for Transport Game.
 
+## Token request
+First, the user needs to request a token for the game. This token acts as an ID for the player. Note that token for a role of player will be issued only if there's only at most three people in a room. Role is either "spectator" or "player".
+```js
+{
+    roomname : "room-1",
+    username : "dragon-flyer",
+    role : "player"
+}
+```
+
+## Connection
+After receiving the token, client should directly connect with the received token. 
+
 ## Events
 ### Joining Event
 On connection, server emits information about the number of the player, i.e. 1st player, 2nd player etc.<br/>
