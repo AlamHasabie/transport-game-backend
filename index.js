@@ -121,20 +121,21 @@ io.on('connection',(socket)=>{
     }
 
     socket.on('ready',function(msg){
-        // Remove from ready list
-        gameState[room].player_ready.delete(token);
+        if(gameState[room].state == "prepare"){
+            gameState[room].player_ready.delete(token);
 
-        // Add to turn determination list
-        gameState[room].player_order.push(token);
-        if(gameState[room].player_ready.size==0){
-            gameState[room].state = "ready";
-            io.to(room).emit("game ready"); 
-            console.log(gameState[room]);
-        } else {
-            io.to(room).emit("player ready",{
-                token : token
-            })
-        } 
+            // Add to turn determination list
+            gameState[room].player_order.push(token);
+            if(gameState[room].player_ready.size==0){
+                gameState[room].state = "ready";
+                io.to(room).emit("game ready"); 
+                console.log(gameState[room]);
+            } else {
+                io.to(room).emit("player ready",{
+                    token : token
+                })
+            } 
+        }
     });
 
     /** Second step, when game is in ready state */
@@ -147,6 +148,7 @@ io.on('connection',(socket)=>{
 
         if(gameState[room].player_status.hasOwnProperty(token)){
             // TODO : Check if this player has the turn
+            // TODO : Check if game state is playing
 
             //if(global.gameState[room].current_player == token){
                 var reward = rewards[gameState[room].reward_pointer];
