@@ -7,6 +7,8 @@ var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 var bodyParser = require('body-parser');
 var crypto = require("crypto");
+var questions = require('./assets/questions.json');
+var answers = require('./assets/answers.json');
 
 // Global gamestate
 // First defined as empty object
