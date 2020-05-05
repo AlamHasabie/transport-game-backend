@@ -7,22 +7,38 @@
     <ul id="messages"></ul>
     <label for="token">Token</label>
     <input type="text" id="token" name="token" value="<%= token %>" readonly><br>
-    <button class="button" id="initbtn" type="submit">Join</button>
+    <button type="submit" id="ready-btn" name="ready-btn">Ready</button>
   </body>
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
   <script>
     $(function () {
-        var socket;
-        $('#initbtn').click(function(e) {
-            var token = $('#token').val();
-            e.preventDefault(); // prevents page reloading
-            socket = io('',{
-                query : {
-                  token : token
-                }
-            });
-            return false;
+        var token = $('#token').val();
+        var socket = io('',{
+          query : {
+            token : token
+          }
+        });
+
+        socket.on("player join",function(msg){
+          alert(JSON.stringify(msg));
+        });
+
+        socket.on("spectator join",function(msg){
+          alert("Spectator join");
+        })
+
+        socket.on("player ready",function(msg){
+          alert(msg.username + " ready");
+        });
+
+        socket.on("game ready",function(msg){
+          alert("game ready");
+        });
+
+        $('#ready-btn').click(function(e){
+          e.preventDefault();
+          socket.emit("ready");
         });
   });
   </script>

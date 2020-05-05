@@ -33,6 +33,7 @@ app.post('/game',(req,res)=>{
     
     var roomname = req.body["room"];
     var role = req.body["role"];
+    var username = req.body["username"];
     
     if(gameState.hasOwnProperty(roomname)){
 
@@ -60,8 +61,12 @@ app.post('/game',(req,res)=>{
     // Add user info
     userInfo[id] = {
         roomname : roomname,
-        role : role
+        role : role,
+        username : username
     }
+
+    /**Add number of player */
+    gameState[roomname].player++;
 
     res.statusCode = 200;
     res.render('game',{
@@ -78,7 +83,52 @@ io.on('connection',(socket)=>{
 
     var token = socket.handshake.query.token;
     var user = userInfo[token];
-    console.log(user);
+    var room = user.roomname;
+    var username = user.username;
+    var role = user.role;
+
+    /** Join to room */
+    socket.join(room);
+
+    /** Add information regarding the user */
+    gameState[room].player_status[token] = {
+        money : 150,
+        square : 0,
+        question : null,
+        question_answered : 0
+    }
+
+    /** Add token to player ready list */
+    gameState[room].player_ready.push(token);
+
+
+    
+    if(role=="player"){
+        io.to(room).emit("player join",{
+            username : username,
+            status : gameState[room].player_status[token]
+        })
+    } else {
+        io.to(room).emit('spectator join',{
+            username : username
+        });
+    }
+
+    socket.on('ready',function(msg){
+        // Remove from ready list
+        gameState[room].player_ready = gameState[room].player_ready.
+            filter(function(item){
+                return item!=token;
+            });
+        if(gameState[room].player_ready.length==0){
+            gameState[room].state = 1;
+            io.to(room).emit("game ready"); 
+        } else {
+            io.to(room).emit("player ready",{
+                username : username
+            })
+        } 
+    });
 });
 
 http.listen(3000,()=>{
@@ -88,22 +138,11 @@ http.listen(3000,()=>{
 
 /**Utils */
 /**This part is created so that function can be more modular in the future */
-
-function addnewmembertoroom(roomname , role){
-    if(role=="player"){
-        gameState[roomname].player = gameState[roomname].player + 1;
-    } else if (role=="spectator"){
-        gameState[roomname].spectator = gameState[roomname].spectator + 1;
-    }
-}
-
 function createnewroom(roomname){
     let new_room_data = {
         state : 0,
         player : 0,
-        spectator : 0,
-        player_socket : [],
-        spectator_socket : [],
+        player_ready : [],
         taken_questions : [],
         player_order : [],
         current_player : null,
@@ -111,18 +150,8 @@ function createnewroom(roomname){
         reward_pointer : 0,
         key_pointer : 0,
         question_pointer : 0,
-        player_status : []
+        player_status : {}
     }
 
     gameState[roomname] = new_room_data;
-}
-
-function addnewplayerstatus(roomname){
-    let new_player_data = {
-        money : 0,
-        square : 0,
-        question_card_held : null
-    }
-
-    gameState[roomname].player_status.push(new_player_data);
 }
