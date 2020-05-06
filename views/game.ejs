@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Game !</title>
+  </head>
+  <body>
+    <ul id="messages"></ul>
+    <label for="token">Token</label>
+    <input type="text" id="token" name="token" value="<%= token %>" readonly><br>
+    <button type="submit" id="ready-btn" name="ready-btn">Ready</button><br>
+    <button type="get reward" id="reward-btn" name="reward-btn">Draw Reward</button>
+  </body>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+  <script>
+    $(function () {
+        var token = $('#token').val();
+        var socket = io('',{
+          query : {
+            token : token
+          }
+        });
+
+        socket.on("player join",function(msg){
+          alert(JSON.stringify(msg));
+        });
+
+        socket.on("spectator join",function(msg){
+          alert("Spectator join");
+        })
+
+        socket.on("player ready",function(msg){
+          alert(msg.token + " ready");
+        });
+
+        socket.on("game ready",function(msg){
+          alert("game ready");
+        });
+
+        socket.on("cash change",function(msg){
+          alert(JSON.stringify(msg));
+        })
+
+        socket.on("reward",function(msg){
+          alert(JSON.stringify(msg));
+        })
+
+        $('#ready-btn').click(function(e){
+          e.preventDefault();
+          socket.emit("ready");
+        });
+
+        $('#reward-btn').click(function(e){
+          e.preventDefault();
+          socket.emit("draw reward");
+        });
+
+  });
+  </script>
+</html>

@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Game !</title>
+  </head>
+  <body>
+    <ul id="messages"></ul>
+    <label for="roomname">Game Room</label>
+    <input type="text" id="roomname" name="roomname"><br>
+    <label for="role">Role(player/spectator)</label>
+    <input type="text" id="role" name="role"><br>
+    <button class="button" id="initbtn" type="submit">Join</button>
+  </body>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+  <script>
+    $(function () {
+
+        var socket;
+        $('#initbtn').click(function(e) {
+
+            var roomname = $('#roomname').val();
+            var role = $('#role').val();
+            console.log(roomname);
+            console.log(role);
+            e.preventDefault(); // prevents page reloading
+            socket = io('',{
+                query : {
+                    roomname : roomname,
+                    role : role
+                }
+            });
+            return false;
+        });
+  });
+  </script>
+</html>

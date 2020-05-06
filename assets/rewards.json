@@ -1,0 +1,110 @@
+[
+    {
+        "text" : "You received a bonus of $10 !",
+        "nominal" : 10
+    },
+    {
+        "text" : "You received a bonus of $20 !",
+        "nominal" : 20
+    },
+    {
+        "text" : "You received a bonus of $50 !",
+        "nominal" : 50
+    },
+    {
+        "text" : "You received a bonus of $0 !",
+        "nominal" : 0
+    },
+    {
+        "text" : "You received a bonus of $0 !",
+        "nominal" : 0
+    },
+    {
+        "text" : "You received a bonus of $20 !",
+        "nominal" : 20
+    },
+    {
+        "text" : "You received a bonus of $20 !",
+        "nominal" : 20
+    },
+    {
+        "text" : "You received a bonus of $10 !",
+        "nominal" : 10
+    },
+    {
+        "text" : "You received a bonus of $10 !",
+        "nominal" : 10
+    },
+    {
+        "text" : "You received a bonus of $50 !",
+        "nominal" : 50
+    },
+    {
+        "text" : "You received a bonus of $0 !",
+        "nominal" : 0
+    },
+    {
+        "text" : "You received a bonus of $20 !",
+        "nominal" : 20
+    },
+    {
+        "text" : "You received a bonus of $20 !",
+        "nominal" : 20
+    },
+    {
+        "text" : "You received a bonus of $10 !",
+        "nominal" : 10
+    },
+    {
+        "text" : "You received a bonus of $10 !",
+        "nominal" : 10
+    },
+    {
+        "text" : "You received a bonus of $50 !",
+        "nominal" : 50
+    },
+    {
+        "text" : "You received a bonus of $0 !",
+        "nominal" : 0
+    },
+    {
+        "text" : "You received a bonus of $10 !",
+        "nominal" : 10
+    },
+    {
+        "text" : "You received a bonus of $20 !",
+        "nominal" : 20
+    },
+    {
+        "text" : "You received a bonus of $0 !",
+        "nominal" : 0
+    },
+    {
+        "text" : "You received a bonus of $0 !",
+        "nominal" : 0
+    },
+    {
+        "text" : "You received a bonus of $10 !",
+        "nominal" : 10
+    },
+    {
+        "text" : "You received a bonus of $20 !",
+        "nominal" : 20
+    },
+    {
+        "text" : "You received a bonus of $10 !",
+        "nominal" : 10
+    },
+    {
+        "text" : "You received a bonus of $10 !",
+        "nominal" : 10
+    },
+    {
+        "text" : "You received a bonus of $20 !",
+        "nominal" : 20
+    },
+    {
+        "text" : "You received a bonus of $20 !",
+        "nominal" : 20
+    }
+]
