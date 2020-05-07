@@ -9,6 +9,7 @@
     <input type="text" id="token" name="token" value="<%= token %>" readonly><br>
     <button type="submit" id="ready-btn" name="ready-btn">Ready</button><br>
     <button type="get reward" id="reward-btn" name="reward-btn">Draw Reward</button>
+    <button type="submit" id="first-dice-btn" name="first-dice-btn">Draw first dice</button>
   </body>
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
@@ -22,27 +23,35 @@
         });
 
         socket.on("player join",function(msg){
-          alert(JSON.stringify(msg));
+          console.log(msg);
         });
 
         socket.on("spectator join",function(msg){
-          alert("Spectator join");
+          console.log("Spectator join");
         })
 
         socket.on("player ready",function(msg){
-          alert(msg.token + " ready");
+          console.log(msg.token + " ready");
         });
 
         socket.on("game ready",function(msg){
-          alert("game ready");
+          console.log("game ready");
         });
 
         socket.on("cash change",function(msg){
-          alert(JSON.stringify(msg));
+          console.log(msg);
         })
 
         socket.on("reward",function(msg){
-          alert(JSON.stringify(msg));
+          console.log(msg);
+        })
+
+        socket.on("player order",function(msg){
+          console.log(msg);
+        })
+
+        socket.on("game start",function(msg){
+          console.log("Game started");
         })
 
         $('#ready-btn').click(function(e){
@@ -55,6 +64,22 @@
           socket.emit("draw reward");
         });
 
+        $('#reward-btn').click(function(e){
+          e.preventDefault();
+          socket.emit("draw reward");
+        });
+
+        $('#first-dice-btn').click(function(e){
+          e.preventDefault();
+          var dice_1 = Math.floor(Math.random()*5+1);
+          var dice_2 = Math.floor(Math.random()*5+1);
+          console.log(dice_1);
+          console.log(dice_2);
+          socket.emit("first roll",{
+            dice_1 : dice_1,
+            dice_2 : dice_2
+          });
+        });
   });
   </script>
 </html>
