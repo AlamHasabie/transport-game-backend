@@ -179,8 +179,9 @@ io.on('connection',(socket)=>{
                 console.log(gameState[room].first_roll);
 
                 if(gameState[room].roll_wait.size == 0 ){
+
                     // Start the game
-                    gameState[room].state == "rolling"
+                    gameState[room].state = "rolling"
 
                     // Build order
                     buildturnorder(room);
@@ -217,8 +218,8 @@ io.on('connection',(socket)=>{
     
                 // Announce dice roll
                 io.to(room).emit("roll info",{
-                    dice_1 = msg.dice_1,
-                    dice_2 = msg.dice_2
+                    dice_1 : msg.dice_1,
+                    dice_2 : msg.dice_2
                 });
     
                 var movement = msg.dice_1 + msg.dice_2;
@@ -241,7 +242,9 @@ io.on('connection',(socket)=>{
                     gameState[room].repeated_roll = 0;
                     gameState[room].state = "activation";
 
-                    io.to(room).emit("square activation");
+                    io.to(room).emit("square activation",{
+                        token : token
+                    });
                 }
             }
         });
@@ -252,12 +255,128 @@ io.on('connection',(socket)=>{
                 var next_player = (gameState[room].current_player+1)%gameState[room].player_order.size;
                 gameState[room].current_player = next_player;
     
-                io.to.emit("turn",{
+                /** Change turn */
+                io.to(room).emit("turn",{
                     token : token
                 });
+
+                /** Change gamestate to rolling */
+                gameState[room].state = "rolling"
             }
 
         });
+
+
+        /** Fetch */
+        socket.on("draw question",function(msg){
+
+            /**
+             * Only fetch if current game state is in activation state
+             * Also, check if current player is playing
+             */
+
+            if(isPlayingToken(token,room)&&(
+                gameState[room].state == "activation"
+            )){
+                if(gameState[room].player_status[token].question==null){
+
+                    var current_question = gameState[room].question_pointer;
+                    while(gameState[room].taken_questions.has(current_question)){
+                        current_question = (current_question+1)%questions.size;
+                    }
+                    // Add question to room status
+                    gameState[room].taken_questions.add(current_question);
+
+                    // Change pointer
+                    gameState[room].question_pointer  = current_question;
+
+                    // Add question to player status
+                    gameState[room].player_status[token].question = current_question;
+
+                    // Emit information about the question
+                    io.to(room).emit("question",{
+                        token : token,
+                        question_no : current_question,
+                        question_text : questions[current_question].question
+                    });
+    
+                    // Take question
+                } else {
+
+                    // Emit information that this player already has a question card
+                    io.to(room).emit("already has question",{
+                        token : token
+                    });
+                }
+
+            }
+            /** Else don't handle */
+        })
+
+        /** 
+         * Draw answer 
+         * Only draw if player is playing
+         * Also, change game state to wait for answer
+        */
+        socket.on("draw answer",function(msg){
+
+            // Get answer
+            if(isPlayingToken(token,room)&&isRoomState(room,"activation")){
+                if(gameState[room].player_status[room].question!=null){
+                    var current_answer = gameState[room].key_pointer;
+                    var current_answer_2 = (current_answer + 1)%answers.size;
+    
+                    // Change state to wait for answer
+                    gameState[room].state = "waiting for answer"
+                    gameState[room].key_pointer =  (current_answer_2+1)%answers.size;
+                    // Emit answer to all players
+                    io.to(room).emit("answers",{
+                        ans_1 : answers[current_answer],
+                        ans_2 : answers[current_answer_2]
+                    });
+                } else {
+                    io.to("room").emit("no question")
+                }
+            }
+        });
+
+        socket.on("answer",function(msg){
+            if(isPlayingToken(token,room)&&isRoomState(room,"waiting")){
+                if(playerHasQuestion(room,token)){
+                    var question_no = gameState[room].player_status[token].question;
+                    if(msg.answer==null){
+                        io.to(room).emit("not answering",{
+                            token : token
+                        });
+                    } else {
+                        if(questions[question_no].answer.has(msg.answer)){
+                            io.to(room).emit("answer true",{
+                                token : token
+                            });
+
+                            gameState[room].player_status[token].question_answered++;
+
+                        } else {
+                            io.to(room).emit("answer false",{
+                                token : token
+                            })
+                        }
+
+                        // Delete question
+                        gameState[room].player_status[token].question = null;
+                        gameState[room].taken_questions.delete(question_no);
+                    }
+
+                    // Change gamestate to activation again
+                    gameState[room].state = "activation"
+
+                } else {
+                    io.to(room).emit("no question",{
+                        token : token
+                    })
+                }
+            }
+        })
 
 
         socket.on('draw reward',function(msg){
@@ -267,10 +386,8 @@ io.on('connection',(socket)=>{
                 // TODO : Check if this player has the turn
                 // TODO : Check if game state is playing
 
-                //if(global.gameState[room].current_player == token){
+                if(isPlayingToken(token,room)&&isRoomState(room,"activation")){
                     var reward = rewards[gameState[room].reward_pointer];
-
-
                     gameState[room].player_status[token].money += reward.nominal;
                     gameState[room].reward_pointer = (gameState[room].reward_pointer + 1)%rewards.length;
 
@@ -284,7 +401,7 @@ io.on('connection',(socket)=>{
                         text : reward.text
                     });
                 }
-            //}
+            }
             // Else ignore the invalid request (not from current player)
         });
 
@@ -335,6 +452,7 @@ function createnewroom(roomname){
 function buildturnorder(roomname){
 
     for(var i = 0 ; i < gameState[roomname].player ; i++){
+        console.log(gameState[roomname].first_roll);
         current_max_dice = 0;
         current_index = 0;
         for(var k = 0; k < gameState[roomname].length ; k++){
@@ -345,7 +463,7 @@ function buildturnorder(roomname){
         }
 
         // Get taken token
-        var token = gameState[roomname].first_roll[k].token;
+        var token = gameState[roomname].first_roll[current_index].token;
 
         // Add max as first element of player turn
         gameState[roomname].player_order.push(token);
@@ -363,4 +481,12 @@ function buildturnorder(roomname){
 
 function isPlayingToken(token,room){
     return token==gameState[room].player_order[gameState[room].current_player];
+}
+
+function isRoomState(room,state){
+    return gameState[room].state==state
+}
+
+function playerHasQuestion(room,token){
+    return gameState[room].player_status[token].question != null
 }
