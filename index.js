@@ -132,68 +132,7 @@ http.listen(3000,()=>{
 
 /**Utils */
 /**This part is created so that function can be more modular in the future */
-function createnewroom(roomname){
-    let new_room_data = {
-        state : "prepare",
-        player : 0,
-        player_ready : new Set(),
-        roll_wait : new Set(),
-        taken_questions : new Set(),
-        first_roll : [],
-        player_order : [],
-        current_player : null,
-        event_pointer : 0,
-        reward_pointer : 0,
-        key_pointer : 0,
-        question_pointer : 0,
-        player_status : {}
-    }
 
-    gameState[roomname] = new_room_data;
-}
-
-// Get turn order
-function buildturnorder(roomname){
-
-    for(var i = 0 ; i < gameState[roomname].player ; i++){
-        console.log(gameState[roomname].first_roll);
-        current_max_dice = 0;
-        current_index = 0;
-        for(var k = 0; k < gameState[roomname].length ; k++){
-            if((gameState[roomname].first_roll[k].dice>current_max_dice)){
-                current_max_dice = gameState[roomname].first_roll[k].dice;
-                current_index = k;    
-            }
-        }
-
-        // Get taken token
-        var token = gameState[roomname].first_roll[current_index].token;
-
-        // Add max as first element of player turn
-        gameState[roomname].player_order.push(token);
-
-        // Delete element with the same token
-        gameState[roomname].first_roll = gameState[roomname].first_roll.filter(function(el){
-            return el.token != token;
-        });
-    }
-
-    // Delete first_roll
-    delete gameState[roomname].first_roll
-}
-
-
-function isPlayingToken(token,room){
-    return token==gameState[room].player_order[gameState[room].current_player];
-}
-
-function isRoomState(room,state){
-    return gameState[room].state==state
-}
-
-function playerHasQuestion(room,token){
-    return gameState[room].player_status[token].question != null;
-}
 
 
 function registerValidPlayer(socket,token){
@@ -205,13 +144,8 @@ function registerValidPlayer(socket,token){
     /** Join socket to room */
     socket.join(room);
 
-    /** Add information regarding the user */
-    gameState[room].player_status[token] = {
-        money : 150,
-        square : 0,
-        question : null,
-        question_answered : 0
-    }
+
+    addnewplayertoroom(token,room);
     
     /** Add to ready queue */
     gameState[room].player_ready.add(token);
@@ -223,7 +157,10 @@ function registerValidPlayer(socket,token){
         status : gameState[room]
     })
 
-    // TODO : send server data to spectator
+
+    /**
+     *  GAME SETUP PROCEDURE
+     */
     socket.on('ready',function(msg){
         if(gameState[room].state == "prepare"){
             gameState[room].player_ready.delete(token);
@@ -250,10 +187,6 @@ function registerValidPlayer(socket,token){
         console.log(gameState[room]);
     });
 
-    /** Second step, when game is in ready state */
-    /** Assume legal actions taken by all clients */
-
-    /** First Roll */
     socket.on("first roll",function(msg){
         if(gameState[room].state=="ready"){
 
@@ -300,6 +233,12 @@ function registerValidPlayer(socket,token){
             }
         }
     });
+
+    /**
+     * TURN PROCEDURE
+     */
+
+
 
 
     socket.on("roll",function(msg){
@@ -361,8 +300,11 @@ function registerValidPlayer(socket,token){
 
     });
 
+    /**
+     *  QUESTION AND ANSWER PROCEDURE
+     */
 
-    /** Fetch */
+
     socket.on("draw question",function(msg){
 
         /**
@@ -410,11 +352,6 @@ function registerValidPlayer(socket,token){
         /** Else don't handle */
     })
 
-    /** 
-     * Draw answer 
-     * Only draw if player is playing
-     * Also, change game state to wait for answer
-    */
     socket.on("draw answer",function(msg){
 
         // Get answer
@@ -480,8 +417,11 @@ function registerValidPlayer(socket,token){
 
             console.log(gameState[room]);
         }
-    })
+    });
 
+    /**
+     * REWARD
+     */
 
     socket.on('draw reward',function(msg){
 
@@ -513,7 +453,90 @@ function registerValidPlayer(socket,token){
 
 function registerValidSpectator(socket,token){
 
+    var user = userInfo[token];
+    var room = user.roomname;
+    var username = user.username;
+
+    socket.join(room);
 
 
+    io.emit("spectator join",{
+        token : token,
+        username : username
+    });
+}
 
+
+/** UTILS */
+
+function createnewroom(roomname){
+    let new_room_data = {
+        state : "prepare",
+        player : 0,
+        player_ready : new Set(),
+        roll_wait : new Set(),
+        taken_questions : new Set(),
+        first_roll : [],
+        player_order : [],
+        current_player : null,
+        event_pointer : 0,
+        reward_pointer : 0,
+        key_pointer : 0,
+        question_pointer : 0,
+        player_status : {}
+    }
+
+    gameState[roomname] = new_room_data;
+}
+
+// Get turn order
+function buildturnorder(roomname){
+
+    for(var i = 0 ; i < gameState[roomname].player ; i++){
+        console.log(gameState[roomname].first_roll);
+        current_max_dice = 0;
+        current_index = 0;
+        for(var k = 0; k < gameState[roomname].length ; k++){
+            if((gameState[roomname].first_roll[k].dice>current_max_dice)){
+                current_max_dice = gameState[roomname].first_roll[k].dice;
+                current_index = k;    
+            }
+        }
+
+        // Get taken token
+        var token = gameState[roomname].first_roll[current_index].token;
+
+        // Add max as first element of player turn
+        gameState[roomname].player_order.push(token);
+
+        // Delete element with the same token
+        gameState[roomname].first_roll = gameState[roomname].first_roll.filter(function(el){
+            return el.token != token;
+        });
+    }
+
+    // Delete first_roll
+    delete gameState[roomname].first_roll
+}
+
+
+function isPlayingToken(token,room){
+    return token==gameState[room].player_order[gameState[room].current_player];
+}
+
+function isRoomState(room,state){
+    return gameState[room].state==state
+}
+
+function playerHasQuestion(room,token){
+    return gameState[room].player_status[token].question != null;
+}
+
+function addnewplayertoroom(room,token){
+    gameState[room].player_status[token] = {
+        money : 150,
+        square : 0,
+        question : null,
+        question_answered : 0
+    }
 }
