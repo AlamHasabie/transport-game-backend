@@ -14,19 +14,19 @@ const answers = require('./assets/answers.json');
 const rewards = require('./assets/rewards.json');
 
 
-global.gameState = {};
 
-// Mapping from token to user information
-// User information includes :
-// username , gameroom , role in the designated game room
+/** Server initialization */
+global.gameState = {}
 global.userInfo = {};
 
 
+
+/** This is for testing purpose only */
 app.use(bodyParser.urlencoded());
 app.get('/',(req,res)=>{
     res.render('index.ejs');
 });
-// For testing purpose only
+
 app.set('view engine', 'ejs');
 
 
@@ -86,11 +86,6 @@ app.post('/game',(req,res)=>{
 io.on('connection',(socket)=>{
 
     var token = socket.handshake.query.token;
-
-    /** TODO : Establish one-to-one relationship between token and socket.id 
-     * If an event comes , but the current socket id does not own the token.
-     * reject as it is an unauthorized socket.
-    */
 
     // If token is unknown, force close the connection
     if(!userInfo.hasOwnProperty(token)){
@@ -156,6 +151,9 @@ io.on('connection',(socket)=>{
                     io.to(room).emit("game ready"); 
                 }
             }
+
+
+            console.log(gameState[room]);
         });
 
         /** Second step, when game is in ready state */
@@ -197,7 +195,7 @@ io.on('connection',(socket)=>{
 
                     // Emit information about turn
                     io.to(room).emit("turn",{
-                        token : token
+                        token : gameState[room].player_order[0]
                     })
 
                     gameState[room].repeated_roll = 0;
@@ -245,23 +243,26 @@ io.on('connection',(socket)=>{
                     io.to(room).emit("square activation",{
                         token : token
                     });
+                    
                 }
+                console.log(gameState[room]);
             }
         });
 
         socket.on("finish turn",function(msg){
             if((gameState[room].state == "activation")&&
             isPlayingToken(token,room)){
-                var next_player = (gameState[room].current_player+1)%gameState[room].player_order.size;
+                var next_player = (gameState[room].current_player+1)%gameState[room].player_order.length;
                 gameState[room].current_player = next_player;
     
                 /** Change turn */
                 io.to(room).emit("turn",{
-                    token : token
+                    token : gameState[room].player_order[next_player]
                 });
-
                 /** Change gamestate to rolling */
-                gameState[room].state = "rolling"
+                gameState[room].state = "rolling";
+
+                console.log(gameState[room]);
             }
 
         });
@@ -309,6 +310,8 @@ io.on('connection',(socket)=>{
                     });
                 }
 
+                console.log(gameState[room]);
+
             }
             /** Else don't handle */
         })
@@ -322,26 +325,31 @@ io.on('connection',(socket)=>{
 
             // Get answer
             if(isPlayingToken(token,room)&&isRoomState(room,"activation")){
-                if(gameState[room].player_status[room].question!=null){
+                if(gameState[room].player_status[token].question!=null){
                     var current_answer = gameState[room].key_pointer;
-                    var current_answer_2 = (current_answer + 1)%answers.size;
-    
-                    // Change state to wait for answer
+                    var current_answer_2 = (current_answer + 1)%answers.length;
+
+
+
                     gameState[room].state = "waiting for answer"
-                    gameState[room].key_pointer =  (current_answer_2+1)%answers.size;
+                    gameState[room].key_pointer =  (current_answer_2+1)%answers.length;
                     // Emit answer to all players
                     io.to(room).emit("answers",{
                         ans_1 : answers[current_answer],
                         ans_2 : answers[current_answer_2]
                     });
                 } else {
-                    io.to("room").emit("no question")
+                    io.to("room").emit("no question",{
+                        token : token
+                    });
                 }
+
+                console.log(gameState[room]);
             }
         });
 
         socket.on("answer",function(msg){
-            if(isPlayingToken(token,room)&&isRoomState(room,"waiting")){
+            if(isPlayingToken(token,room)&&isRoomState(room,"waiting for answer")){
                 if(playerHasQuestion(room,token)){
                     var question_no = gameState[room].player_status[token].question;
                     if(msg.answer==null){
@@ -349,7 +357,7 @@ io.on('connection',(socket)=>{
                             token : token
                         });
                     } else {
-                        if(questions[question_no].answer.has(msg.answer)){
+                        if(questions[question_no].answer.includes(msg.answer)){
                             io.to(room).emit("answer true",{
                                 token : token
                             });
@@ -375,6 +383,8 @@ io.on('connection',(socket)=>{
                         token : token
                     })
                 }
+
+                console.log(gameState[room]);
             }
         })
 
@@ -383,9 +393,6 @@ io.on('connection',(socket)=>{
 
 
             if(gameState[room].player_status.hasOwnProperty(token)){
-                // TODO : Check if this player has the turn
-                // TODO : Check if game state is playing
-
                 if(isPlayingToken(token,room)&&isRoomState(room,"activation")){
                     var reward = rewards[gameState[room].reward_pointer];
                     gameState[room].player_status[token].money += reward.nominal;
@@ -400,25 +407,24 @@ io.on('connection',(socket)=>{
                         token : token,
                         text : reward.text
                     });
+
+                    console.log(gameState[room]);
                 }
             }
-            // Else ignore the invalid request (not from current player)
         });
 
     } else if (role=="spectator") {
+
         io.to(room).emit('spectator join',{
             token : token,
             username : username
         });
-        // TODO : Send data about current game state to user
-        
     } else {
         /** Illegal request */
         /** Terminate */
         socket.disconnect();
         return;
     }
-
 });
 
 http.listen(3000,()=>{
@@ -488,5 +494,5 @@ function isRoomState(room,state){
 }
 
 function playerHasQuestion(room,token){
-    return gameState[room].player_status[token].question != null
+    return gameState[room].player_status[token].question != null;
 }
