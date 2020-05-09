@@ -1,18 +1,47 @@
 # transport-game-backend
 NodeJS backend for Transport Game.
 
+## Token request
+First, the user needs to request a token for the game. This token acts as an ID for the player. Note that token for a role of player will be issued only if there's only at most three people in a room. Role is either "spectator" or "player". Given below is the parameter of the request, sent with POST to the /game path.
+```js
+{
+    roomname : "room-1",
+    username : "dragon-flyer",
+    role : "player"
+}
+```
+
+## Connection
+After receiving the token, client should directly connect with the received token. 
+'''js
+var socket = io('',{
+    query : {
+        token : token
+        }
+    });
+'''
 ## Events
 ### Joining Event
-On connection, server emits information about the number of the player, i.e. 1st player, 2nd player etc.<br/>
-**Server**
+On connection, server emits information about the joining , either a spectator or a player. Below is the event from server-side
+**Player joins**
 ```js
-io.to(socketId).emit()
-    "player number info",
-    {
-        "number":2
-    }
-)
+io.to(room).emit("player join",{
+    token : token,
+    username : username,
+    status : roomdataonjoin(room)
+})
 ```
+
+**Spectator joins**
+```js
+io.to(room).emit('spectator join',{
+    token : token,
+    username : username
+});
+```
+Note the status. It will be described in the struct session.
+
+
 ### Game Setup Event
 #### Start
 Client needs to inform server that he is ready to start the game. Server emits this event when all players are prepared and ready to start the game.<br/>
@@ -21,149 +50,47 @@ Client needs to inform server that he is ready to start the game. Server emits t
 io.emit("ready");
 ```
 **Server**
+If not all players are ready :
 ```js
-io.emit("game start");
-```
-
-#### First Dice Roll
-Server receive information about the dice roll of each client.<br/>
-**Client**
-```js
-io.emit("first dice roll",{
-    "dice" : 4
+io.to(room).emit("player ready",{
+    token : token
 })
 ```
-
-#### Turn information
-When all players had emitted their dice, then server will emit information about the turns in an array.T he first element indicates which player moves first, the second is the second player to move etc.<br/>
-**Server**
+If all players are ready : 
 ```js
-io.emit("turn information",{
-    "turns" : [2,3,4,1]
-})
+io.to(room).emit("game ready"); 
 ```
 
-### Turn
-#### Beginning of a turn
-In the beginning of every turn, server will emit information about which player will play.<br/>
-**Server**
-```js
-io.emit("turn",{
-    "turn" : 2
-})
+After this emission, no player can join. Spectators can join.
 
-```
-#### Player Movement
-When the player moves, the server has to be notified.<br/>
-**Client**
-```js
-io.emit("player movement",{
-    "player" : 1,
-    "destSquare" : 20
-})
-```
-Server sends broadcast with same data to all other players.<br/>
-**Server**
-```js
-io.brodcast("player movement",{
-    "player" : 1,
-    "destSquare" : 20
-})
-```
+### Status Change Events
+Every change in the visible status of a player will be informed.
 
-#### Turn End
-When a player had finished its turn by moving or doing all of its obligations, it should notify the server.<br/>
-**Client**
+#### Cash Change
+When the amount of a cash changes, then the amount will be announced to all spectators and players.
 ```js
-io.emit("turn ends")
-```
-The server then will pick the next player to play.
-
-### Money
-#### Fund Change
-Should be sent whenever the amount of fund a player has changes. 
-The player and the change should be sent.<br/>
-**Client**
-```js
-io.emit("fund change",{
-    "player" : 1,
-    "change" : -20
-})
-```
-
-Server emits fund held by the player (not the change).<br/>
-**Server**
-```js
-io.emit("fund update",{
-    "player" : 1,
-    "fund" : 400
+io.to(room).emit("cash change",{
+    token : token,
+    cash_amount : gameState[room].player_status[token].money
 });
 ```
-### Question and Keys
-#### Landing on Question Space
-When a playing player lands on a question space, the server needs to be mentioned.<br/>
-**Client**
-```js
-io.emit("question space")
-```
-In turn , the server will emit about question if the player doesn't hold any question cards.<br/>
-**Server**
-```js
-io.emit("question",{
-    "question_id" : 3,
-    "question" : "What is the answer of the universe ?"
-)}
-```
-If player holds a question card, then the socket will send an information that the player holds it already.<br/>
-**Server**
-```js
-io.emit("holds question already");
-```
-*Note : the description above can be implemented client-side, but it is safer to also do it in server*
 
-#### Landing on Key Space
-When a player lands on a key space, it should notify the server.<br/>
-**Client**
+
+### Reward Events
+If a client lands on a reward square, it needs to inform the server.
 ```js
-io.emit("key space").
-```
-In turn, the server will emit with data containing two keys.<br/>
-**Server**
-```js
-io.emit("key",{
-    [{
-        "key_id" : 42,
-        "answer" : "It's 42"
-    },
-    {
-        "key_id" : 66,
-        "answer" : "Nothing"
-    }
-    ]
-})
+socket.emit("draw reward");
 ```
 
-#### Answering
-After player had determined the answer, client should notify the server.<br/>
-**Client**
+Server will return two emits. The first one is the **cash change** event described earlier, and the second one is the following emit.
+*Additional reward emit*
 ```js
-io.emit("answer",{
-    "key_id" : 66
-}
+io.to(room).emit("reward",{
+    token : token,
+    text : reward.text
+});
 ```
-Should client decided to not answer, the client should notify the server.<br/>
-**Server**
-```js
-io.emit("no answer")
-```
-This indicates that client returns the key question cards to the deck.
 
-#### Response of Answer
-After answering, server emits information whether the answer is true or false.<br/>
-**Server**
-```js
-io.emit("response",{
-    "response" : true
-})
-```
-If player answers correctly, then server will also emit fund change event.
+## Structs
+Given below is the structure of data used in the socket:
+
