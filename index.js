@@ -181,10 +181,12 @@ function registerValidPlayer(socket,token){
                 gameState[room].state = validState.ready;
                 io.to(room).emit("game ready"); 
             }
+
+            console.log(gameState[room]);
         }
 
 
-        console.log(gameState[room]);
+
     });
 
     socket.on("first roll",function(msg){
@@ -231,6 +233,8 @@ function registerValidPlayer(socket,token){
                 delete gameState[room].roll_wait;
                 console.log(gameState[room]);
             }
+
+            console.log(gameState[room]);
         }
     });
 
@@ -317,7 +321,7 @@ function registerValidPlayer(socket,token){
 
                 var current_question = gameState[room].question_pointer;
                 while(gameState[room].taken_questions.has(current_question)){
-                    current_question = (current_question+1)%questions.size;
+                    current_question = (current_question+1)%questions.length;
                 }
                 // Add question to room status
                 gameState[room].taken_questions.add(current_question);
@@ -445,6 +449,122 @@ function registerValidPlayer(socket,token){
     });
 
 
+    /** Disconnect 
+     * When a user leaves, then thing needs to be undone
+    */
+    socket.on("disconnect",function(msg){
+        switch (gameState[room].state) {
+            case validState.prepare:
+
+                delete gameState[room].player_status[token];
+                gameState[room].player_ready.delete(token);
+                gameState[room].roll_wait.delete(token);
+
+                io.to(room).emit("player leaves",{
+                    token : token
+                })
+
+
+                gameState[room].player--;
+
+                // If player ready becomes zero, then kickstart the game earlier.
+                if(gameState[room].player_ready.size==0){
+
+                    // Delete player_ready element
+                    delete gameState[room].player_ready;
+    
+                    // Set to game ready
+                    gameState[room].state = validState.ready;
+                    io.to(room).emit("game ready"); 
+                }
+
+
+                deleteroomifempty(room);
+                
+                break;
+
+            case validState.ready:
+
+                gameState[room].first_roll = gameState[room].first_roll
+                    .filter(function(item){return item != token});
+
+                gameState[room].roll_wait.delete(token);
+                delete gameState[room].player_status[token];
+
+                gameState[room].player--;
+
+
+                deleteroomifempty(room);
+
+            
+                break;
+
+        
+            case validState.rolling:
+
+                releasequestion(room,token);
+
+                var thistokenplaying = isPlayingToken(token,room)
+                delete gameState[room].player_status[token];
+                deletefromplayerorder(room,token);
+
+                io.to(room).emit("player leaves",{
+                    token : token
+                });
+
+                if(thistokenplaying){
+                    io.to(room).emit("turn",{
+                        token : gameState[room].player_order[gameState[room].current_player]
+                    });
+                }
+
+                gameState[room].player--;
+
+                deleteroomifempty(room);
+
+                break;
+
+
+            case validState.answer_wait:
+            case validState.activation:
+
+                releasequestion(room,token);
+                var thistokenplaying = isPlayingToken(token,room)
+                delete gameState[room].player_status[token];
+                deletefromplayerorder(room,token);
+
+                io.to(room).emit("player leaves",{
+                    token : token
+                });
+
+                if(thistokenplaying){
+                    gameState[room].state = validState.rolling;
+                    io.to(room).emit("turn",{
+                        token : gameState[room].player_order[gameState[room].current_player]
+                    });
+                }
+
+                gameState[room].player--;
+
+                deleteroomifempty(room);
+
+
+                break;
+        
+            default:
+
+                break;
+        }
+
+
+        console.log(gameState[room]);
+    });
+
+
+    console.log(gameState[room]);
+
+
+
 
 }
 
@@ -457,10 +577,17 @@ function registerValidSpectator(socket,token){
     socket.join(room);
 
 
-    io.emit("spectator join",{
+    io.to(room).emit("spectator join",{
         token : token,
         username : username
     });
+
+    gameState[room].spectator.add(token);
+
+
+    socket.on("disconnect",function(msg){
+        gameState[room].spectator.delete(token);
+    })
 }
 
 
@@ -470,6 +597,7 @@ function createnewroom(roomname){
     let new_room_data = {
         state : validState.prepare,
         player : 0,
+        spectator : new Set(),
         player_ready : new Set(),
         roll_wait : new Set(),
         taken_questions : new Set(),
@@ -534,5 +662,40 @@ function addnewplayertoroom(room,token){
         square : 0,
         question : null,
         question_answered : 0
+    }
+}
+
+function releasequestion(room,token){
+    if(gameState[room].player_status[token].question!=null){
+        gameState[room].taken_questions.delete(gameState[room].player_status[token].question);
+        gameState[room].player_status[token].question = null;
+    }
+
+}
+
+function deletefromplayerorder(room,token){
+
+    // Get next available token
+    var cur_play = gameState[room].current_player;
+    var size = gameState[room].player_order.length;
+    var next_tok;
+    if(isPlayingToken(token,room)){
+        next_tok = gameState[room].player_order[(cur_play+1)%size];
+    } else {
+        next_tok = gameState[room].player_order[cur_play];
+    }
+
+    // Delete element
+    gameState[room].player_order
+        .filter(function(item){return item!=token});
+
+    // Set current player to the next_tok
+    var index = gameState[room].player_order.indexOf(next_tok);
+    gameState[room].current_player = index;
+}
+
+function deleteroomifempty(room){
+    if(gameState[room].player==0&&gameState[room].spectator.size==0){
+        delete gameState[room];
     }
 }

@@ -97,14 +97,18 @@
 
         socket.on("answer true",function(msg){
           console.log("Player : " + msg.token + " answered true !");
-        })
+        });
 
         socket.on("answer false",function(msg){
           console.log("Player : " + msg.token + " answered false !");
-        })
+        });
 
         socket.on("not answering",function(msg){
           console.log("Player : " + msg.token + " not answering !");
+        });
+
+        socket.on('player leaves',function(msg){
+          console.log("Player : " + msg.token + " leaves");
         })
 
         $('#ready-btn').click(function(e){
