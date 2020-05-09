@@ -13,6 +13,15 @@ const questions = require('./assets/questions.json');
 const answers = require('./assets/answers.json');
 const rewards = require('./assets/rewards.json');
 
+const validState = {
+    prepare : 0,
+    ready : 1,
+    rolling : 2,
+    activation : 3,
+    answer_wait : 4,
+    finished : 5
+}
+
 
 
 /** Server initialization */
@@ -28,10 +37,6 @@ app.get('/',(req,res)=>{
 });
 
 app.set('view engine', 'ejs');
-
-
-/** To join a room , simply send a post request with username, room-name and spectator */
-/** Username had to be unique for all users */
 
 app.post('/game',(req,res)=>{
     
@@ -79,53 +84,44 @@ app.post('/game',(req,res)=>{
 });
 
 
-/** To join a room , simply send a post request with room-name and spectator*/
-/** The page should directly call for socket joining*/
-/** Assume that only validated user would be able to connect to the application , */
-/** Means that the room exists */
+/** SOCKETS */
 io.on('connection',(socket)=>{
 
     var token = socket.handshake.query.token;
 
-    // If token is unknown, force close the connection
+
     if(!userInfo.hasOwnProperty(token)){
+
         socket.disconnect();
-        return;
-    }
-    var user = userInfo[token];
-    var room = user.roomname;
-    var username = user.username;
-    var role = user.role;
 
-    
-    /** Join to room */
-    socket.join(room);
-
-
-    if(role=="player"){
-
-        /** Illegal entry */
-        /** Now server crashes when someone refresh the page */
-        /** So this return hasn't worked yet :( */
-        if(!gameState[room].state== "prepare"){
-            socket.disconnect();
-            return;
-        } else {
-            registerValidPlayer(socket,token);
-        }
-        
-
-    } else if (role=="spectator") {
-
-        io.to(room).emit('spectator join',{
-            token : token,
-            username : username
-        });
     } else {
-        /** Illegal request */
-        /** Terminate */
-        socket.disconnect();
-        return;
+
+        var role = userInfo[token].role;
+        var room = userInfo[token].roomname;
+
+        if(role == "player"){
+
+            if(isRoomState(room,"prepare")){
+
+                registerValidPlayer(socket,token);
+
+
+            } else {
+
+                socket.disconnect();
+
+            }
+
+        } else if (role=="spectator") {
+
+            registerValidSpectator(socket,token);
+
+        } else {
+
+            console.log("Role unknown, illegal argument");
+
+
+        }
     }
 });
 
@@ -205,6 +201,9 @@ function registerValidPlayer(socket,token){
     var user = userInfo[token];
     var room = user.roomname;
     var username = user.username;
+
+    /** Join socket to room */
+    socket.join(room);
 
     /** Add information regarding the user */
     gameState[room].player_status[token] = {
