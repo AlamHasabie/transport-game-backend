@@ -103,4 +103,27 @@ Context sent by server can be seen in the constans.json file, and can be one of 
 Note that contexts are registered within every "update" event emit of the socket.
 
 ### gameState
+state : one of the state in the constant.json valid state
+player : number of player
+spectator : Set of spectators
+player_ready : Set of player not ready yet
+roll_wait : Set of player who hasn't rolled the first dice
+taken_questions : Set of taken questions
+skipped : Set of skipped players
+first_roll : Array to save the first roll dice, used to create order of the turns.
+player_order : Order of player for every turn as an array. Contains tokens of players
+offered_answer : answer card currently used
+current_player : current player, as an index of the player order
+event_pointer : points to which event card will be drawed next
+reward_pointer : points to which reward card will be drawed next
+key_pointer : points to which key card will be drawed next
+question_pointer : points to which question card will be drawed next 
+player_status : object of player status. Accessible with player token (player_status[token])
+    money : money
+    square : which square the player is in
+    question_answered : number of answers correctly answered by the player
+    question : question currently held by player. null if no question is held:
+        no : the id of the question
+        text : the question (i.e. what is your name ?_
+
 
