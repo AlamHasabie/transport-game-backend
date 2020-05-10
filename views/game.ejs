@@ -48,6 +48,10 @@
 
         socket.on("cash change",function(msg){
           console.log(msg);
+        });
+
+        socket.on("update",function(msg){
+          console.log(msg.game_status);
         })
 
         socket.on("reward",function(msg){

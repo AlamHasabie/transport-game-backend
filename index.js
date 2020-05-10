@@ -12,6 +12,7 @@ var crypto = require("crypto");
 const questions = require('./assets/questions.json');
 const answers = require('./assets/answers.json');
 const rewards = require('./assets/rewards.json');
+const board = require('./assets/board.json');
 
 const validState = {
     prepare : 0,
@@ -154,7 +155,7 @@ function registerValidPlayer(socket,token){
     io.to(room).emit("player join",{
         token : token,
         username : username,
-        status : gameState[room]
+        game_status : gameState[room]
     })
 
 
@@ -166,13 +167,14 @@ function registerValidPlayer(socket,token){
             gameState[room].player_ready.delete(token);
 
             io.to(room).emit("player ready",{
-                token : token
+                token : token,
+                game_status : gameState[room]
             })
 
             // Add to turn determination list
             gameState[room].roll_wait.add(token);
 
-            if(gameState[room].player_ready.size==0){
+            if(gameState[room].player_ready.size==0&&gameState[room].player>=2){
 
                 // Delete player_ready element
                 delete gameState[room].player_ready;
@@ -184,9 +186,6 @@ function registerValidPlayer(socket,token){
 
             console.log(gameState[room]);
         }
-
-
-
     });
 
     socket.on("first roll",function(msg){
@@ -203,8 +202,6 @@ function registerValidPlayer(socket,token){
                 dice : dice
             });
 
-            console.log(gameState[room].first_roll);
-
             if(gameState[room].roll_wait.size == 0 ){
 
                 // Start the game
@@ -213,18 +210,18 @@ function registerValidPlayer(socket,token){
                 // Build order
                 buildturnorder(room);
 
-                // Emit turn order
-                io.to(room).emit("player order",gameState[room].player_order);
-
                 // Emit game start
-                io.to(room).emit("game start");
+                io.to(room).emit("game start",{
+                    game_status : gameState[room]
+                });
 
                 // Set first playing player
                 gameState[room].current_player = 0;
 
                 // Emit information about turn
                 io.to(room).emit("turn",{
-                    token : gameState[room].player_order[0]
+                    token : gameState[room].player_order[0],
+                    game_status : gameState[room]
                 })
 
                 gameState[room].repeated_roll = 0;
@@ -258,11 +255,9 @@ function registerValidPlayer(socket,token){
             var movement = msg.dice_1 + msg.dice_2;
             var tosquare = (gameState[room].player_status[token].square + movement)%40;
             gameState[room].player_status[token].square = tosquare;
-            // Announce position change
-            io.to(room).emit("position change",{
-                token : token,
-                to : tosquare
-            });
+            sendcurrentstatedata(room);
+
+
 
             // Check if dice is same
             // If same, then ask to roll again
@@ -309,50 +304,9 @@ function registerValidPlayer(socket,token){
 
     socket.on("draw question",function(msg){
 
-        /**
-         * Only fetch if current game state is in activation state
-         * Also, check if current player is playing
-         */
+        addquestiontouser(room,token);
 
-        if(isPlayingToken(token,room)&&
-            isRoomState(room,validState.activation)
-        ){
-            if(gameState[room].player_status[token].question==null){
-
-                var current_question = gameState[room].question_pointer;
-                while(gameState[room].taken_questions.has(current_question)){
-                    current_question = (current_question+1)%questions.length;
-                }
-                // Add question to room status
-                gameState[room].taken_questions.add(current_question);
-
-                // Change pointer
-                gameState[room].question_pointer  = current_question;
-
-                // Add question to player status
-                gameState[room].player_status[token].question = current_question;
-
-                // Emit information about the question
-                io.to(room).emit("question",{
-                    token : token,
-                    question_no : current_question,
-                    question_text : questions[current_question].question
-                });
-
-                // Take question
-            } else {
-
-                // Emit information that this player already has a question card
-                io.to(room).emit("already has question",{
-                    token : token
-                });
-            }
-
-            console.log(gameState[room]);
-
-        }
-        /** Else don't handle */
-    })
+    });
 
     socket.on("draw answer",function(msg){
 
@@ -697,5 +651,38 @@ function deletefromplayerorder(room,token){
 function deleteroomifempty(room){
     if(gameState[room].player==0&&gameState[room].spectator.size==0){
         delete gameState[room];
+    }
+}
+
+function sendcurrentstatedata(room){
+    io.to(room).emit("update",{
+        game_status : gameState[room]
+    })
+}
+
+
+/** Update question to the playing user */
+/** If user quits during timeout, then do nothing */
+
+function addquestiontouser(room,token){
+    if(isPlayingToken(token,room)){
+        if(!playerHasQuestion(room,token)){
+
+            var current_question = gameState[room].question_pointer;
+            while(gameState[room].taken_questions.has(current_question)){
+                current_question = (current_question+1)%questions.length;
+            }
+            // Add question to room status
+            gameState[room].taken_questions.add(current_question);
+
+            // Change pointer
+            gameState[room].question_pointer  = current_question;
+
+            // Add question to player status
+            gameState[room].player_status[token].question = questions[current_question];
+
+            /** Update */
+            sendcurrentstatedata(room);
+        }
     }
 }
