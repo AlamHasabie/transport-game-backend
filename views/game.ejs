@@ -51,16 +51,9 @@
         });
 
         socket.on("update",function(msg){
-          console.log(msg.game_status);
-        })
-
-        socket.on("reward",function(msg){
           console.log(msg);
         })
 
-        socket.on("player order",function(msg){
-          console.log(msg);
-        })
 
         socket.on("game start",function(msg){
           console.log("Game started");

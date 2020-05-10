@@ -13,6 +13,7 @@ const questions = require('./assets/questions.json');
 const answers = require('./assets/answers.json');
 const rewards = require('./assets/rewards.json');
 const board = require('./assets/board.json');
+const timeoutLength = 1000;
 
 const validState = {
     prepare : 0,
@@ -23,6 +24,33 @@ const validState = {
     finished : 5
 }
 
+const validSquare = {
+    start : "start",
+    empty : "empty",
+    question : "question",
+    key : "key",
+    event : "event",
+    treasure : "treasure",
+    reward : "reward",
+    service : "service"
+}
+
+const validContext = {
+    spectator_join : "spectator join",
+    player_join :"player join",
+    player_ready : "player ready",
+    player_leave : "player leave",
+    game_ready : "game_ready",
+    game_start : "game_start",
+    move : "move",
+    reward : "reward",
+    question : "question",
+    key : "key",
+    treasure : "treasure",
+    event : "event",
+    service : "service",
+    turn : "turn"
+}
 
 
 /** Server initialization */
@@ -153,6 +181,7 @@ function registerValidPlayer(socket,token){
 
 
     io.to(room).emit("player join",{
+        context : validContext.player_join,
         token : token,
         username : username,
         game_status : gameState[room]
@@ -167,6 +196,7 @@ function registerValidPlayer(socket,token){
             gameState[room].player_ready.delete(token);
 
             io.to(room).emit("player ready",{
+                context : validContext.player_ready,
                 token : token,
                 game_status : gameState[room]
             })
@@ -181,17 +211,13 @@ function registerValidPlayer(socket,token){
 
                 // Set to game ready
                 gameState[room].state = validState.ready;
-                io.to(room).emit("game ready"); 
+                sendcurrentstatedata(room,validContext.game_ready); 
             }
-
-            console.log(gameState[room]);
         }
     });
 
     socket.on("first roll",function(msg){
         if(isRoomState(room,validState.ready)){
-
-            // Remove token from set
             gameState[room].roll_wait.delete(token);
 
             // Get dice number
@@ -202,36 +228,9 @@ function registerValidPlayer(socket,token){
                 dice : dice
             });
 
-            if(gameState[room].roll_wait.size == 0 ){
-
-                // Start the game
-                gameState[room].state = validState.rolling;
-
-                // Build order
-                buildturnorder(room);
-
-                // Emit game start
-                io.to(room).emit("game start",{
-                    game_status : gameState[room]
-                });
-
-                // Set first playing player
-                gameState[room].current_player = 0;
-
-                // Emit information about turn
-                io.to(room).emit("turn",{
-                    token : gameState[room].player_order[0],
-                    game_status : gameState[room]
-                })
-
-                gameState[room].repeated_roll = 0;
-
-                // Delete roll wait
-                delete gameState[room].roll_wait;
-                console.log(gameState[room]);
+            if(gameState[room].roll_wait.size == 0){
+                startgame(room);   
             }
-
-            console.log(gameState[room]);
         }
     });
 
@@ -246,67 +245,35 @@ function registerValidPlayer(socket,token){
             var dice_1 = msg.dice_1;
             var dice_2 = msg.dice_2;
 
-            // Announce dice roll
-            io.to(room).emit("roll info",{
-                dice_1 : msg.dice_1,
-                dice_2 : msg.dice_2
-            });
 
             var movement = msg.dice_1 + msg.dice_2;
             var tosquare = (gameState[room].player_status[token].square + movement)%40;
             gameState[room].player_status[token].square = tosquare;
-            sendcurrentstatedata(room);
 
 
 
             // Check if dice is same
             // If same, then ask to roll again
             if((dice_1==dice_2)&&(gameState[room].repeated_roll<=2)){
-                io.to(room).emit("roll again",{
-                    token : token
-                });
+                // State not changed
                 gameState[room].repeated_roll += 1;
+                sendcurrentstatedata(room,validContext.move);
+                setTimeout(sendcurrentstatedata,timeoutLength,room,validContext.turn);
             } else {
+
+                /** Moving to square activation state */
                 gameState[room].repeated_roll = 0;
                 gameState[room].state = validState.activation;
-
-                io.to(room).emit("square activation",{
-                    token : token
-                });
+                sendcurrentstatedata(room,validContext.move);
+                setTimeout(activatesquare,timeoutLength,room,token);
                 
             }
-            console.log(gameState[room]);
         }
-    });
-
-    socket.on("finish turn",function(msg){
-        if(isRoomState(room,validState.activation)&&
-        isPlayingToken(token,room)){
-            var next_player = (gameState[room].current_player+1)%gameState[room].player_order.length;
-            gameState[room].current_player = next_player;
-
-            /** Change turn */
-            io.to(room).emit("turn",{
-                token : gameState[room].player_order[next_player]
-            });
-            /** Change gamestate to rolling */
-            gameState[room].state = validState.rolling;
-
-            console.log(gameState[room]);
-        }
-
     });
 
     /**
      *  QUESTION AND ANSWER PROCEDURE
      */
-
-
-    socket.on("draw question",function(msg){
-
-        addquestiontouser(room,token);
-
-    });
 
     socket.on("draw answer",function(msg){
 
@@ -375,33 +342,6 @@ function registerValidPlayer(socket,token){
         }
     });
 
-    /**
-     * REWARD
-     */
-
-    socket.on('draw reward',function(msg){
-
-
-        if(gameState[room].player_status.hasOwnProperty(token)){
-            if(isPlayingToken(token,room)&&isRoomState(room,validState.activation)){
-                var reward = rewards[gameState[room].reward_pointer];
-                gameState[room].player_status[token].money += reward.nominal;
-                gameState[room].reward_pointer = (gameState[room].reward_pointer + 1)%rewards.length;
-
-                io.to(room).emit("cash change",{
-                    token : token,
-                    cash_amount : gameState[room].player_status[token].money
-                });
-
-                io.to(room).emit("reward",{
-                    token : token,
-                    text : reward.text
-                });
-
-            }
-        }
-    });
-
 
     /** Disconnect 
      * When a user leaves, then thing needs to be undone
@@ -421,20 +361,18 @@ function registerValidPlayer(socket,token){
 
                 gameState[room].player--;
 
+                emitplayerleaves(room,token);
+
                 // If player ready becomes zero, then kickstart the game earlier.
-                if(gameState[room].player_ready.size==0){
+                if(gameState[room].player_ready.size==0&&gameState[room].player>=2){
 
                     // Delete player_ready element
                     delete gameState[room].player_ready;
     
                     // Set to game ready
                     gameState[room].state = validState.ready;
-                    io.to(room).emit("game ready"); 
+                    sendcurrentstatedata(room,validContext.game_ready); 
                 }
-
-
-                deleteroomifempty(room);
-                
                 break;
 
             case validState.ready:
@@ -445,15 +383,14 @@ function registerValidPlayer(socket,token){
                 gameState[room].roll_wait.delete(token);
                 delete gameState[room].player_status[token];
 
-                gameState[room].player--;
+                gameState[room].player--;            
+                emitplayerleaves(room,token);
 
-
-                deleteroomifempty(room);
-
-            
+                if(gameState[room].roll_wait.size == 0){
+                    startgame(room);   
+                }
                 break;
 
-        
             case validState.rolling:
 
                 releasequestion(room,token);
@@ -461,23 +398,15 @@ function registerValidPlayer(socket,token){
                 var thistokenplaying = isPlayingToken(token,room)
                 delete gameState[room].player_status[token];
                 deletefromplayerorder(room,token);
-
-                io.to(room).emit("player leaves",{
-                    token : token
-                });
-
-                if(thistokenplaying){
-                    io.to(room).emit("turn",{
-                        token : gameState[room].player_order[gameState[room].current_player]
-                    });
-                }
-
                 gameState[room].player--;
 
-                deleteroomifempty(room);
+                emitplayerleaves(room,token);
+
+                if(thistokenplaying){
+                    sendcurrentstatedata(room,validContext.turn);
+                }
 
                 break;
-
 
             case validState.answer_wait:
             case validState.activation:
@@ -486,22 +415,14 @@ function registerValidPlayer(socket,token){
                 var thistokenplaying = isPlayingToken(token,room)
                 delete gameState[room].player_status[token];
                 deletefromplayerorder(room,token);
+                gameState[room].player--;
 
-                io.to(room).emit("player leaves",{
-                    token : token
-                });
+                emitplayerleaves(room,token);
 
                 if(thistokenplaying){
                     gameState[room].state = validState.rolling;
-                    io.to(room).emit("turn",{
-                        token : gameState[room].player_order[gameState[room].current_player]
-                    });
+                    sendcurrentstatedata(room,validContext.turn);
                 }
-
-                gameState[room].player--;
-
-                deleteroomifempty(room);
-
 
                 break;
         
@@ -512,6 +433,8 @@ function registerValidPlayer(socket,token){
 
 
         console.log(gameState[room]);
+
+        deleteroomifempty(room);
     });
 
 
@@ -526,22 +449,14 @@ function registerValidSpectator(socket,token){
 
     var user = userInfo[token];
     var room = user.roomname;
-    var username = user.username;
 
     socket.join(room);
-
-
-    io.to(room).emit("spectator join",{
-        token : token,
-        username : username
-    });
-
     gameState[room].spectator.add(token);
 
 
     socket.on("disconnect",function(msg){
         gameState[room].spectator.delete(token);
-    })
+    });
 }
 
 
@@ -555,6 +470,7 @@ function createnewroom(roomname){
         player_ready : new Set(),
         roll_wait : new Set(),
         taken_questions : new Set(),
+        skipped : {},
         first_roll : [],
         player_order : [],
         current_player : null,
@@ -599,7 +515,7 @@ function buildturnorder(roomname){
 
 
 function isPlayingToken(token,room){
-    return token==gameState[room].player_order[gameState[room].current_player];
+    return token == gameState[room].player_order[gameState[room].current_player];
 }
 
 function isRoomState(room,state){
@@ -654,8 +570,10 @@ function deleteroomifempty(room){
     }
 }
 
-function sendcurrentstatedata(room){
+function sendcurrentstatedata(room,context){
+    console.log(gameState[room]);
     io.to(room).emit("update",{
+        context : context,
         game_status : gameState[room]
     })
 }
@@ -682,7 +600,142 @@ function addquestiontouser(room,token){
             gameState[room].player_status[token].question = questions[current_question];
 
             /** Update */
-            sendcurrentstatedata(room);
+            sendcurrentstatedata(room,validContext.question);
         }
     }
+}
+
+function activatesquare(room,token){
+    
+    /** Check if still playing
+     * Otherwise maybe the player has left during timeouts
+     */
+
+    if(isPlayingToken(token,room)&&isRoomState(room,validState.activation)){
+        var position = gameState[room].player_status[token].square;
+        switch(board[position]){
+            case validSquare.question :
+                
+                addquestiontouser(room,token);
+
+                /** Finish turn with timeout */
+                finishturn(room,token);
+                break;
+
+            case validSquare.key :
+
+
+                giveKey(room,token);
+                break;
+
+            case validSquare.reward :
+
+                giveReward(room,token);
+
+                /** Timeout */
+                finishturn(room,token);
+
+                break;
+
+            case validSquare.event :
+
+
+                giveEvent(room,token);
+                break;
+
+            case validSquare.treasure :
+
+                giveTreasure(room,token);
+                break;
+
+            case validSquare.service :
+
+                service(room,token);
+
+                /** Timeout */
+                finishturn(room,token);
+
+                break;
+
+            case validSquare.start :
+            case validSquare.empty :
+
+                /** No timeout */
+                finishturn(room,token);
+                break;
+        }
+    }
+}
+
+
+function finishturn(room,token){
+
+    /** Check if current playing token is still playing */
+    /** Otherwise, it might have left the room during the timeout */
+
+    if(isPlayingToken(token,room)){
+        var next_player = (gameState[room].current_player+1)%gameState[room].player_order.length;
+        gameState[room].current_player = next_player;
+    
+        /** Change gamestate to rolling */
+        gameState[room].state = validState.rolling;
+    
+        sendcurrentstatedata(room,validContext.turn);
+    }
+}
+
+
+function giveReward(room,token){
+    var reward = rewards[gameState[room].reward_pointer];
+    gameState[room].player_status[token].money += reward.nominal;
+    gameState[room].reward_pointer = (gameState[room].reward_pointer + 1)%rewards.length;
+
+
+    sendcurrentstatedata(room,validContext.reward);
+}
+
+function service(room,token){
+    gameState[room].skipped[token] = true;
+    gameState[room].player_status[token].money -= 15;
+
+    sendcurrentstatedata(room,validContext.service);
+}
+
+function giveEvent(room,token){
+    sendcurrentstatedata(room,validContext.event);
+    finishturn(room,token);
+}
+
+function giveKey(room,token){
+
+    sendcurrentstatedata(room,validContext.key);
+    finishturn(room,token);
+
+}
+
+function giveTreasure(room,token){
+    sendcurrentstatedata(room,validContext.treasure);
+    finishturn(room,token);
+}
+
+function emitplayerleaves(room,token){
+    io.to(room).emit("update",{
+        context : validContext.player_leave,
+        token : token,
+        game_status : gameState[room]
+    })
+}
+
+function startgame(room){
+    gameState[room].state = validState.rolling;
+    buildturnorder(room);
+
+    gameState[room].current_player = 0;
+
+    gameState[room].repeated_roll = 0;
+
+    delete gameState[room].roll_wait;
+
+    sendcurrentstatedata(room,validContext.game_start);
+    sendcurrentstatedata(room,validContext.turn);
 }
