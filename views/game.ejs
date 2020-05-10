@@ -8,14 +8,8 @@
     <label for="token">Token</label>
     <input type="text" id="token" name="token" value="<%= token %>" readonly><br>
     <button type="submit" id="ready-btn" name="ready-btn">Ready</button><br>
-    <button type="get reward" id="reward-btn" name="reward-btn">Draw Reward</button>
     <button type="submit" id="first-dice-btn" name="first-dice-btn">Draw first dice</button>
     <button type="submit" id="dice-btn" name="dice-btn">Roll dice !</button>
-    <button type="submit" id="draw-question-btn" name="draw-question-btn">Draw a question</button>
-    <button type="submit" id="finish-btn" name="finish-btn">Finish turn</button><br>
-    <button type="submit" id="draw-answer-btn" name="draw-answer-btn">Draw Answer</button><br>
-    <label for="answer">Answer</label>
-    <input type="text" id="answer" name="answer">
     <button type="submit" id="answer-btn" name="answer-btn">Answer</button>
     <button type="submit" id="no-answer-btn" name="no-answer-btn">Not Answering</button>
   </body>
@@ -59,55 +53,6 @@
           console.log("Game started");
         });
 
-        socket.on("turn",function(msg){
-          console.log("turn : "  + msg.token);
-        });
-
-        socket.on("position change",function(msg){
-          console.log("Player : " + msg.token + "to square : " + msg.to);
-        });
-
-        socket.on("roll again", function(msg){
-          console.log("Player : " + msg.token + " roll again");
-        });
-
-        socket.on("square activation",function(msg){
-          console.log("Player : " + msg.token + " need to activate square");
-        });
-
-        socket.on("question",function(msg){
-          console.log("Question for player : " + msg.token);
-          console.log(msg.question_no + " : " + msg.question_text);
-        });
-
-        socket.on("already has question",function(msg){
-          console.log("Player " + msg.token + " already has a question");
-        });
-
-        socket.on("answers",function(msg){
-          console.log(msg.ans_1 + "|" + msg.ans_2);
-        })
-
-        socket.on("no question",function(msg){
-          console.log("Player : " + msg.token + " has no question");
-        });
-
-        socket.on("answer true",function(msg){
-          console.log("Player : " + msg.token + " answered true !");
-        });
-
-        socket.on("answer false",function(msg){
-          console.log("Player : " + msg.token + " answered false !");
-        });
-
-        socket.on("not answering",function(msg){
-          console.log("Player : " + msg.token + " not answering !");
-        });
-
-        socket.on('player leaves',function(msg){
-          console.log("Player : " + msg.token + " leaves");
-        })
-
         $('#ready-btn').click(function(e){
           e.preventDefault();
           socket.emit("ready");
@@ -142,25 +87,10 @@
           });
         });
 
-        $("#draw-question-btn").click(function(e){
-          e.preventDefault();
-          socket.emit("draw question");
-        });
-
-        $("#draw-answer-btn").click(function(e){
-          e.preventDefault();
-          socket.emit("draw answer");
-        });
-
-        $("#finish-btn").click(function(e){
-          e.preventDefault();
-          socket.emit("finish turn")
-        });
-
         $("#answer-btn").click(function(e){
           e.preventDefault();
           socket.emit("answer",{
-            answer : $("#answer").val()
+            selected : true
           });
         });
 
@@ -168,7 +98,7 @@
           e.preventDefault();
           console.log("not answering");
           socket.emit("answer",{
-            answer : null
+            selected : false
           })
         })
 

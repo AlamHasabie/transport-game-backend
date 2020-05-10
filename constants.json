@@ -1,0 +1,42 @@
+{
+    "validState" : {
+        "prepare" : 0,
+        "ready" : 1,
+        "rolling" : 2,
+        "activation" : 3,
+        "answer_wait" : 4,
+        "finished" : 5
+    },
+    
+    "validSquare" : {
+        "start" : "start",
+        "empty" : "empty",
+        "question" : "question",
+        "key" : "key",
+        "event" : "event",
+        "treasure" : "treasure",
+        "reward" : "reward",
+        "service" : "service"
+    },
+
+    "validContext" : {
+        "spectator_join" : "spectator join",
+        "player_join" :"player join",
+        "player_ready" : "player ready",
+        "player_leave" : "player leave",
+        "game_ready" : "game_ready",
+        "game_start" : "game_start",
+        "move" : "move",
+        "reward" : "reward",
+        "question" : "question",
+        "key" : "key",
+        "treasure" : "treasure",
+        "event" : "event",
+        "service" : "service",
+        "turn" : "turn",
+        "timeout" : "timeout",
+        "answer_true" : "answer_true",
+        "answer_false" : "answer_false",
+        "no_answer" : "no_answer"
+    }
+}
