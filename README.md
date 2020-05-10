@@ -119,11 +119,15 @@ Note that contexts are registered within every "update" event emit of the socket
 - key_pointer : points to which key card will be drawed next
 - question_pointer : points to which question card will be drawed next 
 - player_status : object of player status. Accessible with player token (player_status[token])
-    -- money : money
-    -- square : which square the player is in
-    -- question_answered : number of answers correctly answered by the player
-    -- question : question currently held by player. null if no question is held:
-       --- no : the id of the question
-        --- text : the question (i.e. what is your name ?_
+
+### player_status
+- money : money
+- square : which square the player is in
+- question_answered : number of answers correctly answered by the player
+- question : question currently held by player. null if no question is held:
+
+### question (in player_status_
+- no : the id of the question
+- text : the question (i.e. what is your name ?_
 
 
