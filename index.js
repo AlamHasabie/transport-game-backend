@@ -556,7 +556,7 @@ function deletefromplayerorder(room,token){
     }
 
     // Delete element
-    gameState[room].player_order
+    gameState[room].player_order = gameState[room].player_order
         .filter(function(item){return item!=token});
 
     // Set current player to the next_tok
