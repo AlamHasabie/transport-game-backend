@@ -14,8 +14,12 @@ const validConstants = require('./constants.json');
 
 /** Config */
 const gamemaster = require('./assets/gm.json');
-const timeoutLength = 500;
-const answerTimeoutLength = 20000;
+const timeoutLength = 1000;
+const answerTimeoutLength = 10000;
+const treasureAnswerTimeoutLength = 30000;
+
+const minimumAnswertoTreasure = 1;
+const treasure = require("./assets/treasure.json");
 
 
 /** Server initialization */
@@ -192,10 +196,12 @@ function registerValidPlayer(socket,token){
     socket.on("roll",function(msg){
         handleRollEvent(room,token,msg);
     });
-
     socket.on("answer",function(msg){
         handleAnswerEvent(room,token,msg);
     });
+    socket.on("treasure answer",function(msg){
+        handleTreasureAnswerEvent(room,token,msg);
+    })
 
 
     /** Disconnect 
@@ -518,7 +524,13 @@ function activatesquare(room,token){
 
             case validSquare.treasure :
 
-                giveTreasure(room,token);
+                var answered = gameState[room].player_status[token].question_answered;
+                if(answered >= minimumAnswertoTreasure){
+                    giveTreasure(room,token);
+                }else{
+                    finishturn(room,token);
+                }
+
                 break;
 
             case validSquare.service :
@@ -606,8 +618,23 @@ function giveKey(room,token){
 }
 
 function giveTreasure(room,token){
+
+    /** Wait for treasure */
+    gameState[room].state = validState.treasure_wait;
+
+    /** Add treasure to gameState */
+    gameState[room].treasure = {}
+    gameState[room].treasure.question = treasure.question;
+    gameState[room].treasure.choices = treasure.choices;
+
+
+    
     sendcurrentstatedata(room,validContext.treasure);
-    finishturn(room,token);
+
+    /** Add timeout */
+    var timeout_id =  setTimeout(treasureFail,treasureAnswerTimeoutLength,room,token);
+
+    gameState[room].treasure_timeout = timeout_id;
 }
 
 function emitplayerleaves(room,token){
@@ -738,6 +765,21 @@ function handleAnswerEvent(room,token,msg){
 
 
 }
+function handleTreasureAnswerEvent(room,token,msg){
+    if(isPlayingToken(token,room)&&
+    isRoomState(room,validState.treasure_wait)){
+
+        clearTimeout(gameState[room].treasure_timeout);
+        
+        var answer = msg.answer;
+        if(answer==treasure.answer){
+            /** Game finished */
+            setTimeout(finishturn, timeoutLength, room,token);
+        } else {
+            treasureFail(room,token);
+        }
+    }
+}
 
 function finishGame(room){
     gameState[room].state = validState.finished;
@@ -748,4 +790,14 @@ function finishGame(room){
 function timeout(room,token){
     sendcurrentstatedata(room,validContext.timeout);
     finishturn(room,token);
+}
+
+function treasureFail(room,token){
+
+    /** Wrong answer */
+    gameState[room].player_status[token].question_answered = 0;
+    delete gameState[room].treasure_timeout;
+
+    setTimeout(sendcurrentstatedata,timeoutLength,room,validContext.treasure_failed);
+    setTimeout(finishturn,timeoutLength*2,room,token);
 }

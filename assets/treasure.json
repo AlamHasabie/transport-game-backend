@@ -1,0 +1,11 @@
+{
+    "question" : "Which of the following is not one of the factors driving an emphasis on supply chain management?",
+    "choices" : {
+        "A" : "An increasing emphasis on domestic sourcing due to the longer lead times and higher levels of pipeline inventories associated with global sourcing.",
+        "B" : "The cost and availability of information resources among entities in the supply chain that allow easy linkages that eliminate time delays in the network.",
+        "C" : "The level of competition in both domestic and international markets requires organizations to be fast, agile, and flexible.",
+        "D" : "Customer expectations and requirements that are becoming much more demanding.",
+        "E" : "The ability of an organization's supply chain to identify and mitigate risk minimizes disruptions in both supply and downstream product or services to mitigate the impact on lost sales"
+    },
+    "answer" : "B"
+}
