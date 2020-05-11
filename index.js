@@ -566,8 +566,13 @@ function giveReward(room,token){
     gameState[room].player_status[token].money += reward.nominal;
     gameState[room].reward_pointer = (gameState[room].reward_pointer + 1)%rewards.length;
 
+    io.to(room).emit("update",{
+        context : context,
+        text : reward.text,
+        game_status : gameState[room]
+    })
 
-    sendcurrentstatedata(room,validContext.reward);
+    
 }
 
 function service(room,token){
