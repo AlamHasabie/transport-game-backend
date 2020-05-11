@@ -327,6 +327,7 @@ function playerHasQuestion(room,token){
 
 function addnewplayertoroom(room,token){
     gameState[room].player_status[token] = {
+        username : userInfo[token].username,
         money : 150,
         square : 0,
         question : null,
@@ -509,7 +510,7 @@ function giveEvent(room,token){
 function giveKey(room,token){
 
     
-    gameState[room].gameState = validState.answer_wait;
+    gameState[room].state = validState.answer_wait;
     var answer = answers[gameState[room].key_pointer];
 
     gameState[room].is_challenge_answered = false;
@@ -629,23 +630,22 @@ function handleRollEvent(room,token,msg){
 }
 
 function handleAnswerEvent(room,token,msg){
-    console.log("It goes here");
     if(isPlayingToken(token,room)&&
     isRoomState(room,validState.answer_wait)){
         if(playerHasQuestion(room,token)){
-            clearTimeout(gameRoom[room].ans_timeout_id);
+            clearTimeout(gameState[room].ans_timeout_id);
             var question_no = gameState[room].player_status[token].question.no;
             if(!msg.selected){
                 sendcurrentstatedata(room,validContext.no_answer);
                 if(gameState[room].answers_drawed>=2){
                     setTimeout(finishturn,timeoutLength,room,token);
                 } else {
-                    setTimeout(giveKey,timeoutLength,room,key);
+                    setTimeout(giveKey,timeoutLength,room,token);
                 }
             } else {
                 releasequestion(room,token);
                 var answer = gameState[room].offered_answer;
-                if(!questions[question_no].answer.contains(answer)){
+                if(!questions[question_no].answer.includes(answer)){
                     sendcurrentstatedata(room,validContext.answer_false);
                 } else {
                     gameState[room].player_status[token].question_answered++;
