@@ -20,6 +20,7 @@
     },
 
     "validContext" : {
+        "gm_join" : "gm_join",
         "spectator_join" : "spectator join",
         "player_join" :"player join",
         "player_ready" : "player ready",
@@ -37,6 +38,7 @@
         "timeout" : "timeout",
         "answer_true" : "answer_true",
         "answer_false" : "answer_false",
-        "no_answer" : "no_answer"
+        "no_answer" : "no_answer",
+        "finish" : "finish"
     }
 }

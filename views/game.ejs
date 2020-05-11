@@ -15,7 +15,8 @@
     <button type="submit" id="first-dice-btn" name="first-dice-btn">Draw first dice</button>
     <button type="submit" id="dice-btn" name="dice-btn">Roll dice !</button>
     <button type="submit" id="answer-btn" name="answer-btn">Answer</button>
-    <button type="submit" id="no-answer-btn" name="no-answer-btn">Not Answering</button>
+    <button type="submit" id="no-answer-btn" name="no-answer-btn">Not Answering</button>\
+    <button type="submit" id="finish-btn" name="finish-btn">Finish</button>
   </body>
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
@@ -100,10 +101,14 @@
 
         $("#no-answer-btn").click(function(e){
           e.preventDefault();
-          console.log("not answering");
           socket.emit("answer",{
             selected : false
           })
+        })
+
+        $("#finish-btn").click(function(e){
+          e.preventDefault();
+          socket.emit("finish");
         })
 
 

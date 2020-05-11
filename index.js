@@ -1,8 +1,5 @@
 const express = require('express');
 const app = express();
-const path = require('path');
-const roomstatepath = "/rooms/";
-const fs = require('fs');
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 var bodyParser = require('body-parser');
@@ -13,7 +10,10 @@ const questions = require('./assets/questions.json');
 const answers = require('./assets/answers.json');
 const rewards = require('./assets/rewards.json');
 const board = require('./assets/board.json');
-const validConstants = require('./constants.json')
+const validConstants = require('./constants.json');
+
+/** Config */
+const gamemaster = require('./assets/gm.json');
 const timeoutLength = 500;
 const answerTimeoutLength = 20000;
 
@@ -30,6 +30,47 @@ app.use(bodyParser.urlencoded());
 app.get('/',(req,res)=>{
     res.render('index.ejs');
 });
+app.get('/gm',(req,res)=>{
+    res.render('gm-index.ejs');
+});
+app.post('/gm',(req,res)=>{
+
+    var username = req.body["username"];
+    var password = req.body["password"];
+    var roomname = req.body["room"];
+
+    if(gamemaster.username==username&&gamemaster.password==password){
+
+        // Generate
+        if(!gameState.hasOwnProperty(roomname)){
+
+            createnewroom(roomname);
+        }
+
+        // Generate token
+        var id = crypto.randomBytes(20).toString('hex');
+        while(userInfo.hasOwnProperty(id)){
+            id = crypto.randomBytes(20).toString('hex');
+        }
+        
+        // Add user info
+        userInfo[id] = {
+            roomname : roomname,
+            role : "gamemaster",
+            username : username
+        }
+
+        res.statusCode = 200;
+        res.render('game',{
+            token : id
+        });
+
+    } else {
+        res.status(403);
+    }
+
+
+})
 
 app.set('view engine', 'ejs');
 app.post('/game',(req,res)=>{
@@ -60,6 +101,7 @@ app.post('/game',(req,res)=>{
     while(userInfo.hasOwnProperty(id)){
         id = crypto.randomBytes(20).toString('hex');
     }
+    
     // Add user info
     userInfo[id] = {
         roomname : roomname,
@@ -67,7 +109,9 @@ app.post('/game',(req,res)=>{
         username : username
     }
     /**Add number of player */
-    gameState[roomname].player++;
+    if(role=="player"){
+        gameState[roomname].player++;
+    }
 
     res.statusCode = 200;
     res.render('game',{
@@ -94,7 +138,14 @@ io.on('connection',(socket)=>{
                 socket.disconnect();
             }
         } else if (role=="spectator") {
+
             registerValidSpectator(socket,token);
+
+        } else if (role=="gamemaster"){
+
+            registerValidGameMaster(socket,token);
+
+
         } else {
             console.log("Role unknown, illegal argument");
         }
@@ -151,6 +202,7 @@ function registerValidPlayer(socket,token){
      * When a user leaves, then thing needs to be undone
     */
     socket.on("disconnect",function(msg){
+
         switch (gameState[room].state) {
             case validState.prepare:
 
@@ -249,11 +301,32 @@ function registerValidSpectator(socket,token){
 
     socket.join(room);
     gameState[room].spectator.add(token);
-
+    sendcurrentstatedata(room,validContext.spectator_join);
 
     socket.on("disconnect",function(msg){
         gameState[room].spectator.delete(token);
+
+        deleteroomifempty(room);
     });
+}
+
+function registerValidGameMaster(socket,token){
+    var user = userInfo[token];
+    var room = user.roomname;
+
+    socket.join(room);
+    gameState[room].gamemaster.add(token);
+    sendcurrentstatedata(room,validContext.gm_join);
+
+    socket.on("disconnet",function(msg){
+        gameState[room].gamemaster.delete(token);
+
+        deleteroomifempty(room);
+    });
+
+    socket.on("finish",function(msg){
+        finishGame(room);
+    })
 }
 
 
@@ -263,6 +336,7 @@ function createnewroom(roomname){
     let new_room_data = {
         state : validState.prepare,
         player : 0,
+        gamemaster : new Set(),
         spectator : new Set(),
         player_ready : new Set(),
         roll_wait : new Set(),
@@ -363,9 +437,13 @@ function deletefromplayerorder(room,token){
 }
 
 function deleteroomifempty(room){
-    if(gameState[room].player==0&&gameState[room].spectator.size==0){
+    if(gameState[room].player==0&&
+        gameState[room].spectator.size==0&&
+        gameState[room].gamemaster.size==0){
         delete gameState[room];
     }
+
+    console.log("Room " + room + " is deleted");
 }
 
 function sendcurrentstatedata(room,context){
@@ -654,6 +732,11 @@ function handleAnswerEvent(room,token,msg){
     }
 
 
+}
+
+function finishGame(room){
+    gameState[room].state = validState.finished;
+    sendcurrentstatedata(room,validContext.finish);
 }
 
 // If timeout
