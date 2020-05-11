@@ -8,15 +8,18 @@
     <label for="token">Token</label>
     <input type="text" id="token" name="token" value="<%= token %>" readonly><br>
     <button type="submit" id="ready-btn" name="ready-btn">Ready</button><br>
-    <label for="token">Dadu 1</label>
+    <label for="dice-1">Dadu 1</label>
     <input type="number" id="dice-1" name="dice-1" min="1" max="6"><br>
-    <label for="token">Dadu 2</label>
-    <input type="num'" id="dice-2" name="dice-2" min="1" max="6"><br>
+    <label for="dice-2">Dadu 2</label>
+    <input type="number" id="dice-2" name="dice-2" min="1" max="6"><br>
     <button type="submit" id="first-dice-btn" name="first-dice-btn">Draw first dice</button>
     <button type="submit" id="dice-btn" name="dice-btn">Roll dice !</button>
     <button type="submit" id="answer-btn" name="answer-btn">Answer</button>
     <button type="submit" id="no-answer-btn" name="no-answer-btn">Not Answering</button>\
-    <button type="submit" id="finish-btn" name="finish-btn">Finish</button>
+    <button type="submit" id="finish-btn" name="finish-btn">Finish</button><br>
+    <label for="treasure-answer">Jawaban Treasure</label>
+    <input type="text" id="treasure-answer" name="treasure-answer"><br>
+    <button type="submit" id="treasure-btn" name="treasure-btn">Treasure!</button>
   </body>
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
@@ -109,6 +112,13 @@
         $("#finish-btn").click(function(e){
           e.preventDefault();
           socket.emit("finish");
+        });
+
+        $("#treasure-btn").click(function(e){
+          e.preventDefault();
+          socket.emit("treasure answer",{
+            answer : $("#treasure-answer").val()
+          });
         })
 
 

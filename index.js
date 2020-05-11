@@ -18,7 +18,7 @@ const timeoutLength = 1000;
 const answerTimeoutLength = 10000;
 const treasureAnswerTimeoutLength = 30000;
 
-const minimumAnswertoTreasure = 1;
+const minimumAnswertoTreasure = -1;
 const treasure = require("./assets/treasure.json");
 
 
@@ -766,6 +766,7 @@ function handleAnswerEvent(room,token,msg){
 
 }
 function handleTreasureAnswerEvent(room,token,msg){
+
     if(isPlayingToken(token,room)&&
     isRoomState(room,validState.treasure_wait)){
 
@@ -774,7 +775,7 @@ function handleTreasureAnswerEvent(room,token,msg){
         var answer = msg.answer;
         if(answer==treasure.answer){
             /** Game finished */
-            setTimeout(finishturn, timeoutLength, room,token);
+            setTimeout(finishGame, timeoutLength, room);
         } else {
             treasureFail(room,token);
         }
