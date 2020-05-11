@@ -240,7 +240,6 @@ function registerValidPlayer(socket,token){
     });
 
 
-    console.log(gameState[room]);
 }
 
 function registerValidSpectator(socket,token){
@@ -268,7 +267,7 @@ function createnewroom(roomname){
         player_ready : new Set(),
         roll_wait : new Set(),
         taken_questions : new Set(),
-        skipped : {},
+        skipped : new Set(),
         first_roll : [],
         player_order : [],
         offered_answer : null,
@@ -286,7 +285,6 @@ function createnewroom(roomname){
 function buildturnorder(roomname){
 
     for(var i = 0 ; i < gameState[roomname].player ; i++){
-        console.log(gameState[roomname].first_roll);
         current_max_dice = 0;
         current_index = 0;
         for(var k = 0; k < gameState[roomname].first_roll.length ; k++){
@@ -371,7 +369,6 @@ function deleteroomifempty(room){
 }
 
 function sendcurrentstatedata(room,context){
-    console.log(gameState[room]);
     io.to(room).emit("update",{
         context : context,
         game_status : gameState[room]
@@ -469,11 +466,11 @@ function finishturn(room,token){
 
     if(isPlayingToken(token,room)){
         var valid_player = false;
-        var next_player;
+        var next_player = gameState[room].current_player;
         while(!valid_player){
-            next_player = (gameState[room].current_player+1)%gameState[room].player_order.length;
-            if(gameState[room].skipped[gameState[room].player_order[next_player]]){
-                gameState[room].skipped[gameState[room].player_order[next_player]] = false;
+            next_player = (next_player+1)%gameState[room].player_order.length;
+            if(gameState[room].skipped.has(gameState[room].player_order[next_player])){
+                gameState[room].skipped.delete(gameState[room].player_order[next_player]);
             } else {
                 valid_player = true;
             }
@@ -496,7 +493,7 @@ function giveReward(room,token){
 }
 
 function service(room,token){
-    gameState[room].skipped[token] = true;
+    gameState[room].skipped.add(token);
     gameState[room].player_status[token].money -= 15;
 
     sendcurrentstatedata(room,validContext.service);
