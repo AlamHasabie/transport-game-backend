@@ -1,8 +1,9 @@
 [
     {
-        "title" : "Event",
-        "text" : "Free holiday ! Move to a square you want.",
-        "effect" : "teleport",
-        "type" : "event"
+        "title" : "Boots of Evasion [Equipment]",
+        "text" : "Cancel the effect casted on yourself.",
+        "type" : "equipment",
+        "effect" : "cancel",
+        "target" : "self"
     }
 ]
