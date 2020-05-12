@@ -547,7 +547,9 @@ function finishturn(room,token){
             sendcurrentstatedata(room,validContext.turn);
     
             console.log(gameState[room]);
-        } else {
+        } else if (isRoomState(room,validState.roll_again)){
+            rollagain(room);
+        } else if(isRoomState(room,validState.finish_activation)){
             offerToActivateEquipment(room,token);
         }
     }
@@ -562,6 +564,7 @@ function service(room,token){
 
 function giveEvent(room,token){
     gameState[room] = event_module.nextEvent(gameState[room],token);
+    console.log(gameState[room]);
     if(gameState[room].current_event.type == event_types.event){
         sendcurrentstatedata(room,validContext.event);
 
@@ -663,23 +666,24 @@ function handleRollEvent(room,token,msg){
 
 
         var movement = msg.dice_1 + msg.dice_2;
-        var tosquare = (gameState[room].player_status[token].square + movement)%40;
+        var tosquare = (gameState[room].player_status[token].square + movement)%board.length;
         gameState[room].player_status[token].square = tosquare;
 
 
+        sendcurrentstatedata(room,validContext.move);
         // Check if dice is same
         // If same, then ask to roll again
         if((dice_1==dice_2)&&(gameState[room].repeated_roll<=2)){
-            // State not changed
-            gameState[room].repeated_roll += 1;
-            sendcurrentstatedata(room,validContext.move);
-            setTimeout(sendcurrentstatedata,timeoutLength,room,validContext.turn);
+
+            gameState[room].state = validState.roll_again;
+            setTimeout(finishturn,timeoutLength,room,token);
+
         } else {
 
             /** Moving to square activation state */
             gameState[room].repeated_roll = 0;
             gameState[room].state = validState.activation;
-            sendcurrentstatedata(room,validContext.move);
+
             setTimeout(activatesquare,timeoutLength,room,token);       
         }
     }
@@ -788,9 +792,16 @@ function offerToActivateEquipment(room,token){
     /** If no equipment is used */
     if(gameState[room].player_status[token].equipment.size == 0){
         gameState[room].state = validState.finish_turn;
+        finishturn(room,token);
     } else {
         gameState[room].state = validState.equipment_offer;
         sendcurrentstatedata(room,validContext.equipmentOffer);
     }
 
+}
+
+function rollagain(room){
+    gameState[room].repeated_roll += 1;
+    gameState[room].state = validState.rolling;
+    setTimeout(sendcurrentstatedata,timeoutLength,room,validContext.turn);
 }

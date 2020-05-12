@@ -9,7 +9,8 @@
         "finish_activation" : 6,
         "finish_turn" : 7,
         "equipment_offer" : 8,
-        "finished" : 9
+        "roll_again" : 9,
+        "finished" : 10
     },
     
     "validSquare" : {

@@ -26,7 +26,7 @@ function nextEvent(room,token){
 
     // Equipment should be hidden from other player(s)
     // For now we could just send em all
-    room.event_pointer = candidate;
+    room.event_pointer = (candidate+1)%event_cards.length;
     room.current_event = {}
     room.current_event.type = event_cards[candidate].type;
 
@@ -71,21 +71,27 @@ function processEvent(room,token,index){
     switch(event.effect){
         case event_effects.start :
             room.player_status[token].square = 0;
+            room.state = constants.validState.finish_turn;
             break;
         
         case event_effects.stolen :
             room = question_module.releaseQuestions(room,token);
+            room.state = constants.validState.finish_turn;
             break;
 
         case event_effects.cash :
             room.player_status[token].money += event.nominal;
+            room.state = constants.validState.finish_turn;
             break;
 
         case event_effects.skip : 
             room.skipped.add(token);
+            room.state = constants.validState.finish_turn;
+            break;
 
-
-        room.state = constants.validState.finish_turn;
+        case event_effects.roll : 
+            room.state = constants.validState.roll_again;
+            room.repeated_roll = 2;
             break;
 
         default :

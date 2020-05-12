@@ -1,8 +1,20 @@
 [
     {
         "title" : "Event",
+        "text" : "You got an extra ticket. Roll once more",
+        "effect" : "roll",
+        "type" : "event"
+    },
+    {
+        "title" : "Event",
         "text" : "There's a problem with your car. Skip a turn.",
         "type" : "event",
         "effect" : "skip"
+    },
+    {
+        "title" : "Event",
+        "text" : "You are lost. Get back to start.",
+        "type" : "event",
+        "effect" : "start"
     }
 ]
