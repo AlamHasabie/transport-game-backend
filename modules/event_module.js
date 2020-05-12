@@ -71,17 +71,17 @@ function processEvent(room,token,index){
     switch(event.effect){
         case event_effects.start :
             room.player_status[token].square = 0;
-            room.state = constants.validState.finish_turn;
+            room.state = constants.validState.finish_activation;
             break;
         
         case event_effects.stolen :
             room = question_module.releaseQuestions(room,token);
-            room.state = constants.validState.finish_turn;
+            room.state = constants.validState.finish_activation;
             break;
 
         case event_effects.cash :
             room.player_status[token].money += event.nominal;
-            room.state = constants.validState.finish_turn;
+            room.state = constants.validState.finish_activation;
             break;
 
         case event_effects.skip : 

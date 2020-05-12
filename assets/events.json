@@ -255,7 +255,7 @@
         "roll" : "roll",
         "cancel" : "cancel",
         "service" : "service",
-        "start" : "start",
+        "start" : "start",  
         "remove question" : "remove question",
         "remove key" : "remove key",
         "stolen" : "stolen",
