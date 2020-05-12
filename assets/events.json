@@ -198,42 +198,50 @@
         {
             "title" : "Event",
             "text" : "Free holiday ! Move to a square you want.",
-            "effect" : "teleport"
+            "effect" : "teleport",
+            "type" : "event"
         },
         {
             "title" : "Event",
             "text" : "Your pouch is stolen ! You lose one answered question",
-            "effect" : "remove key"
+            "effect" : "remove key",
+            "type" : "event"
         },
         {
             "title" : "Event",
             "text" : "Your suitcase is stolen ! You lose all your questions.",
-            "effect" : "stolen"
+            "effect" : "stolen",
+            "type" : "event"
         },
         {
             "title" : "Event",
             "text" : "Free holiday ! Move to a square you want.",
-            "effect" : "teleport"
+            "effect" : "teleport",
+            "type" : "event"
         },
         {
             "title" : "Event",
             "text" : "You got an extra ticket. Roll once more",
-            "effect" : "roll"
+            "effect" : "roll",
+            "type" : "event"
         },
         {
             "title" : "Coupon",
             "text" : "Free service",
-            "effect" : "service"
+            "effect" : "service",
+            "type" : "event"
         },
         {
             "title" : "Coupon",
             "text" : "Free service",
-            "effect" : "service"
+            "effect" : "service",
+            "type" : "event"
         },
         {
             "title" : "Coupon",
             "text" : "Free service",
-            "effect" : "service"
+            "effect" : "service",
+            "type" : "event"
         },
         {
             "title" : "Event",

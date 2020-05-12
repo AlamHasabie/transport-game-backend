@@ -25,10 +25,10 @@ function givequestion(roomstate,token){
 function releaseQuestions(roomstate,token){
 
     roomstate.player_status[token].questions_answered.forEach(function(el){
-        roomstate.taken_questions.delete(el);
+        roomstate.taken_questions.delete(el.no);
     });
     roomstate.player_status[token].questions_answered = new Set();
-    roomstate = releaseQuestions(roomstate,token);
+    roomstate = releaseHeldQuestion(roomstate,token);
 
     return roomstate;
 

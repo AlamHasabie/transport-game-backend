@@ -1,10 +1,8 @@
 [
-
     {
-        "title" : "Event",
-        "text" : "Your wallet was stolen ! Lose $20.",
         "type" : "event",
-        "effect" : "cash",
-        "nominal" : -20
+        "title" : "Event",
+        "text" : "Your suitcase is stolen ! You lose all your questions.",
+        "effect" : "stolen"
     }
 ]

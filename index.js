@@ -275,6 +275,7 @@ function registerValidPlayer(socket,token){
 
             case validState.answer_wait:
                 gameState[room].offered_answer = null;
+                clearTimeout(gameState[room].timeout_id);
                 gameState[room].timeout_id = null;
 
                 deleteplayerduringgame(room,token);
@@ -701,6 +702,7 @@ function handleAnswerEvent(room,token,msg){
                 if(gameState[room].answers_drawed>=2){
                     gameState[room].answers_drawed = 0;
                     gameState[room].offered_answer = null;
+                    gameState[room].state = validState.finish_activation;
                     setTimeout(finishturn,timeoutLength,room,token);
                 } else {
                     setTimeout(giveKey,timeoutLength,room,token);
@@ -708,15 +710,19 @@ function handleAnswerEvent(room,token,msg){
             } else {
 
                 var answer = gameState[room].offered_answer;
+                console.log(questions[question_no].answer);
                 if(!questions[question_no].answer.includes(answer)){
-                    gameState[room].taken_questions.delete(question_no);
-                    gameState[room].player_status[token].held_question = null;
                     sendcurrentstatedata(room,validContext.answer_false);
                 } else {
                     // Add question to question answered
+                    gameState[room].player_status[token].money+=50;
                     gameState[room].player_status[token].questions_answered.add(question_no);
                     sendcurrentstatedata(room,validContext.answer_true);
                 }
+
+                gameState[room].answers_drawed = 0;
+                gameState[room].offered_answer = null;
+                gameState[room].state = validState.finish_activation;
                 setTimeout(finishturn,timeoutLength,room,token);
             }
         }
@@ -781,7 +787,10 @@ function treasureFail(room,token){
 
     /** Wrong answer */
     gameState[room] = question_module.releaseQuestions(gameState[room],token);
-    delete gameState[room].timeout_id;
+    if(gameState[room].hasOwnProperty("timeout_id")){
+        delete gameState[room].timeout_id;
+    }
+
 
     setTimeout(sendcurrentstatedata,timeoutLength,room,validContext.treasure_failed);
     setTimeout(finishturn,timeoutLength*2,room,token);
