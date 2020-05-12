@@ -90,8 +90,8 @@ Context sent by server can be seen in the constans.json file, and can be one of 
 7. move : sent when the currnet player had moved its position.
 8. reward : sent when the current player receives a reward
 9. question : sent when the current player receives a question
-10. key : sent when the current player is offered a key
-11. treasure : sent when the current player is landed on the treasure
+10. key : sent when the current player is offered a key. Exists only in answer_wait state, otherwise deleted.
+11. treasure : sent when the current player is landed on the treasure. Exists only in treasure_wait state, otherwise deleted
 12. event : sent when the player lands on the event square
 13. service : sent when current player lands on service
 14. turn : notify that the playing player should roll the dice. Called after every turn
@@ -128,6 +128,50 @@ Note that contexts are registered within every "update" event emit of the socket
 
 ### question (in player_status_
 - no : the id of the question
-- text : the question (i.e. what is your name ?_
+- text : the question (i.e. what is your name ?)
+
+Examples :
+```js
+{
+    state : 1,
+    player : 3,
+    spectator : Set{SFWWFWG2352, SFDFR54634EGE, SFWFER674},
+    taken_questions : Set{0,4,5},
+    skipped : Set{PFFWFBH3333},
+    player_order : [PFFWFBH3333,P35252,P252c2cec]
+    current_player : 2
+    event_pointer : 4
+    reward_pointer : 10
+    key_pointer : 8
+    question_pointer : 9
+    player_status : {
+        PFFWFBH3333 : {
+            username : "Kucing",
+            money : 100,
+            square : 25,
+            question_answered : 2
+            question : {
+                no : 3,
+                text : "Tiga + dua sama dengan ?"
+            }
+        P35252 : {
+            username : "Kia",
+            money : 100,
+            square : 25,
+            question_answered : 2,
+            question : null,
+        }
+        P252c2cec : {
+            username : "Telo",
+            money : 100,
+            square : 39,
+            question_answered : 0,
+            question : null,
+        }
+    }
+
+}
+
+```
 
 
