@@ -365,34 +365,6 @@ function createnewroom(roomname){
     gameState[roomname] = room_module.newRoom();
 }
 
-function buildturnorder(roomname){
-
-    for(var i = 0 ; i < gameState[roomname].player ; i++){
-        current_max_dice = 0;
-        current_index = 0;
-        for(var k = 0; k < gameState[roomname].first_roll.length ; k++){
-            if((gameState[roomname].first_roll[k].dice>current_max_dice)){
-                current_max_dice = gameState[roomname].first_roll[k].dice;
-                current_index = k;    
-            }
-        }
-
-        // Get taken token
-        var token = gameState[roomname].first_roll[current_index].token;
-
-        // Add max as first element of player turn
-        gameState[roomname].player_order.push(token);
-
-        // Delete element with the same token
-        gameState[roomname].first_roll = gameState[roomname].first_roll.filter(function(el){
-            return el.token != token;
-        });
-    }
-
-    gameState[roomname].first_roll = null;
-}
-
-
 function isPlayingToken(token,room){
     return token == gameState[room].player_order[gameState[room].current_player];
 }
@@ -619,7 +591,7 @@ function emitplayerleaves(room,token){
 
 function startgame(room){
     gameState[room].state = validState.rolling;
-    buildturnorder(room);
+    gameState[room] = room_module.buildRoomTurnOrder(gameState[room]);
 
     gameState[room].current_player = 0;
 
@@ -655,10 +627,6 @@ function handleReadyEvent(room,token,msg){
             sendcurrentstatedata(room,validContext.game_ready); 
         }
     }
-
-
-
-
 }
 function handleFirstRollEvent(room,token,msg){
     if(isRoomState(room,validState.ready)){

@@ -1,5 +1,4 @@
-var constants = require("../constants.json");
-
+const constants = require("../constants.json");
 
 
 
@@ -27,7 +26,40 @@ function newRoom(){
     }
 }
 
+function buildRoomTurnOrder(room){
+
+    var current_max_dice, current_index;
+
+    for(var i = 0 ; i < room.player ; i++){
+        current_max_dice = 0;
+        current_index = 0;
+        for(var k = 0; k < room.first_roll.length ; k++){
+            if((room.first_roll[k].dice>current_max_dice)){
+                current_max_dice = room.first_roll[k].dice;
+                current_index = k;    
+            }
+        }
+
+        // Get taken token
+        var token = room.first_roll[current_index].token;
+
+        // Add max as first element of player turn
+        room.player_order.push(token);
+
+        // Delete element with the same token
+        room.first_roll = room.first_roll.filter(function(el){
+            return el.token != token;
+        });
+    }
+
+    room.first_roll = null;
+
+    return room;
+
+}
+
 
 module.exports= {
-    newRoom : newRoom
+    newRoom : newRoom,
+    buildRoomTurnOrder : buildRoomTurnOrder
 }
