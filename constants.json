@@ -5,7 +5,8 @@
         "rolling" : 2,
         "activation" : 3,
         "answer_wait" : 4,
-        "finished" : 5
+        "treasure_wait" : 5,
+        "finished" : 6
     },
     
     "validSquare" : {
@@ -20,6 +21,7 @@
     },
 
     "validContext" : {
+        "gm_join" : "gm_join",
         "spectator_join" : "spectator join",
         "player_join" :"player join",
         "player_ready" : "player ready",
@@ -31,12 +33,14 @@
         "question" : "question",
         "key" : "key",
         "treasure" : "treasure",
+        "treasure_failed" : "treasure_failed",
         "event" : "event",
         "service" : "service",
         "turn" : "turn",
         "timeout" : "timeout",
         "answer_true" : "answer_true",
         "answer_false" : "answer_false",
-        "no_answer" : "no_answer"
+        "no_answer" : "no_answer",
+        "finish" : "finish"
     }
 }
