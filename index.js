@@ -208,7 +208,7 @@ function registerValidPlayer(socket,token){
      * When a user leaves, then thing needs to be undone
     */
     socket.on("disconnect",function(msg){
-
+        var thistokenplaying = isPlayingToken(token,room);
         switch (gameState[room].state) {
             case validState.prepare:
 
@@ -255,14 +255,7 @@ function registerValidPlayer(socket,token){
 
             case validState.rolling:
 
-                releasequestion(room,token);
-
-                var thistokenplaying = isPlayingToken(token,room)
-                delete gameState[room].player_status[token];
-                deletefromplayerorder(room,token);
-                gameState[room].player--;
-
-                emitplayerleaves(room,token);
+                deleteplayerduringgame(room,token);
 
                 if(thistokenplaying){
                     sendcurrentstatedata(room,validContext.turn);
@@ -271,15 +264,30 @@ function registerValidPlayer(socket,token){
                 break;
 
             case validState.answer_wait:
+                delete gameState[room].offered_answer;
+                delete gameState[room].timeout_id;
+
+                deleteplayerduringgame(room,token);
+
+                if(thistokenplaying){
+                    gameState[room].state = validState.rolling;
+                    sendcurrentstatedata(room,validContext.turn);
+                }
+
+            case validState.treasure_wait:
+                delete gameState[room].treasure;
+                delete gameState[room].timeout_id;
+                
+                deleteplayerduringgame(room,token);
+
+                if(thistokenplaying){
+                    gameState[room].state = validState.rolling;
+                    sendcurrentstatedata(room,validContext.turn);
+                }
+
             case validState.activation:
 
-                releasequestion(room,token);
-                var thistokenplaying = isPlayingToken(token,room)
-                delete gameState[room].player_status[token];
-                deletefromplayerorder(room,token);
-                gameState[room].player--;
-
-                emitplayerleaves(room,token);
+                deleteplayerduringgame(room,token);
 
                 if(thistokenplaying){
                     gameState[room].state = validState.rolling;
@@ -337,7 +345,16 @@ function registerValidGameMaster(socket,token){
 
 
 /** UTILS */
+function deleteplayerduringgame(room,token){
 
+    releasequestion(room,token);
+    delete gameState[room].player_status[token];
+    deletefromplayerorder(room,token);
+    gameState[room].player--;
+
+    emitplayerleaves(room,token);
+
+}
 function createnewroom(roomname){
     let new_room_data = {
         state : validState.prepare,
@@ -428,7 +445,7 @@ function deletefromplayerorder(room,token){
     var size = gameState[room].player_order.length;
     var next_tok;
     if(isPlayingToken(token,room)){
-        next_tok = gameState[room].player_order[(cur_play+1)%size];
+        next_tok =  changetonextplayer(room);
     } else {
         next_tok = gameState[room].player_order[cur_play];
     }
@@ -548,6 +565,23 @@ function activatesquare(room,token){
     }
 }
 
+function changetonextplayer(room){
+    var valid_player = false;
+    var next_player = gameState[room].current_player;
+    while(!valid_player){
+        next_player = (next_player+1)%gameState[room].player_order.length;
+        if(gameState[room].skipped.has(gameState[room].player_order[next_player])){
+            gameState[room].skipped.delete(gameState[room].player_order[next_player]);
+        } else {
+            valid_player = true;
+        }
+    }
+
+    return next_player;
+
+
+}
+
 
 function finishturn(room,token){
 
@@ -555,18 +589,7 @@ function finishturn(room,token){
     /** Otherwise, it might have left the room during the timeout */
 
     if(isPlayingToken(token,room)){
-        var valid_player = false;
-        var next_player = gameState[room].current_player;
-        while(!valid_player){
-            next_player = (next_player+1)%gameState[room].player_order.length;
-            if(gameState[room].skipped.has(gameState[room].player_order[next_player])){
-                gameState[room].skipped.delete(gameState[room].player_order[next_player]);
-            } else {
-                valid_player = true;
-            }
-        }
-        /** Change gamestate to rolling */
-        gameState[room].current_player = next_player;
+        gameState[room].current_player = changetonextplayer(room);
         gameState[room].state = validState.rolling;
         sendcurrentstatedata(room,validContext.turn);
     }
@@ -611,7 +634,7 @@ function giveKey(room,token){
     gameState[room].answers_drawed++;
 
     sendcurrentstatedata(room,validContext.key);
-    gameState[room].ans_timeout_id = setTimeout(timeout,answerTimeoutLength,room,token);
+    gameState[room].timeout_id = setTimeout(timeout,answerTimeoutLength,room,token);
 
     //finishturn(room,token);
 
@@ -634,7 +657,7 @@ function giveTreasure(room,token){
     /** Add timeout */
     var timeout_id =  setTimeout(treasureFail,treasureAnswerTimeoutLength,room,token);
 
-    gameState[room].treasure_timeout = timeout_id;
+    gameState[room].timeout_id = timeout_id;
 }
 
 function emitplayerleaves(room,token){
@@ -740,7 +763,7 @@ function handleAnswerEvent(room,token,msg){
     if(isPlayingToken(token,room)&&
     isRoomState(room,validState.answer_wait)){
         if(playerHasQuestion(room,token)){
-            clearTimeout(gameState[room].ans_timeout_id);
+            clearTimeout(gameState[room].timeout_id);
             var question_no = gameState[room].player_status[token].question.no;
             if(!msg.selected){
                 sendcurrentstatedata(room,validContext.no_answer);
@@ -770,7 +793,7 @@ function handleTreasureAnswerEvent(room,token,msg){
     if(isPlayingToken(token,room)&&
     isRoomState(room,validState.treasure_wait)){
 
-        clearTimeout(gameState[room].treasure_timeout);
+        clearTimeout(gameState[room].timeout_id);
         
         var answer = msg.answer;
         if(answer==treasure.answer){
@@ -797,7 +820,7 @@ function treasureFail(room,token){
 
     /** Wrong answer */
     gameState[room].player_status[token].question_answered = 0;
-    delete gameState[room].treasure_timeout;
+    delete gameState[room].timeout_id;
 
     setTimeout(sendcurrentstatedata,timeoutLength,room,validContext.treasure_failed);
     setTimeout(finishturn,timeoutLength*2,room,token);
