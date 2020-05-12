@@ -1,0 +1,8 @@
+[
+    {
+        "title" : "Event",
+        "text" : "There's a problem with your car. Skip a turn.",
+        "type" : "event",
+        "effect" : "skip"
+    }
+]

@@ -15,6 +15,8 @@ const validConstants = require('./constants.json');
 const question_module = require('./modules/question_module');
 const rewards_module = require('./modules/reward_module');
 const room_module = require("./modules/room_module");
+const event_module = require("./modules/event_module");
+const event_types = require("./assets/events.json").type;
 
 /** Config */
 const gamemaster = require('./assets/gm.json');
@@ -179,8 +181,7 @@ function registerValidPlayer(socket,token){
     /** Join socket to room */
     socket.join(room);
 
-
-    addnewplayertoroom(room,token);
+    gameState[room] = room_module.addNewPlayer(gameState[room],username,token);
     
     /** Add to ready queue */
     gameState[room].player_ready.add(token);
@@ -206,6 +207,10 @@ function registerValidPlayer(socket,token){
     });
     socket.on("treasure answer",function(msg){
         handleTreasureAnswerEvent(room,token,msg);
+    });
+
+    socket.on("use equipment",function(msg){
+        handleEquipmentUseEvent(room,token,msg);
     })
 
 
@@ -231,7 +236,7 @@ function registerValidPlayer(socket,token){
                 emitplayerleaves(room,token);
 
                 // If player ready becomes zero, then kickstart the game earlier.
-                if(gameState[room].player_ready.size==0&&gameState[room].player>=2){
+                if(gameState[room].player_ready.size==0&&gameState[room].player>=1){
 
                     // Delete player_ready element
                     delete gameState[room].player_ready;
@@ -269,8 +274,8 @@ function registerValidPlayer(socket,token){
                 break;
 
             case validState.answer_wait:
-                delete gameState[room].offered_answer;
-                delete gameState[room].timeout_id;
+                gameState[room].offered_answer = null;
+                gameState[room].timeout_id = null;
 
                 deleteplayerduringgame(room,token);
 
@@ -374,18 +379,6 @@ function isRoomState(room,state){
 }
 
 
-function addnewplayertoroom(room,token){
-    gameState[room].player_status[token] = {
-        username : userInfo[token].username,
-        money : 150,
-        square : 0,
-        held_question : null,
-        questions_answered : new Set(),
-        equipment : new Set()
-
-    }
-}
-
 /** KEYS */
 function giveKey(room,token){
 
@@ -451,11 +444,13 @@ function activatesquare(room,token){
         var position = gameState[room].player_status[token].square;
         switch(board[position]){
             case validSquare.question :
-                
                 if(!question_module.playerHasQuestion(gameState[room],token)){
                     gameState[room] = question_module.givequestion(gameState[room],token);
                     sendcurrentstatedata(room,validContext.question);
                 };
+
+
+                gameState[room].state = validState.finish_activation;
 
                 setTimeout(finishturn,timeoutLength,room,token);
                 break;
@@ -465,6 +460,7 @@ function activatesquare(room,token){
                 if(question_module.playerHasQuestion(gameState[room],token)){
                     giveKey(room,token);
                 } else {
+                    gameState[room].state = validState.finish_activation;
                     finishturn(room,token);
                 }
                 break;
@@ -483,6 +479,7 @@ function activatesquare(room,token){
                     game_status : gameState[room]
                 });
 
+                gameState[room].state = validState.finish_activation;
                 setTimeout(finishturn,timeoutLength,room,token);
 
                 break;
@@ -497,6 +494,7 @@ function activatesquare(room,token){
                 if(answered >= minimumAnswertoTreasure){
                     giveTreasure(room,token);
                 }else{
+                    gameState[room].state = validState.finish_activation;
                     finishturn(room,token);
                 }
 
@@ -505,12 +503,14 @@ function activatesquare(room,token){
             case validSquare.service :
 
                 service(room,token);
+                gameState[room].state = validState.finish_turn;
                 setTimeout(finishturn,timeoutLength,room,token);
                 break;
 
             case validSquare.start :
             case validSquare.empty :
 
+                gameState[room].state = validState.finish_activation;
                 finishturn(room,token);
                 break;
         }
@@ -541,11 +541,15 @@ function finishturn(room,token){
     /** Otherwise, it might have left the room during the timeout */
 
     if(isPlayingToken(token,room)){
-        gameState[room].current_player = changetonextplayer(room);
-        gameState[room].state = validState.rolling;
-        sendcurrentstatedata(room,validContext.turn);
-
-        console.log(gameState[room]);
+        if(isRoomState(room,validState.finish_turn)){
+            gameState[room].current_player = changetonextplayer(room);
+            gameState[room].state = validState.rolling;
+            sendcurrentstatedata(room,validContext.turn);
+    
+            console.log(gameState[room]);
+        } else {
+            offerToActivateEquipment(room,token);
+        }
     }
 }
 
@@ -557,8 +561,13 @@ function service(room,token){
 }
 
 function giveEvent(room,token){
-    sendcurrentstatedata(room,validContext.event);
-    finishturn(room,token);
+    gameState[room] = event_module.nextEvent(gameState[room],token);
+    if(gameState[room].current_event.type == event_types.event){
+        sendcurrentstatedata(room,validContext.event);
+
+        gameState[room].current_event = null;
+        setTimeout(finishturn,timeoutLength,room,token);
+    }
 }
 
 function giveTreasure(room,token){
@@ -617,7 +626,7 @@ function handleReadyEvent(room,token,msg){
         // Add to turn determination list
         gameState[room].roll_wait.add(token);
 
-        if(gameState[room].player_ready.size==0&&gameState[room].player>=2){
+        if(gameState[room].player_ready.size==0&&gameState[room].player>=1){
 
             // Delete player_ready element
             delete gameState[room].player_ready;
@@ -686,6 +695,8 @@ function handleAnswerEvent(room,token,msg){
             if(!msg.selected){
                 sendcurrentstatedata(room,validContext.no_answer);
                 if(gameState[room].answers_drawed>=2){
+                    gameState[room].answers_drawed = 0;
+                    gameState[room].offered_answer = null;
                     setTimeout(finishturn,timeoutLength,room,token);
                 } else {
                     setTimeout(giveKey,timeoutLength,room,token);
@@ -726,6 +737,28 @@ function handleTreasureAnswerEvent(room,token,msg){
     }
 }
 
+function handleEquipmentUseEvent(room,token,msg){
+
+    var target = msg.token;
+    var event_no = msg.no_event;
+    if(isPlayingToken(token,room)&&
+        isRoomState(room,validState.equipment_offer)&&
+        gameState[room].player_status.hasOwnProperty(target)&&
+        gameState[room].player_status[token].equipment.has(event_no)
+    ){
+        gameState[room].challenged_token = target;
+        if(gameState[room].player_status[target].hasReverse||
+            gameState[room].player_status[target].hasCancel){
+            
+            // Challenge
+
+        } else {
+            gameState[room].room = event_module
+        }
+    }
+
+}
+
 function finishGame(room){
     gameState[room].state = validState.finished;
     sendcurrentstatedata(room,validContext.finish);
@@ -735,6 +768,7 @@ function finishGame(room){
 function timeout(room,token){
     
     gameState[room].answers_drawed = 0;
+    gameState[room].offered_answer = null;
     sendcurrentstatedata(room,validContext.timeout);
     finishturn(room,token);
 }
@@ -747,4 +781,16 @@ function treasureFail(room,token){
 
     setTimeout(sendcurrentstatedata,timeoutLength,room,validContext.treasure_failed);
     setTimeout(finishturn,timeoutLength*2,room,token);
+}
+
+function offerToActivateEquipment(room,token){
+
+    /** If no equipment is used */
+    if(gameState[room].player_status[token].equipment.size == 0){
+        gameState[room].state = validState.finish_turn;
+    } else {
+        gameState[room].state = validState.equipment_offer;
+        sendcurrentstatedata(room,validContext.equipmentOffer);
+    }
+
 }

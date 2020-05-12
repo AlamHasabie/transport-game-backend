@@ -12,11 +12,14 @@ function newRoom(){
         player_ready : new Set(),
         roll_wait : new Set(),
         taken_questions : new Set(),
+        taken_event_cards : new Set(),
         skipped : new Set(),
+        using_equipment : new Set(),
         first_roll : [],
         player_order : [],
         offered_answer : null,
         current_player : null,
+        current_event : null,
         event_pointer : 0,
         reward_pointer : 0,
         answers_drawed: 0,
@@ -40,13 +43,9 @@ function buildRoomTurnOrder(room){
             }
         }
 
-        // Get taken token
         var token = room.first_roll[current_index].token;
 
-        // Add max as first element of player turn
         room.player_order.push(token);
-
-        // Delete element with the same token
         room.first_roll = room.first_roll.filter(function(el){
             return el.token != token;
         });
@@ -58,8 +57,24 @@ function buildRoomTurnOrder(room){
 
 }
 
+function addNewPlayer(room,username,token){
+    room.player_status[token] = {
+        username : username,
+        money : 150,
+        square : 0,
+        held_question : null,
+        questions_answered : new Set(),
+        equipment : new Set(),
+        hasReverse : false,
+        hasCancel : false
+    }
+
+    return room;
+}
+
 
 module.exports= {
     newRoom : newRoom,
-    buildRoomTurnOrder : buildRoomTurnOrder
+    buildRoomTurnOrder : buildRoomTurnOrder,
+    addNewPlayer : addNewPlayer
 }

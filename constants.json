@@ -6,7 +6,10 @@
         "activation" : 3,
         "answer_wait" : 4,
         "treasure_wait" : 5,
-        "finished" : 6
+        "finish_activation" : 6,
+        "finish_turn" : 7,
+        "equipment_offer" : 8,
+        "finished" : 9
     },
     
     "validSquare" : {
@@ -41,6 +44,7 @@
         "answer_true" : "answer_true",
         "answer_false" : "answer_false",
         "no_answer" : "no_answer",
-        "finish" : "finish"
+        "finish" : "finish",
+        "equipmentOffer" : "equipmentOffer"
     }
 }
