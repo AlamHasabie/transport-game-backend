@@ -12,6 +12,9 @@ const rewards = require('./assets/rewards.json');
 const board = require('./assets/board.json');
 const validConstants = require('./constants.json');
 
+/** Modules */
+const question_module = require('./modules/question_module');
+
 /** Config */
 const gamemaster = require('./assets/gm.json');
 const timeoutLength = 1000;
@@ -28,6 +31,7 @@ global.userInfo = {};
 const validState = validConstants.validState;
 const validSquare = validConstants.validSquare;
 const validContext = validConstants.validContext;
+
 
 /** This is for testing purpose only */
 app.use(bodyParser.urlencoded());
@@ -347,7 +351,7 @@ function registerValidGameMaster(socket,token){
 /** UTILS */
 function deleteplayerduringgame(room,token){
 
-    releasequestions(room,token);
+    gameState[room] = question_module.releaseQuestions(gameState[room],token);
     delete gameState[room].player_status[token];
     deletefromplayerorder(room,token);
     gameState[room].player--;
@@ -416,9 +420,6 @@ function isRoomState(room,state){
     return gameState[room].state == state;
 }
 
-function playerHasQuestion(room,token){
-    return gameState[room].player_status[token].held_question != null;
-}
 
 function addnewplayertoroom(room,token){
     gameState[room].player_status[token] = {
@@ -432,44 +433,6 @@ function addnewplayertoroom(room,token){
     }
 }
 
-/** QUESTIONS */
-function givequestion(room,token){
-    if(!playerHasQuestion(room,token)){
-
-        var current_question = gameState[room].question_pointer;
-        while(gameState[room].taken_questions.has(current_question)){
-            current_question = (current_question+1)%questions.length;
-        }
-        // Add question to room status
-        gameState[room].taken_questions.add(current_question);
-
-        // Change pointer
-        gameState[room].question_pointer  = current_question;
-
-        // Add question to player statuse
-        gameState[room].player_status[token].held_question = {};
-        gameState[room].player_status[token].held_question.text = questions[current_question].question;
-        gameState[room].player_status[token].held_question.no = current_question;
-
-        /** Update */
-        sendcurrentstatedata(room,validContext.question);
-    }
-}
-
-function releasequestions(room,token){
-
-    gameState[room].player_status[token].questions_answered.forEach(function(el){
-        gameState[room].taken_questions.delete(el);
-    });
-    gameState[room].player_status[token].questions_answered = new Set();
-    releaseHeldQuestion(room,token);
-}
-function releaseHeldQuestion(room,token){
-    if(gameState[room].player_status[token].held_question!=null){
-        gameState[room].taken_questions.delete(gameState[room].player_status[token].held_question.no);
-        gameState[room].player_status[token].held_question = null;
-    }
-}
 /** KEYS */
 function giveKey(room,token){
 
@@ -536,13 +499,17 @@ function activatesquare(room,token){
         switch(board[position]){
             case validSquare.question :
                 
-                givequestion(room,token);
+                if(!question_module.playerHasQuestion(gameState[room],token)){
+                    gameState[room] = question_module.givequestion(gameState[room],token);
+                    sendcurrentstatedata(room,validContext.question);
+                };
+
                 setTimeout(finishturn,timeoutLength,room,token);
                 break;
 
             case validSquare.key :
 
-                if(playerHasQuestion(room,token)){
+                if(question_module.playerHasQuestion(gameState[room],token)){
                     giveKey(room,token);
                 } else {
                     finishturn(room,token);
@@ -767,7 +734,7 @@ function handleRollEvent(room,token,msg){
 function handleAnswerEvent(room,token,msg){
     if(isPlayingToken(token,room)&&
     isRoomState(room,validState.answer_wait)){
-        if(playerHasQuestion(room,token)){
+        if(question_module.playerHasQuestion(gameState[room],token)){
             clearTimeout(gameState[room].timeout_id);
             delete gameState[room].timeout_id;
             var question_no = gameState[room].player_status[token].held_question.no;
@@ -822,7 +789,6 @@ function finishGame(room){
 // If timeout
 function timeout(room,token){
     
-    releaseHeldQuestion(room,token);
     gameState[room].answers_drawed = 0;
     sendcurrentstatedata(room,validContext.timeout);
     finishturn(room,token);
@@ -831,7 +797,7 @@ function timeout(room,token){
 function treasureFail(room,token){
 
     /** Wrong answer */
-    releasequestions(room,token);
+    gameState[room] = question_module.releaseQuestions(gameState[room],token);
     delete gameState[room].timeout_id;
 
     setTimeout(sendcurrentstatedata,timeoutLength,room,validContext.treasure_failed);
