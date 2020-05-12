@@ -11,7 +11,8 @@
         "teleport_offer" : 8,
         "equipment_offer" : 9,
         "roll_again" : 10,
-        "finished" : 11
+        "finished" : 11,
+        "equipment_activation" : 12
     },
     
     "validSquare" : {
@@ -39,6 +40,7 @@
         "key" : "key",
         "treasure" : "treasure",
         "treasure_failed" : "treasure_failed",
+        "equipment_activated" : "equipment_activated",
         "event" : "event",
         "equipment" : "equipment",
         "service" : "service",

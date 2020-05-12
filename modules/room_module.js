@@ -13,8 +13,10 @@ function newRoom(){
         roll_wait : new Set(),
         taken_questions : new Set(),
         taken_event_cards : new Set(),
-        skipped : new Set(),
-        using_equipment : new Set(),
+        skipped : new Set(), 
+        challenged_token : null,
+        activated_equipment : null,
+        barrier_equipment : null,
         first_roll : [],
         player_order : [],
         offered_answer : null,
@@ -64,7 +66,8 @@ function addNewPlayer(room,username,token){
         square : 0,
         held_question : null,
         questions_answered : new Set(),
-        equipment : new Set(),
+        equipment : {},
+        n_equipments : 0,
         hasReverse : false,
         hasCancel : false
     }
@@ -81,7 +84,7 @@ function prepareRoomToStart(room){
     room.repeated_roll = 0;
 
     delete room.roll_wait;
-    
+
     return room;
 }
 

@@ -7,11 +7,6 @@ const constants = require("../constants.json");
 
 
 
-
-
-
-
-
 function nextEvent(room,token){
 
     var candidate = room.event_pointer;
@@ -43,11 +38,8 @@ function nextEvent(room,token){
 function addEquipment(room,token,index){
 
     var card = event_cards[index];
-    var equipment = {
-        id : index,
-        card : card
-    }
-    room.player_status[token].equipment.add(equipment);
+    room.player_status[token].equipment[index] = card;
+    room.player_status[token].n_equipments++;
     room.taken_event_cards.add(index);
 
     if(card.effect == event_effects.cancel){
@@ -114,15 +106,27 @@ function processEvent(room,token,index){
     return room;
 }
 
-function executeEquipment(room,token,to,event){
+
+function releaseUsedEquipment(room,token){
+
+    var id = room.activated_equipment;
+    
+    delete room.player_status[token].equipment[id];
+    room.player_status[token].n_equipments--;
+    room.activated_equipment = null;
+    room.taken_event_cards.delete(id);
 
     return room;
+
+
+
 }
 
 
-
-
-
 module.exports = {
-    nextEvent : nextEvent
+    eventCards : event_cards,
+    eventEffect : event_effects,
+    eventType : event_types,
+    nextEvent : nextEvent,
+    releaseUsedEquipment : releaseUsedEquipment
 }

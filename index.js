@@ -17,6 +17,7 @@ const rewards_module = require('./modules/reward_module');
 const room_module = require("./modules/room_module");
 const event_module = require("./modules/event_module");
 const event_types = require("./assets/events.json").type;
+const event_effects = require("./modules/event_module").eventEffect;
 
 /** Config */
 const gamemaster = require('./assets/gm.json');
@@ -215,7 +216,7 @@ function registerValidPlayer(socket,token){
 
     socket.on("teleport",function(msg){
         handleTeleportEvent(room,token,msg);
-    })
+    });
 
 
     /** Disconnect 
@@ -425,9 +426,13 @@ function deleteroomifempty(room){
         gameState[room].spectator.size==0&&
         gameState[room].gamemaster.size==0){
         delete gameState[room];
+
+        console.log("Room " + room + " is deleted");
+
     }
 
-    console.log("Room " + room + " is deleted");
+    console.log(gameState);
+
 }
 
 function sendcurrentstatedata(room,context){
@@ -542,6 +547,9 @@ function finishturn(room,token){
 
     if(isPlayingToken(token,room)){
         if(isRoomState(room,validState.finish_turn)){
+
+            // ** Delete a lot of things
+            gameState[room].current_event = null;
             gameState[room].current_player = changetonextplayer(room);
             gameState[room].state = validState.rolling;
             sendcurrentstatedata(room,validContext.turn);
@@ -742,28 +750,6 @@ function handleTreasureAnswerEvent(room,token,msg){
     }
 }
 
-function handleEquipmentUseEvent(room,token,msg){
-
-    var target = msg.token;
-    var event_no = msg.no_event;
-    if(isPlayingToken(token,room)&&
-        isRoomState(room,validState.equipment_offer)&&
-        gameState[room].player_status.hasOwnProperty(target)&&
-        gameState[room].player_status[token].equipment.has(event_no)
-    ){
-        gameState[room].challenged_token = target;
-        if(gameState[room].player_status[target].hasReverse||
-            gameState[room].player_status[target].hasCancel){
-            
-            // Challenge
-
-        } else {
-            gameState[room].room = event_module
-        }
-    }
-
-}
-
 function handleTeleportEvent(room,token,msg){
     if(isPlayingToken(token,room)&&
     isRoomState(room,validState.teleport_offer)){
@@ -810,8 +796,8 @@ function treasureFail(room,token){
 
 function offerToActivateEquipment(room,token){
 
-    /** If no equipment is used */
-    if(gameState[room].player_status[token].equipment.size == 0){
+    /** If no equipment  */
+    if(gameState[room].player_status[token].n_equipments == 0){
         gameState[room].state = validState.finish_turn;
         finishturn(room,token);
     } else {
@@ -829,4 +815,50 @@ function rollagain(room){
 
 function offerTeleportEvent(room){
     sendcurrentstatedata(room,validContext.teleportOffer);
+}
+
+function handleEquipmentUseEvent(room,token,msg){
+
+    var id = msg.card_id;
+
+
+    if(id==null){
+        gameState[room].state = validState.finish_turn;
+        setTimeout(finishturn,timeoutLength,room,token);
+    } else {
+
+        if(isPlayingToken(token,room)&&
+            isRoomState(room,validState.equipment_offer)&&
+            gameState[room].player_status[token].equipment.hasOwnProperty(id))
+        {
+
+            gameState[room].activated_equipment = id;
+
+            useEquipment(room,token);
+
+        }
+    }
+}
+
+
+function useEquipment(room,token){
+
+    var id = gameState[room].activated_equipment
+    gameState[room].state = validState.equipment_activation;
+    var card = event_module.eventCards[id];
+    switch(card.effect){
+
+        case event_module.eventEffect.roll :
+            sendcurrentstatedata(room,validContext.equipment_activated);
+            gameState[room].state = validState.roll_again;
+            gameState[room].repeated_roll = 2;
+
+            gameState[room] = event_module.releaseUsedEquipment(gameState[room],token);
+
+            console.log(gameState[room]);
+
+
+            setTimeout(finishturn,timeoutLength,room,token);
+
+    }
 }

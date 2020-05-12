@@ -1,9 +1,8 @@
 [
     {
-        "title" : "Boots of Evasion [Equipment]",
-        "text" : "Cancel the effect casted on yourself.",
+        "title" : "Boots of Speed [Equipment]",
+        "text" : "Roll again",
         "type" : "equipment",
-        "effect" : "cancel",
-        "target" : "self"
+        "effect" : "roll"
     }
 ]
