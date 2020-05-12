@@ -715,6 +715,7 @@ function handleAnswerEvent(room,token,msg){
                     sendcurrentstatedata(room,validContext.answer_false);
                 } else {
                     // Add question to question answered
+                    gameState[room].player_status[token].held_question = null;
                     gameState[room].player_status[token].money+=50;
                     gameState[room].player_status[token].questions_answered.add(question_no);
                     sendcurrentstatedata(room,validContext.answer_true);
@@ -791,7 +792,7 @@ function treasureFail(room,token){
         delete gameState[room].timeout_id;
     }
 
-
+    gameState[room].state = validState.finish_activation;
     setTimeout(sendcurrentstatedata,timeoutLength,room,validContext.treasure_failed);
     setTimeout(finishturn,timeoutLength*2,room,token);
 }

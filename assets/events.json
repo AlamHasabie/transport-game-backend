@@ -264,8 +264,8 @@
         "cancel" : "cancel",
         "service" : "service",
         "start" : "start",  
-        "remove question" : "remove question",
-        "remove key" : "remove key",
+        "remove_question" : "remove question",
+        "remove_key" : "remove key",
         "stolen" : "stolen",
         "cash" : "cash"
     }

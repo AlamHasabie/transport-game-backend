@@ -94,6 +94,11 @@ function processEvent(room,token,index){
             room.repeated_roll = 2;
             break;
 
+        case event_effects.remove_key : 
+            room = question_module.releaseAQuestion(room,token);
+            room.state = constants.validState.finish_activation;
+
+            break;
         default :
             break;
     }  
