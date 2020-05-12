@@ -8,9 +8,10 @@
         "treasure_wait" : 5,
         "finish_activation" : 6,
         "finish_turn" : 7,
-        "equipment_offer" : 8,
-        "roll_again" : 9,
-        "finished" : 10
+        "teleport_offer" : 8,
+        "equipment_offer" : 9,
+        "roll_again" : 10,
+        "finished" : 11
     },
     
     "validSquare" : {
@@ -46,6 +47,7 @@
         "answer_false" : "answer_false",
         "no_answer" : "no_answer",
         "finish" : "finish",
+        "teleportOffer" : "teleportOffer",
         "equipmentOffer" : "equipmentOffer"
     }
 }

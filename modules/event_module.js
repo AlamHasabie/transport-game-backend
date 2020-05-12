@@ -97,8 +97,12 @@ function processEvent(room,token,index){
         case event_effects.remove_key : 
             room = question_module.releaseAQuestion(room,token);
             room.state = constants.validState.finish_activation;
-
             break;
+        
+        case event_effects.teleport :
+            room.state = constants.validState.teleport_offer;
+            break;
+            
         default :
             break;
     }  

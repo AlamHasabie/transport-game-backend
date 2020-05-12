@@ -211,6 +211,10 @@ function registerValidPlayer(socket,token){
 
     socket.on("use equipment",function(msg){
         handleEquipmentUseEvent(room,token,msg);
+    });
+
+    socket.on("teleport",function(msg){
+        handleTeleportEvent(room,token,msg);
     })
 
 
@@ -353,8 +357,6 @@ function registerValidGameMaster(socket,token){
         finishGame(room);
     })
 }
-
-
 /** UTILS */
 function deleteplayerduringgame(room,token){
 
@@ -568,7 +570,9 @@ function giveEvent(room,token){
     console.log(gameState[room]);
     if(gameState[room].current_event.type == event_types.event){
         sendcurrentstatedata(room,validContext.event);
-
+        if(gameState[room].state==validState.teleport_offer){
+            offerTeleportEvent(room);
+        }
         gameState[room].current_event = null;
         setTimeout(finishturn,timeoutLength,room,token);
     }
@@ -588,7 +592,6 @@ function giveTreasure(room,token){
     
     sendcurrentstatedata(room,validContext.treasure);
 
-    /** Add timeout */
     var timeout_id =  setTimeout(treasureFail,treasureAnswerTimeoutLength,room,token);
 
     gameState[room].timeout_id = timeout_id;
@@ -603,14 +606,8 @@ function emitplayerleaves(room,token){
 }
 
 function startgame(room){
-    gameState[room].state = validState.rolling;
-    gameState[room] = room_module.buildRoomTurnOrder(gameState[room]);
 
-    gameState[room].current_player = 0;
-
-    gameState[room].repeated_roll = 0;
-
-    delete gameState[room].roll_wait;
+    gameState[room] = room_module.prepareRoomToStart(gameState[room]);
 
     sendcurrentstatedata(room,validContext.game_start);
     sendcurrentstatedata(room,validContext.turn);
@@ -672,8 +669,6 @@ function handleRollEvent(room,token,msg){
 
 
         sendcurrentstatedata(room,validContext.move);
-        // Check if dice is same
-        // If same, then ask to roll again
         if((dice_1==dice_2)&&(gameState[room].repeated_roll<=2)){
 
             gameState[room].state = validState.roll_again;
@@ -681,7 +676,6 @@ function handleRollEvent(room,token,msg){
 
         } else {
 
-            /** Moving to square activation state */
             gameState[room].repeated_roll = 0;
             gameState[room].state = validState.activation;
 
@@ -770,6 +764,23 @@ function handleEquipmentUseEvent(room,token,msg){
 
 }
 
+function handleTeleportEvent(room,token,msg){
+    if(isPlayingToken(token,room)&&
+    isRoomState(room,validState.teleport_offer)){
+        var to = msg.to;
+        
+        gameState[room].player_status[token].square = to%board.length;
+        sendcurrentstatedata(room,validContext.move);
+
+        gameState[room].state = validState.finish_turn;
+        setTimeout(finishturn,timeoutLength,room,token);
+    }
+
+    
+
+}
+
+
 function finishGame(room){
     gameState[room].state = validState.finished;
     sendcurrentstatedata(room,validContext.finish);
@@ -814,4 +825,8 @@ function rollagain(room){
     gameState[room].repeated_roll += 1;
     gameState[room].state = validState.rolling;
     setTimeout(sendcurrentstatedata,timeoutLength,room,validContext.turn);
+}
+
+function offerTeleportEvent(room){
+    sendcurrentstatedata(room,validContext.teleportOffer);
 }

@@ -1,8 +1,8 @@
 [
     {
         "title" : "Event",
-        "text" : "Your pouch is stolen ! You lose one answered question",
-        "effect" : "remove key",
+        "text" : "Free holiday ! Move to a square you want.",
+        "effect" : "teleport",
         "type" : "event"
     }
 ]

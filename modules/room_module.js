@@ -72,9 +72,23 @@ function addNewPlayer(room,username,token){
     return room;
 }
 
+function prepareRoomToStart(room){
+
+    room.state = constants.validState.rolling;
+    room = buildRoomTurnOrder(room);
+
+    room.current_player = 0;
+    room.repeated_roll = 0;
+
+    delete room.roll_wait;
+    
+    return room;
+}
+
 
 module.exports= {
     newRoom : newRoom,
     buildRoomTurnOrder : buildRoomTurnOrder,
+    prepareRoomToStart : prepareRoomToStart,
     addNewPlayer : addNewPlayer
 }
