@@ -58,6 +58,10 @@ function addEquipment(room,token,index){
         room.player_status[token].hasReverse = true;
     }
 
+    room.state = constants.validState.finish_activation;
+    room.current_event = {}
+    room.current_event.type = event_types.equipment;
+
     return room;
 };
 
@@ -102,7 +106,7 @@ function processEvent(room,token,index){
         case event_effects.teleport :
             room.state = constants.validState.teleport_offer;
             break;
-            
+
         default :
             break;
     }  

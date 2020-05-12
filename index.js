@@ -540,9 +540,6 @@ function changetonextplayer(room){
 
 function finishturn(room,token){
 
-    /** Check if current playing token is still playing */
-    /** Otherwise, it might have left the room during the timeout */
-
     if(isPlayingToken(token,room)){
         if(isRoomState(room,validState.finish_turn)){
             gameState[room].current_player = changetonextplayer(room);
@@ -574,6 +571,9 @@ function giveEvent(room,token){
             offerTeleportEvent(room);
         }
         gameState[room].current_event = null;
+        setTimeout(finishturn,timeoutLength,room,token);
+    } else if (gameState[room].current_event.type == event_types.equipment){
+        sendcurrentstatedata(room,validContext.equipment);
         setTimeout(finishturn,timeoutLength,room,token);
     }
 }
