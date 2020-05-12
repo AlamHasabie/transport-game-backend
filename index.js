@@ -14,6 +14,7 @@ const validConstants = require('./constants.json');
 /** Modules */
 const question_module = require('./modules/question_module');
 const rewards_module = require('./modules/reward_module');
+const room_module = require("./modules/room_module");
 
 /** Config */
 const gamemaster = require('./assets/gm.json');
@@ -360,28 +361,8 @@ function deleteplayerduringgame(room,token){
 
 }
 function createnewroom(roomname){
-    let new_room_data = {
-        state : validState.prepare,
-        player : 0,
-        gamemaster : new Set(),
-        spectator : new Set(),
-        player_ready : new Set(),
-        roll_wait : new Set(),
-        taken_questions : new Set(),
-        skipped : new Set(),
-        first_roll : [],
-        player_order : [],
-        offered_answer : null,
-        current_player : null,
-        event_pointer : 0,
-        reward_pointer : 0,
-        answers_drawed: 0,
-        key_pointer : 0,
-        question_pointer : 0,
-        player_status : {}
-    }
 
-    gameState[roomname] = new_room_data;
+    gameState[roomname] = room_module.newRoom();
 }
 
 function buildturnorder(roomname){
