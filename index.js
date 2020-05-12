@@ -8,12 +8,12 @@ var crypto = require("crypto");
 /** Assets library  */
 const questions = require('./assets/questions.json');
 const answers = require('./assets/answers.json');
-const rewards = require('./assets/rewards.json');
 const board = require('./assets/board.json');
 const validConstants = require('./constants.json');
 
 /** Modules */
 const question_module = require('./modules/question_module');
+const rewards_module = require('./modules/reward_module');
 
 /** Config */
 const gamemaster = require('./assets/gm.json');
@@ -518,7 +518,18 @@ function activatesquare(room,token){
 
             case validSquare.reward :
 
-                giveReward(room,token);
+                var ret_obj = rewards_module.giveReward(gameState[room],token);
+                var text = ret_obj.text;
+                gameState[room] = ret_obj.state;
+
+
+                // Io emit reward
+                io.to(room).emit("update",{
+                    context : validContext.reward,
+                    text : text,
+                    game_status : gameState[room]
+                });
+
                 setTimeout(finishturn,timeoutLength,room,token);
 
                 break;
@@ -583,21 +594,6 @@ function finishturn(room,token){
 
         console.log(gameState[room]);
     }
-}
-
-
-function giveReward(room,token){
-    var reward = rewards[gameState[room].reward_pointer];
-    gameState[room].player_status[token].money += reward.nominal;
-    gameState[room].reward_pointer = (gameState[room].reward_pointer + 1)%rewards.length;
-
-    io.to(room).emit("update",{
-        context : context,
-        text : reward.text,
-        game_status : gameState[room]
-    })
-
-    
 }
 
 function service(room,token){

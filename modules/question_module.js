@@ -48,6 +48,7 @@ function playerHasQuestion(roomstate,token){
 
 
 module.exports = {
+    questions : questions,
     playerHasQuestion : playerHasQuestion,
     releaseHeldQuestion : releaseHeldQuestion,
     releaseQuestions : releaseQuestions,
