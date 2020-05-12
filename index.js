@@ -371,6 +371,7 @@ function createnewroom(roomname){
         current_player : null,
         event_pointer : 0,
         reward_pointer : 0,
+        answers_drawed: 0,
         key_pointer : 0,
         question_pointer : 0,
         player_status : {}
@@ -425,7 +426,9 @@ function addnewplayertoroom(room,token){
         money : 150,
         square : 0,
         held_question : null,
-        questions_answered : new Set
+        questions_answered : new Set(),
+        equipment : new Set()
+
     }
 }
 
@@ -458,14 +461,14 @@ function releasequestions(room,token){
     gameState[room].player_status[token].questions_answered.forEach(function(el){
         gameState[room].taken_questions.delete(el);
     });
-
-    // Create empty set
     gameState[room].player_status[token].questions_answered = new Set();
+    releaseHeldQuestion(room,token);
+}
+function releaseHeldQuestion(room,token){
     if(gameState[room].player_status[token].held_question!=null){
-        gameState[room].taken_questions.delete(gameState[room].player_status[token].question.no);
-        gameState[room].player_status[token].question = null;
+        gameState[room].taken_questions.delete(gameState[room].player_status[token].held_question.no);
+        gameState[room].player_status[token].held_question = null;
     }
-
 }
 /** KEYS */
 function giveKey(room,token){
@@ -540,7 +543,6 @@ function activatesquare(room,token){
             case validSquare.key :
 
                 if(playerHasQuestion(room,token)){
-                    gameState[room].answers_drawed = 0;
                     giveKey(room,token);
                 } else {
                     finishturn(room,token);
@@ -785,7 +787,7 @@ function handleAnswerEvent(room,token,msg){
                     sendcurrentstatedata(room,validContext.answer_false);
                 } else {
                     // Add question to question answered
-                    gameState[room].player_status.question.add(question_no);
+                    gameState[room].player_status[token].questions_answered.add(question_no);
                     sendcurrentstatedata(room,validContext.answer_true);
                 }
                 setTimeout(finishturn,timeoutLength,room,token);
@@ -819,6 +821,9 @@ function finishGame(room){
 
 // If timeout
 function timeout(room,token){
+    
+    releaseHeldQuestion(room,token);
+    gameState[room].answers_drawed = 0;
     sendcurrentstatedata(room,validContext.timeout);
     finishturn(room,token);
 }
