@@ -1,17 +1,33 @@
 var rewards = require("../assets/rewards.json");
-
-function giveReward(roomstate,token){
-    var reward = rewards[roomstate.reward_pointer];
-    roomstate.player_status[token].money += reward.nominal;
-    roomstate.reward_pointer = (roomstate.reward_pointer + 1)%rewards.length;
+var constants = require("../constants.json");
+var emitter;
 
 
-    return {
-        state : roomstate,
-        text : reward.text
-    }
+
+
+function init(emitter_in){
+    emitter = emitter_in;
+}
+
+function handle(room){
+
+    let token = room.player_order[room.current_player];
+    let reward = rewards[room.reward_pointer];
+
+    room.player_status[token].money += reward.nominal;
+    room.reward_pointer = (room.reward_pointer+1)%rewards.length;
+
+    emitter.sendstate(room,constants.validContext.reward);
+
+    room.state = constants.validState.finished;
+
+    return room;
+
+
+
 }
 
 module.exports = {
-    giveReward : giveReward
+    init:init,
+    handle : handle
 }

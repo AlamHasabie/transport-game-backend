@@ -163,10 +163,12 @@ io.on('connection',(socket)=>{
 
 const emitter = require("./modules/emitter");
 const questionHandler = require("./modules/question_module");
+const rewardHandler = require("./modules/reward_module");
 
 
 emitter.init(io);
 questionHandler.init(emitter);
+rewardHandler.init(emitter);
 
 http.listen(3000,()=>{
     console.log('listening on 3000');
@@ -506,18 +508,7 @@ function activatesquare(room,token){
 
             case validSquare.reward :
 
-                var ret_obj = rewards_module.giveReward(gameState[room],token);
-                var text = ret_obj.text;
-                gameState[room] = ret_obj.state;
-
-
-                // Io emit reward
-                io.to(room).emit("update",{
-                    context : validContext.reward,
-                    text : text,
-                    game_status : gameState[room]
-                });
-
+                gameState[room] = rewardHandler.handle(gameState[room]);
                 setTimeout(finishturn,timeoutLength,room,token);
 
                 break;
