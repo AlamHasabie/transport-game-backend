@@ -7,7 +7,9 @@
         "answer_wait" : 4,
         "treasure_wait" : 5,
         "finished" : 6,
-        "ended" : 7
+        "ended" : 7,
+        "player_empty" : 8,
+        "current_player_leave" : 9
     },
     
     "validSquare" : {
