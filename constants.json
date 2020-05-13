@@ -28,6 +28,7 @@
         "player_leave" : "player leave",
         "game_ready" : "game_ready",
         "game_start" : "game_start",
+        "roll_again" : "roll_again",
         "move" : "move",
         "reward" : "reward",
         "question" : "question",

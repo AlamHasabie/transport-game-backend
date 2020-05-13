@@ -164,21 +164,19 @@ io.on('connection',(socket)=>{
 const emitter = require("./modules/emitter");
 const questionHandler = require("./modules/question_module");
 const rewardHandler = require("./modules/reward_module");
+const rollHandler = require("./modules/roll_module");
 
 
 emitter.init(io);
 questionHandler.init(emitter);
 rewardHandler.init(emitter);
+rollHandler.init(emitter);
 
 http.listen(3000,()=>{
     console.log('listening on 3000');
 });
 
 
-/**Utils */
-/**This part is created so that function can be more modular in the future */
-
-/** Register emitter */
 
 
 
@@ -679,30 +677,14 @@ function handleFirstRollEvent(room,token,msg){
 function handleRollEvent(room,token,msg){
     if(isRoomState(room,validState.rolling)&&
     isPlayingToken(token,room)){
-        var dice_1 = msg.dice_1;
-        var dice_2 = msg.dice_2;
+        gameState[room].dice_1 = msg.dice_1;
+        gameState[room].dice_2 = msg.dice_2;
 
-
-        var movement = msg.dice_1 + msg.dice_2;
-        var tosquare = (gameState[room].player_status[token].square + movement)%40;
-        gameState[room].player_status[token].square = tosquare;
-
-
-        // Check if dice is same
-        // If same, then ask to roll again
-        if((dice_1==dice_2)&&(gameState[room].repeated_roll<=2)){
-            // State not changed
-            gameState[room].repeated_roll += 1;
-            sendcurrentstatedata(room,validContext.move);
-            setTimeout(sendcurrentstatedata,timeoutLength,room,validContext.turn);
-        } else {
-
-            /** Moving to square activation state */
-            gameState[room].repeated_roll = 0;
-            gameState[room].state = validState.activation;
-            sendcurrentstatedata(room,validContext.move);
-            setTimeout(activatesquare,timeoutLength,room,token);       
+        gameState[room] = rollHandler.handle(gameState[room]);
+        if(isRoomState(room,validState.activation)){
+            gameState[room].next_event = setTimeout(activatesquare,timeoutLength,room,token);
         }
+
     }
 }
 

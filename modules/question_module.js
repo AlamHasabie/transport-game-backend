@@ -36,7 +36,7 @@ function releaseQuestions(roomstate,token){
         roomstate.taken_questions.delete(el);
     });
     roomstate.player_status[token].questions_answered = new Set();
-    roomstate = releaseQuestions(roomstate,token);
+    roomstate = releaseHeldQuestion(roomstate,token);
 
     return roomstate;
 

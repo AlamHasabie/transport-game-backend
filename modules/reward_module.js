@@ -24,7 +24,6 @@ function handle(room){
     return room;
 
 
-
 }
 
 module.exports = {
