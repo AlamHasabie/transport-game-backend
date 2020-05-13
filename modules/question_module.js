@@ -10,6 +10,14 @@ function init(sender_in){
 
 }
 
+function addAnsweredQuestion(room,token){
+    let no = room.player_status[token].held_question;
+    room.player_status[token].questions_answered.add(no);
+    room.player_status[token].held_question = null;
+
+    return room;
+}
+
 
 function givequestion(roomstate,token){
 
@@ -75,6 +83,7 @@ function handle(room){
 
 
 module.exports = {
+    addAnsweredQuestion : addAnsweredQuestion,
     questions : questions,
     playerHasQuestion : playerHasQuestion,
     releaseHeldQuestion : releaseHeldQuestion,
