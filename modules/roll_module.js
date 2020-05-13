@@ -31,6 +31,7 @@ function handle(room){
 
     } else {
 
+        emitter.sendstate(room,constants.validContext.move);
         room.state = constants.validState.activation;
 
     }

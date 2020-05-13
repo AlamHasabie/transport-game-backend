@@ -165,12 +165,14 @@ const emitter = require("./modules/emitter");
 const questionHandler = require("./modules/question_module");
 const rewardHandler = require("./modules/reward_module");
 const rollHandler = require("./modules/roll_module");
+const answerHandler = require("./modules/answer_module");
 
 
 emitter.init(io);
 questionHandler.init(emitter);
 rewardHandler.init(emitter);
 rollHandler.init(emitter);
+answerHandler.init(emitter);
 
 http.listen(3000,()=>{
     console.log('listening on 3000');
@@ -241,7 +243,7 @@ function registerValidPlayer(socket,token){
                 emitplayerleaves(room,token);
 
                 // If player ready becomes zero, then kickstart the game earlier.
-                if(gameState[room].player_ready.size==0&&gameState[room].player>=2){
+                if(gameState[room].player_ready.size==0&&gameState[room].player>=1){
 
                     // Delete player_ready element
                     delete gameState[room].player_ready;
@@ -315,7 +317,6 @@ function registerValidPlayer(socket,token){
 
                 break;
         }
-        console.log(gameState[room]);
 
         deleteroomifempty(room);
     });
@@ -497,10 +498,16 @@ function activatesquare(room,token){
 
             case validSquare.key :
 
-                if(question_module.playerHasQuestion(gameState[room],token)){
-                    giveKey(room,token);
+                gameState[room] = answerHandler.handle(gameState[room]);
+                if(isRoomState(room,validState.answer_wait)){
+                    gameState[room].timeout_id = setTimeout(
+                        answerTimeout,
+                        answerTimeoutLength,
+                        room,
+                        token
+                    );
                 } else {
-                    finishturn(room,token);
+                    setTimeout(finishturn,timeoutLength,room,token);
                 }
                 break;
 
@@ -568,8 +575,6 @@ function finishturn(room,token){
         gameState[room].current_player = changetonextplayer(room);
         gameState[room].state = validState.rolling;
         sendcurrentstatedata(room,validContext.turn);
-
-        console.log(gameState[room]);
     }
 }
 
@@ -641,7 +646,7 @@ function handleReadyEvent(room,token,msg){
         // Add to turn determination list
         gameState[room].roll_wait.add(token);
 
-        if(gameState[room].player_ready.size==0&&gameState[room].player>=2){
+        if(gameState[room].player_ready.size==0&&gameState[room].player>=1){
 
             // Delete player_ready element
             delete gameState[room].player_ready;
@@ -739,17 +744,11 @@ function handleTreasureAnswerEvent(room,token,msg){
 }
 
 function finishGame(room){
-    gameState[room].state = validState.finished;
+    gameState[room].state = validState.ended;
     sendcurrentstatedata(room,validContext.finish);
 }
 
 // If timeout
-function timeout(room,token){
-    
-    gameState[room].answers_drawed = 0;
-    sendcurrentstatedata(room,validContext.timeout);
-    finishturn(room,token);
-}
 
 function treasureFail(room,token){
 
@@ -759,4 +758,17 @@ function treasureFail(room,token){
 
     setTimeout(sendcurrentstatedata,timeoutLength,room,validContext.treasure_failed);
     setTimeout(finishturn,timeoutLength*2,room,token);
+}
+
+function answerTimeout(room,token){
+    gameState[room].answers_drawed = 0;
+    gameState[room].answer = null;
+    timeout(room,token);
+}
+
+function timeout(room,token){
+    
+    gameState[room].state = validState.finished;
+    sendcurrentstatedata(room,validContext.timeout);
+    finishturn(room,token);
 }

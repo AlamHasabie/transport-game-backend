@@ -14,14 +14,17 @@ function handle(room){
 
     let token = room.player_order[room.current_player];
 
-    if(!question_module.playerHasQuestion(room,token)){
-        room.state = constants.validState.answer_wait;
+
+    if(question_module.playerHasQuestion(room,token)){
+        room = giveKey(room); 
     }
+
 
     return room;
 }
 
 function giveKey(room){
+
 
     let token = room.player_order[room.current_player];
 
@@ -40,7 +43,7 @@ function handleAnswerEvent(room){
     let no = room.player_status[token].held_question;
     let answer = room.answer;
 
-    if(room.answer == null){
+    if(answer == null){
         if(room.answers_drawed>=2){
             emitter.sendstate(room,constants.validContext.no_answer);
             room.answers_drawed = 0;

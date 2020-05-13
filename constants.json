@@ -6,7 +6,8 @@
         "activation" : 3,
         "answer_wait" : 4,
         "treasure_wait" : 5,
-        "finished" : 6
+        "finished" : 6,
+        "ended" : 7
     },
     
     "validSquare" : {
