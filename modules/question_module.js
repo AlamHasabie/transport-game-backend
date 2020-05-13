@@ -1,4 +1,15 @@
 var questions = require("../assets/questions.json");
+var constanst = require("../constants.json");
+var sender;
+
+
+
+function init(sender_in){
+
+    sender = sender_in;
+
+}
+
 
 function givequestion(roomstate,token){
 
@@ -12,11 +23,8 @@ function givequestion(roomstate,token){
     // Change pointer
     roomstate.question_pointer  = current_question;
 
-    // Add question to player statuse
-    roomstate.player_status[token].held_question = {};
-    roomstate.player_status[token].held_question.text = questions[current_question].question;
-    roomstate.player_status[token].held_question.no = current_question;
-
+    // Add question to player status
+    roomstate.player_status[token].held_question = current_question;
 
     return roomstate;
 
@@ -47,12 +55,33 @@ function playerHasQuestion(roomstate,token){
 }
 
 
+function handle(room){
+    
+    let token = room.player_order[room.current_player];
+
+    if(playerHasQuestion(room,token)){
+
+    } else {
+
+        room = givequestion(room,token);
+        sender.sendstate(room,constanst.validContext.question);
+
+    }
+
+    room.state = constanst.validState.finished;
+
+    return room;
+}
+
+
 module.exports = {
     questions : questions,
     playerHasQuestion : playerHasQuestion,
     releaseHeldQuestion : releaseHeldQuestion,
     releaseQuestions : releaseQuestions,
-    givequestion : givequestion
+    givequestion : givequestion,
+    init : init,
+    handle : handle,
 }
 
 

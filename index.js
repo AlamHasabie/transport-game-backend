@@ -161,6 +161,13 @@ io.on('connection',(socket)=>{
     }
 });
 
+const emitter = require("./modules/emitter");
+const questionHandler = require("./modules/question_module");
+
+
+emitter.init(io);
+questionHandler.init(emitter);
+
 http.listen(3000,()=>{
     console.log('listening on 3000');
 });
@@ -168,6 +175,9 @@ http.listen(3000,()=>{
 
 /**Utils */
 /**This part is created so that function can be more modular in the future */
+
+/** Register emitter */
+
 
 
 function registerValidPlayer(socket,token){
@@ -363,6 +373,7 @@ function deleteplayerduringgame(room,token){
 function createnewroom(roomname){
 
     gameState[roomname] = room_module.newRoom();
+    gameState[roomname].roomname = roomname;
 }
 
 function buildturnorder(roomname){
@@ -479,12 +490,8 @@ function activatesquare(room,token){
         var position = gameState[room].player_status[token].square;
         switch(board[position]){
             case validSquare.question :
-                
-                if(!question_module.playerHasQuestion(gameState[room],token)){
-                    gameState[room] = question_module.givequestion(gameState[room],token);
-                    sendcurrentstatedata(room,validContext.question);
-                };
 
+                gameState[room] = questionHandler.handle(gameState[room]);
                 setTimeout(finishturn,timeoutLength,room,token);
                 break;
 
