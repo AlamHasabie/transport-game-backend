@@ -17,12 +17,14 @@ const rewards_module = require('./modules/reward_module');
 const room_module = require("./modules/room_module");
 
 /** Config */
+const config = require("./config.json");
 const gamemaster = require('./assets/gm.json');
-const timeoutLength = 1000;
-const answerTimeoutLength = 10000;
-const treasureAnswerTimeoutLength = 30000;
+const delayLength = config.delay;
+const timeoutLength = config.timeout;
+const answerTimeoutLength = config.answer_timeout
+const treasureAnswerTimeoutLength = config.treasure_timeout;
 
-const minimumAnswertoTreasure = -1;
+const minimumAnswertoTreasure = config.treasure_minimal_questions;
 const treasure = require("./assets/treasure.json");
 
 
@@ -166,6 +168,7 @@ const questionHandler = require("./modules/question_module");
 const rewardHandler = require("./modules/reward_module");
 const rollHandler = require("./modules/roll_module");
 const answerHandler = require("./modules/answer_module");
+const treasureHandler = require("./modules/treasure_module");
 
 
 emitter.init(io);
@@ -173,6 +176,7 @@ questionHandler.init(emitter);
 rewardHandler.init(emitter);
 rollHandler.init(emitter);
 answerHandler.init(emitter);
+treasureHandler.init(emitter);
 
 http.listen(3000,()=>{
     console.log('listening on 3000');
@@ -232,7 +236,7 @@ function registerValidPlayer(socket,token){
                 emitplayerleaves(room,token);
 
                 // If player ready becomes zero, then kickstart the game earlier.
-                if(gameState[room].player_ready.size==0&&gameState[room].player>=1){
+                if(gameState[room].player_ready.size==0&&gameState[room].player>=config.minimal_player){
 
                     // Delete player_ready element
                     delete gameState[room].player_ready;
@@ -453,13 +457,11 @@ function activatesquare(room,token){
         var position = gameState[room].player_status[token].square;
         switch(board[position]){
             case validSquare.question :
-
                 gameState[room] = questionHandler.handle(gameState[room]);
-                setTimeout(finishturn,timeoutLength,room,token);
+                setTimeout(finishturn,delayLength,room,token);
                 break;
 
             case validSquare.key :
-
                 gameState[room] = answerHandler.handle(gameState[room]);
                 if(isRoomState(room,validState.answer_wait)){
                     gameState[room].timeout_id = setTimeout(
@@ -469,14 +471,13 @@ function activatesquare(room,token){
                         token
                     );
                 } else {
-                    setTimeout(finishturn,timeoutLength,room,token);
+                    setTimeout(finishturn,delayLength,room,token);
                 }
                 break;
 
             case validSquare.reward :
-
                 gameState[room] = rewardHandler.handle(gameState[room]);
-                setTimeout(finishturn,timeoutLength,room,token);
+                setTimeout(finishturn,delayLength,room,token);
 
                 break;
 
@@ -485,25 +486,27 @@ function activatesquare(room,token){
                 break;
 
             case validSquare.treasure :
-
-                var answered = gameState[room].player_status[token].questions_answered.size;
-                if(answered >= minimumAnswertoTreasure){
-                    giveTreasure(room,token);
-                }else{
-                    finishturn(room,token);
+                gameState[room] = treasureHandler.handle(gameState[room]);
+                if(isRoomState(room,validState.finished)){
+                    setTimeout(finishturn,delayLength,room,token);
+                } else if (isRoomState(room,validState.treasure_wait)){
+                    gameState[room].timeout_id = setTimeout(
+                        treasureFail,
+                        treasureAnswerTimeoutLength,
+                        room,
+                        token
+                    );
                 }
 
                 break;
 
             case validSquare.service :
-
                 service(room,token);
-                setTimeout(finishturn,timeoutLength,room,token);
+                setTimeout(finishturn,delayLength,room,token);
                 break;
 
             case validSquare.start :
             case validSquare.empty :
-
                 finishturn(room,token);
                 break;
         }
@@ -530,6 +533,12 @@ function finishturn(room,token){
         gameState[room].current_player = changetonextplayer(room);
         gameState[room].state = validState.rolling;
         sendcurrentstatedata(room,validContext.turn);
+        gameState[room].timeout_id = setTimeout(
+            timeout,
+            timeoutLength,
+            room,
+            token  
+        );
     }
 }
 
@@ -543,24 +552,6 @@ function service(room,token){
 function giveEvent(room,token){
     sendcurrentstatedata(room,validContext.event);
     finishturn(room,token);
-}
-
-function giveTreasure(room,token){
-
-    /** Wait for treasure */
-    gameState[room].state = validState.treasure_wait;
-
-    /** Add treasure to gameState */
-    gameState[room].treasure = {}
-    gameState[room].treasure.question = treasure.question;
-    gameState[room].treasure.choices = treasure.choices;
-
-    sendcurrentstatedata(room,validContext.treasure);
-
-    /** Add timeout */
-    var timeout_id =  setTimeout(treasureFail,treasureAnswerTimeoutLength,room,token);
-
-    gameState[room].timeout_id = timeout_id;
 }
 
 function emitplayerleaves(room,token){
@@ -585,7 +576,6 @@ function startgame(room){
     sendcurrentstatedata(room,validContext.turn);
 }
 
-/** Handlers */
 function handleReadyEvent(room,token,msg){
     if(isRoomState(room,validState.prepare)){
         gameState[room].player_ready.delete(token);
@@ -599,7 +589,7 @@ function handleReadyEvent(room,token,msg){
         // Add to turn determination list
         gameState[room].roll_wait.add(token);
 
-        if(gameState[room].player_ready.size==0&&gameState[room].player>=1){
+        if(gameState[room].player_ready.size==0&&gameState[room].player>=config.minimal_player){
 
             // Delete player_ready element
             delete gameState[room].player_ready;
@@ -634,12 +624,21 @@ function handleFirstRollEvent(room,token,msg){
 function handleRollEvent(room,token,msg){
     if(isRoomState(room,validState.rolling)&&
     isPlayingToken(token,room)){
+
+        clearTimeout(gameState[room].timeout_id);
         gameState[room].dice_1 = msg.dice_1;
         gameState[room].dice_2 = msg.dice_2;
 
         gameState[room] = rollHandler.handle(gameState[room]);
         if(isRoomState(room,validState.activation)){
-            setTimeout(activatesquare,timeoutLength,room,token);
+            setTimeout(activatesquare,delayLength,room,token);
+        } else if (isRoomState(room,validState.rolling)){
+            gameState[room].timeout_id = setTimeout(
+                timeout,
+                timeoutLength,
+                room,
+                token
+            )
         }
     }
 }
@@ -653,7 +652,7 @@ function handleAnswerEvent(room,token,msg){
         gameState[room] = answerHandler.handleAnswerEvent(gameState[room]);
 
         if(isRoomState(room,validState.finished)){
-            setTimeout(finishturn,timeoutLength,room,token);
+            setTimeout(finishturn,delayLength,room,token);
         } else if(isRoomState(room,validState.answer_wait)){
             setTimeout(answerTimeout,answerTimeoutLength,room,token);
         }
@@ -666,10 +665,9 @@ function handleTreasureAnswerEvent(room,token,msg){
 
         clearTimeout(gameState[room].timeout_id);
         
-        var answer = msg.answer;
-        if(answer==treasure.answer){
-            /** Game finished */
-            setTimeout(finishGame, timeoutLength, room);
+        if(msg.answer==treasure.answer){
+            gameState[room].state = validState.ended;
+            setTimeout(finishGame, delayLength, room);
         } else {
             treasureFail(room,token);
         }
@@ -681,16 +679,15 @@ function finishGame(room){
     sendcurrentstatedata(room,validContext.finish);
 }
 
-// If timeout
+// If timeout or answer failed.
 function treasureFail(room,token){
 
     /** Wrong answer or timed out*/
-    gameState[room] = question_module.releaseQuestions(gameState[room],token);
+    gameState[room] = question_module.releaseAnsweredQuestions(gameState[room],token);
     delete gameState[room].timeout_id;
-
-    setTimeout(sendcurrentstatedata,timeoutLength,room,validContext.treasure_failed);
+    sendcurrentstatedata(room,validContext.treasure_failed);
     gameState[room].state = validState.finished;
-    setTimeout(finishturn,timeoutLength*2,room,token);
+    setTimeout(finishturn,delayLength*2,room,token);
 }
 
 function answerTimeout(room,token){
@@ -700,7 +697,9 @@ function answerTimeout(room,token){
 }
 
 function timeout(room,token){
-    
+
+    delete gameState[room].timeout_id;
+    console.log("timeout called");
     gameState[room].state = validState.finished;
     sendcurrentstatedata(room,validContext.timeout);
     finishturn(room,token);

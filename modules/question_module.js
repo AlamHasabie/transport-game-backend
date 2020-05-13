@@ -38,16 +38,22 @@ function givequestion(roomstate,token){
 
 }
 
-function releaseQuestions(roomstate,token){
-
+function releaseAnsweredQuestions(roomstate,token){
     roomstate.player_status[token].questions_answered.forEach(function(el){
         roomstate.taken_questions.delete(el);
     });
     roomstate.player_status[token].questions_answered = new Set();
+
+    return roomstate;
+}
+
+function releaseQuestions(roomstate,token){
+
+    roomstate = releaseAnsweredQuestions(roomstate,token);
     roomstate = releaseHeldQuestion(roomstate,token);
 
     return roomstate;
-
+    
 }
 function releaseHeldQuestion(roomstate,token){
     if(roomstate.player_status[token].held_question!=null){
@@ -86,6 +92,7 @@ module.exports = {
     addAnsweredQuestion : addAnsweredQuestion,
     questions : questions,
     playerHasQuestion : playerHasQuestion,
+    releaseAnsweredQuestions : releaseAnsweredQuestions,
     releaseHeldQuestion : releaseHeldQuestion,
     releaseQuestions : releaseQuestions,
     givequestion : givequestion,
