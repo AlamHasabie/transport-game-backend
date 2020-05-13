@@ -179,9 +179,6 @@ http.listen(3000,()=>{
 });
 
 
-
-
-
 function registerValidPlayer(socket,token){
 
     var user = userInfo[token];
@@ -190,19 +187,11 @@ function registerValidPlayer(socket,token){
 
     /** Join socket to room */
     socket.join(room);
-
-
     addnewplayertoroom(room,token);
     
-    /** Add to ready queue */
     gameState[room].player_ready.add(token);
 
-    io.to(room).emit("player join",{
-        context : validContext.player_join,
-        token : token,
-        username : username,
-        game_status : gameState[room]
-    })
+    sendcurrentstatedata(room,validContext.player_join);
 
     socket.on('ready',function(msg){
         handleReadyEvent(room,token,msg);
@@ -317,7 +306,6 @@ function registerValidPlayer(socket,token){
 
                 break;
         }
-
         deleteroomifempty(room);
     });
 
@@ -359,8 +347,6 @@ function registerValidGameMaster(socket,token){
     })
 }
 
-
-/** UTILS */
 function deleteplayerduringgame(room,token){
 
     gameState[room] = question_module.releaseQuestions(gameState[room],token);
@@ -413,7 +399,6 @@ function isRoomState(room,state){
     return gameState[room].state == state;
 }
 
-
 function addnewplayertoroom(room,token){
     gameState[room].player_status[token] = {
         username : userInfo[token].username,
@@ -425,23 +410,6 @@ function addnewplayertoroom(room,token){
 
     }
 }
-
-/** KEYS */
-function giveKey(room,token){
-
-    gameState[room].state = validState.answer_wait;
-    var answer = answers[gameState[room].key_pointer];
-
-    gameState[room].is_challenge_answered = false;
-    gameState[room].key_pointer++;
-    gameState[room].offered_answer = answer;
-    gameState[room].answers_drawed++;
-
-    sendcurrentstatedata(room,validContext.key);
-    gameState[room].timeout_id = setTimeout(timeout,answerTimeoutLength,room,token);
-}
-
-
 
 function deletefromplayerorder(room,token){
 
@@ -470,8 +438,6 @@ function deleteroomifempty(room){
         gameState[room].gamemaster.size==0){
         delete gameState[room];
     }
-
-    console.log("Room " + room + " is deleted");
 }
 
 function sendcurrentstatedata(room,context){
@@ -480,10 +446,6 @@ function sendcurrentstatedata(room,context){
         game_status : gameState[room]
     })
 }
-
-
-
-/** Square Procedures */
 
 function activatesquare(room,token){
 
@@ -559,17 +521,10 @@ function changetonextplayer(room){
             valid_player = true;
         }
     }
-
     return next_player;
-
-
 }
 
-
 function finishturn(room,token){
-
-    /** Check if current playing token is still playing */
-    /** Otherwise, it might have left the room during the timeout */
 
     if(isPlayingToken(token,room)){
         gameState[room].current_player = changetonextplayer(room);
@@ -600,8 +555,6 @@ function giveTreasure(room,token){
     gameState[room].treasure.question = treasure.question;
     gameState[room].treasure.choices = treasure.choices;
 
-
-    
     sendcurrentstatedata(room,validContext.treasure);
 
     /** Add timeout */
@@ -678,7 +631,6 @@ function handleFirstRollEvent(room,token,msg){
         }
     }
 }
-
 function handleRollEvent(room,token,msg){
     if(isRoomState(room,validState.rolling)&&
     isPlayingToken(token,room)){
@@ -689,42 +641,23 @@ function handleRollEvent(room,token,msg){
         if(isRoomState(room,validState.activation)){
             gameState[room].next_event = setTimeout(activatesquare,timeoutLength,room,token);
         }
-
     }
 }
 
 function handleAnswerEvent(room,token,msg){
     if(isPlayingToken(token,room)&&
-    isRoomState(room,validState.answer_wait)){
-        if(question_module.playerHasQuestion(gameState[room],token)){
-            clearTimeout(gameState[room].timeout_id);
-            delete gameState[room].timeout_id;
-            var question_no = gameState[room].player_status[token].held_question.no;
-            if(!msg.selected){
-                sendcurrentstatedata(room,validContext.no_answer);
-                if(gameState[room].answers_drawed>=2){
-                    setTimeout(finishturn,timeoutLength,room,token);
-                } else {
-                    setTimeout(giveKey,timeoutLength,room,token);
-                }
-            } else {
+    isRoomState(room,validState.answer_wait)&&
+    question_module.playerHasQuestion(gameState[room],token)){
+        clearTimeout(gameState[room].timeout_id);
+        gameState[room].answer = msg.selected;
+        gameState[room] = answerHandler.handleAnswerEvent(gameState[room]);
 
-                var answer = gameState[room].offered_answer;
-                if(!questions[question_no].answer.includes(answer)){
-                    gameState[room].taken_questions.delete(question_no);
-                    gameState[room].player_status[token].held_question = null;
-                    sendcurrentstatedata(room,validContext.answer_false);
-                } else {
-                    // Add question to question answered
-                    gameState[room].player_status[token].questions_answered.add(question_no);
-                    sendcurrentstatedata(room,validContext.answer_true);
-                }
-                setTimeout(finishturn,timeoutLength,room,token);
-            }
+        if(isRoomState(room,validState.finished)){
+            setTimeout(finishturn,timeoutLength,room,token);
+        } else if(isRoomState(room,validState.answer_wait)){
+            setTimeout(answerTimeout,answerTimeoutLength,room,token);
         }
     }
-
-
 }
 function handleTreasureAnswerEvent(room,token,msg){
 

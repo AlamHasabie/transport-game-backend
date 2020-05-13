@@ -26,8 +26,6 @@ function handle(room){
 function giveKey(room){
 
 
-    let token = room.player_order[room.current_player];
-
     room.state = constants.validState.answer_wait;
     room.key_pointer = (room.key_pointer+1)%answers.length;
     room.answers_drawed++;
@@ -41,9 +39,10 @@ function handleAnswerEvent(room){
 
     let token = room.player_order[room.current_player];
     let no = room.player_status[token].held_question;
-    let answer = room.answer;
+    let is_answer = room.answer;
+    let answer = answers[room.key_pointer];
 
-    if(answer == null){
+    if(!is_answer){
         if(room.answers_drawed>=2){
             emitter.sendstate(room,constants.validContext.no_answer);
             room.answers_drawed = 0;
@@ -55,7 +54,6 @@ function handleAnswerEvent(room){
             return giveKey(room);
         }
     } else {
-
         if(questions[no].answer.includes(answer)){
             emitter.sendstate(room,constants.validContext.answer_true);
             room = question_module.addAnsweredQuestion(room,token);
