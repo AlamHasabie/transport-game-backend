@@ -526,7 +526,7 @@ function changetonextplayer(room){
 
 function finishturn(room,token){
 
-    if(isPlayingToken(token,room)){
+    if(isPlayingToken(token,room)&&(isRoomState(room,validState.finished))){
         gameState[room].current_player = changetonextplayer(room);
         gameState[room].state = validState.rolling;
         sendcurrentstatedata(room,validContext.turn);
@@ -639,7 +639,7 @@ function handleRollEvent(room,token,msg){
 
         gameState[room] = rollHandler.handle(gameState[room]);
         if(isRoomState(room,validState.activation)){
-            gameState[room].next_event = setTimeout(activatesquare,timeoutLength,room,token);
+            setTimeout(activatesquare,timeoutLength,room,token);
         }
     }
 }
@@ -682,14 +682,14 @@ function finishGame(room){
 }
 
 // If timeout
-
 function treasureFail(room,token){
 
-    /** Wrong answer */
+    /** Wrong answer or timed out*/
     gameState[room] = question_module.releaseQuestions(gameState[room],token);
     delete gameState[room].timeout_id;
 
     setTimeout(sendcurrentstatedata,timeoutLength,room,validContext.treasure_failed);
+    gameState[room].state = validState.finished;
     setTimeout(finishturn,timeoutLength*2,room,token);
 }
 
