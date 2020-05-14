@@ -66,11 +66,9 @@ io.emit("treasure answer",{
 })
 ```
 
-5. 
 
 
-
-### Status Change Events
+### Status Change Updates
 Every change in the visible status of a player will be informed in the "update" event.
 ```js
 io.to(roo).emit("update",{
@@ -79,6 +77,12 @@ io.to(roo).emit("update",{
 }
 ```
 Context and gameState struct will be defined below.
+
+## Leaving the Game
+Players can sometimes have bad connection, making the socket disconnected. Or maybe they are just a pain in the ass and want to leave the game so he would not lose.
+In either case(s), there will be emitted update with player_leave context. However, the game would not decided to end his turn until the next timeout. This is much easier to be implemented in the code.
+
+
 
 ## Structs
 Given below is the structure of data used in the socket:
@@ -121,6 +125,9 @@ Note that contexts are registered within every "update" event emit of the socket
 - reward_pointer : points to the reward drawed
 - key_pointer : points to the key card drawed
 - question_pointer : points to question card drawed
+- repeated_roll : number of consecutive roll-agains. set to 0 by default
+- answer_drawed : number of consecutive drawn answers, used during answer_wait state.
+- answer : answer by the player during answer_wait state. null in other state.
 - player_status : object of player status. Accessible with player token (player_status[token])
 
 ### player_status
@@ -140,32 +147,35 @@ Examples :
     spectator : Set{"SFWWFWG2352", "SFDFR54634EGE", "SFWFER674"},
     taken_questions : Set{0,4,5},
     skipped : Set{"PFFWFBH3333"},
-    player_order : ["PFFWFBH3333","P35252","P252c2cec"]
-    current_player : 3
-    event_pointer : 4
-    reward_pointer : 10
-    key_pointer : 8
-    question_pointer : 9
+    player_order : ["PFFWFBH3333","P35252","P252c2cec"],
+    current_player : 3,
+    event_pointer : 4,
+    reward_pointer : 10,
+    key_pointer : 8,
+    question_pointer : 9,
+    repeated_roll : 0,
+    answers_drawed : 0,
+    answer : null,
     player_status : {
-        PFFWFBH3333 : {
+        "PFFWFBH3333" : {
             username : "Kucing",
             money : 100,
             square : 25,
-            question_answered : Set{0}
-            question : null
-        P35252 : {
+            questions_answered : Set{0}
+            held_question : null
+        "P35252" : {
             username : "Kia",
             money : 100,
             square : 25,
-            question_answered : Set{4,5},
-            question : null,
+            questions_answered : Set{4},
+            held_question : 5,
         }
         P252c2cec : {
             username : "Telo",
             money : 100,
             square : 39,
-            question_answered : Set{},
-            question : null,
+            questions_answered : Set{},
+            held_question : null,
         }
     }
 
