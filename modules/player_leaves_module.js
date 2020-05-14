@@ -1,5 +1,6 @@
 var constants = require("../constants.json");
 var config = require("../config.json");
+var room_module = require("./room_module");
 var emitter;
 
 
@@ -7,13 +8,12 @@ var emitter;
 function init(emitter_in){
 
     emitter = emitter_in;
+    room_module.init(emitter);
 
 }
 
 function handle(room,token){
 
-    let playing_token = room.player_order[room.current_player];
-    let isPlaying = (playing_token==token);
     switch (room.state) {
         case constants.validState.prepare:
 
@@ -49,7 +49,7 @@ function handle(room,token){
 
             // Start game
             if(room.roll_wait.size == 0){
-                startgame(room);   
+                room = room_module.startGame(room);
             }
             break;
 
@@ -57,8 +57,12 @@ function handle(room,token){
 
             deleteplayerduringgame(room,token);
 
-            if(thistokenplaying){
-                sendcurrentstatedata(room,validContext.turn);
+            if(isPlaying){
+
+                room = adjustPlayerTurn(room,token);
+
+            } else {
+
             }
 
             break;
@@ -103,6 +107,42 @@ function handle(room,token){
     }
 
 }
+
+function adjustPlayerTurn(room,token){
+
+    let playing_token = room.player_order[room.current_player];
+    let next_tok;
+    if(token == playing_token){
+        room = fetchNextPlayer(room);
+    } 
+
+    next_tok = room.player_order[room.current_player];
+    room.player_order = room.player_order
+        .filter(function(item){return item!=token});
+
+    let index = room.player_order.indexOf(next_tok);
+    room.current_player = index;
+
+    return room;
+
+}
+
+function fetchNextPlayer(room){
+    let valid_player = false;
+    let next_player = room.current_player;
+    while(!valid_player){
+        next_player = (next_player+1)%room.player_order.length;
+        if(room.skipped.has(room.player_order[next_player])){
+            room.skipped.delete(room.player_order[next_player]);
+        } else {
+            valid_player = true;
+        }
+    }
+    room.current_player = next_player;
+
+    return room;
+}
+
 
 function deleteplayerduringgame(room,token){
 

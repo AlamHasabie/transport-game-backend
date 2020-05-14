@@ -202,8 +202,6 @@ io.on('connection',(socket)=>{
     }
 });
 
-
-
 /** Event Handler Module */
 const emitter = require("./modules/emitter");
 const questionHandler = require("./modules/question_module");
@@ -260,8 +258,6 @@ function registerValidPlayer(socket,token){
     socket.on("disconnect",function(msg){
         handleDisconnectEvent(room,token,msg);
     });
-
-
 }
 
 function handleDisconnectEvent(room,token,msg){
@@ -321,34 +317,6 @@ function createnewroom(roomname){
     gameState[roomname] = room_module.newRoom();
     gameState[roomname].roomname = roomname;
 }
-
-function buildturnorder(roomname){
-
-    for(var i = 0 ; i < gameState[roomname].player ; i++){
-        current_max_dice = 0;
-        current_index = 0;
-        for(var k = 0; k < gameState[roomname].first_roll.length ; k++){
-            if((gameState[roomname].first_roll[k].dice>current_max_dice)){
-                current_max_dice = gameState[roomname].first_roll[k].dice;
-                current_index = k;    
-            }
-        }
-
-        // Get taken token
-        var token = gameState[roomname].first_roll[current_index].token;
-
-        // Add max as first element of player turn
-        gameState[roomname].player_order.push(token);
-
-        // Delete element with the same token
-        gameState[roomname].first_roll = gameState[roomname].first_roll.filter(function(el){
-            return el.token != token;
-        });
-    }
-
-    gameState[roomname].first_roll = null;
-}
-
 
 function isPlayingToken(token,room){
     return token == gameState[room].player_order[gameState[room].current_player];
@@ -513,20 +481,6 @@ function giveEvent(room,token){
     setTimeout(finishturn,delayLength,room,token);
 }
 
-function startgame(room){
-    gameState[room].state = validState.rolling;
-    buildturnorder(room);
-
-    gameState[room].current_player = 0;
-
-    gameState[room].repeated_roll = 0;
-
-    delete gameState[room].roll_wait;
-
-    sendcurrentstatedata(room,validContext.game_start);
-    sendcurrentstatedata(room,validContext.turn);
-}
-
 function handleReadyEvent(room,token,msg){
     if(isRoomState(room,validState.prepare)){
         gameState[room].player_ready.delete(token);
@@ -630,7 +584,7 @@ function finishGame(room){
     sendcurrentstatedata(room,validContext.finish);
 }
 
-// If timeout or answer failed.
+/** TIMEOUTS */
 function treasureFail(room,token){
 
     /** Wrong answer or timed out*/
