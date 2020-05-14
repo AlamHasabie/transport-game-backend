@@ -1,6 +1,7 @@
 var question_module = require("./question_module");
 var questions = question_module.questions;
 var answers = require("../assets/answers.json"); 
+var config = require("../config.json");
 var constants = require("../constants.json")
 var emitter;
 
@@ -57,6 +58,7 @@ function handleAnswerEvent(room){
         if(questions[no].answer.includes(answer)){
             emitter.sendstate(room,constants.validContext.answer_true);
             room = question_module.addAnsweredQuestion(room,token);
+            room.player_status[token].money+=config.answer_reward;
         } else {
             emitter.sendstate(room,constants.validContext.answer_false);
         }

@@ -221,6 +221,7 @@ rollHandler.init(emitter);
 answerHandler.init(emitter);
 treasureHandler.init(emitter);
 playerLeaveHandler.init(emitter);
+room_module.init(emitter);
 
 
 http.listen(3000,()=>{
@@ -502,6 +503,8 @@ function service(room,token){
     gameState[room].player_status[token].money -= 15;
 
     sendcurrentstatedata(room,validContext.service);
+    gameState[room].state = validState.finished;
+    setTimeout(finishturn,delayLength,room,token);
 }
 
 function giveEvent(room,token){
@@ -564,7 +567,7 @@ function handleFirstRollEvent(room,token,msg){
         });
 
         if(gameState[room].roll_wait.size == 0){
-            startgame(room);   
+            gameState[room] = room_module.startGame(gameState[room]);   
         }
     }
 }
@@ -614,6 +617,7 @@ function handleTreasureAnswerEvent(room,token,msg){
         
         if(msg.answer==treasure.answer){
             gameState[room].state = validState.ended;
+            gameState[room].player_status[token].money+=config.treasure_reward;
             setTimeout(finishGame, delayLength, room);
         } else {
             treasureFail(room,token);

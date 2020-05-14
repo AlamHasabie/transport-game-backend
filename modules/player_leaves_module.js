@@ -12,47 +12,43 @@ function init(emitter_in){
 
 function handle(room,token){
 
-    var thistokenplaying = isPlayingToken(token,room);
-    switch (gameState[room].state) {
-        case validState.prepare:
+    let playing_token = room.player_order[room.current_player];
+    let isPlaying = (playing_token==token);
+    switch (room.state) {
+        case constants.validState.prepare:
 
-            delete gameState[room].player_status[token];
+            delete room.player_status[token];
             gameState[room].player_ready.delete(token);
             gameState[room].roll_wait.delete(token);
-
-            io.to(room).emit("player leaves",{
-                token : token
-            })
-
-
             gameState[room].player--;
 
-            emitplayerleaves(room,token);
-
             // If player ready becomes zero, then kickstart the game earlier.
-            if(gameState[room].player_ready.size==0&&gameState[room].player>=config.minimal_player){
+            if(room.player_ready.size==0&&room.player>=config.minimal_player){
 
                 // Delete player_ready element
                 delete gameState[room].player_ready;
 
                 // Set to game ready
                 gameState[room].state = validState.ready;
-                sendcurrentstatedata(room,validContext.game_ready); 
+                emitter.sendstate(room,constants.validContext.player_leave);
+                emitter.sendstate(room,validContext.game_ready); 
             }
+
             break;
 
         case validState.ready:
 
-            gameState[room].first_roll = gameState[room].first_roll
+            room.first_roll = room.first_roll
                 .filter(function(item){return item != token});
 
-            gameState[room].roll_wait.delete(token);
-            delete gameState[room].player_status[token];
+            room.roll_wait.delete(token);
+            delete room.player_status[token];
 
-            gameState[room].player--;            
-            emitplayerleaves(room,token);
+            room.player--;            
+            emitter.sendstate(room,constants.validContext.player_leave);
 
-            if(gameState[room].roll_wait.size == 0){
+            // Start game
+            if(room.roll_wait.size == 0){
                 startgame(room);   
             }
             break;
@@ -103,6 +99,7 @@ function handle(room,token){
         default:
 
             break;
+
     }
 
 }

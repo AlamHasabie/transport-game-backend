@@ -1,6 +1,10 @@
 var constants = require("../constants.json");
+var emitter;
 
+function init(emitter_in){
 
+    emitter = emitter_in;
+}
 
 
 function newRoom(){
@@ -27,7 +31,56 @@ function newRoom(){
     }
 }
 
+function startGame(room){
+
+    room = buildTurnOrder(room);
+    room.state = constants.validState.rolling;
+    room.current_player = 0;
+    room.repeated_roll = 0;
+
+    delete room.roll_wait;
+
+    emitter.sendstate(room,constants.validContext.game_start);
+    emitter.sendstate(room,constants.validContext.turn);
+
+    return room;
+}
+
+function buildTurnOrder(room){
+
+    let current_max_dice,current_index,token;
+
+    for(var i = 0 ; i < room.player ; i++){
+        current_max_dice = 0;
+        current_index = 0;
+        for(var k = 0; k < room.first_roll.length ; k++){
+            if((room.first_roll[k].dice>current_max_dice)){
+                current_max_dice = room.first_roll[k].dice;
+                current_index = k;    
+            }
+        }
+
+        // Get taken token
+        token = room.first_roll[current_index].token;
+
+        // Add max as first element of player turn
+        room.player_order.push(token);
+
+        // Delete element with the same token
+        room.first_roll = room.first_roll.filter(function(el){
+            return el.token != token;
+        });
+    }
+
+    room.first_roll = null;
+
+    return room;
+
+}
+
 
 module.exports= {
+    init:init,
+    startGame : startGame,
     newRoom : newRoom
 }
