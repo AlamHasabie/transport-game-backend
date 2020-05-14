@@ -592,7 +592,7 @@ function treasureFail(room,token){
     delete gameState[room].timeout_id;
     sendcurrentstatedata(room,validContext.treasure_failed);
     gameState[room].state = validState.finished;
-    setTimeout(finishturn,delayLength*2,room,token);
+    setTimeout(finishturn,delayLength,room,token);
 }
 
 function answerTimeout(room,token){
