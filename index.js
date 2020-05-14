@@ -273,9 +273,8 @@ function handleDisconnectEvent(room,token,msg){
             delayLength,
             room,
             playing_token);
-    } else if (isRoomState(room,validState.empty)){
-        deleteroomifempty(room);
     }
+    deleteroomifempty(room);
 }
 
 function registerValidSpectator(socket,token){

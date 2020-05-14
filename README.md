@@ -11,6 +11,14 @@ First, the user needs to request a token for the game. This token acts as an ID 
 }
 ```
 
+Response
+```json
+{
+    "token" : "token"
+}
+```
+
+
 ## Connection
 After receiving the token, client should directly connect with the received token. 
 '''js
@@ -21,50 +29,44 @@ var socket = io('',{
     });
 '''
 ## Events
-### Joining Event
-On connection, server emits information about the joining , either a spectator or a player. Below is the event from server-side
-**Player joins**
+### Event by Clients
+Client should send the following emits :
+1. Inform that client is ready
 ```js
-io.to(room).emit("player join",{
-    token : token,
-    username : username,
-    game_status : gameState
+io.emit("ready")
+```
+
+2. Inform first roll dice
+```js
+io.emit("first roll",{
+    dice_1 : dice_1,
+    dice_2 : dice_2
 })
 ```
 
-**Spectator joins**
+3. Roll the dice
 ```js
-io.to(room).emit('spectator join',{
-    token : token,
-    username : username
+io.emit("roll",{
+    dice_1 : dice_1,
+    dice_2 : dice_2
+})
+```
+
+4. Answer. Selected should be a boolean
+```js
+io.emit("answer",{
+    selected : true
 });
 ```
-Note the status. It will be described in the struct session.
 
-
-### Game Setup Event
-#### Start
-Client needs to inform server that he is ready to start the game. Server emits this event when all players are prepared and ready to start the game.<br/>
-**Client**
+4. Treasure answer. Answer is between [A,E]
 ```js
-io.emit("ready");
-```
-**Server**
-If not all players are ready :
-```js
-io.to(room).emit("player ready",{
-    token : token,
-    game_status : gameState
+io.emit("roll",{
+    selected : true
 })
 ```
-If all players are ready : 
-```js
-io.to(room).emit("game ready",{
-    game_status : gameState
-}); 
-```
 
-After this emission, no player can join. Spectators can join.
+
 
 ### Status Change Events
 Every change in the visible status of a player will be informed in the "update" event.

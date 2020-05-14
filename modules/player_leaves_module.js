@@ -20,18 +20,18 @@ function handle(room,token){
         case constants.validState.prepare:
 
             delete room.player_status[token];
-            gameState[room].player_ready.delete(token);
-            gameState[room].roll_wait.delete(token);
-            gameState[room].player--;
+            room.player_ready.delete(token);
+            room.roll_wait.delete(token);
+            room.player--;
 
             // If player ready becomes zero, then kickstart the game earlier.
             if(room.player_ready.size==0&&room.player>=config.minimal_player){
 
                 // Delete player_ready element
-                delete gameState[room].player_ready;
+                delete room.player_ready;
 
                 // Set to game ready
-                gameState[room].state = validState.ready;
+                room.state = validState.ready;
                 emitter.sendstate(room,constants.validContext.player_leave);
                 emitter.sendstate(room,validContext.game_ready); 
             }
@@ -65,6 +65,7 @@ function handle(room,token){
 
             room = deletePlayerStatus(room,token);
             room = adjustPlayerTurn(room,token);
+            room.player--;
             let newToken = room.player_order[room.current_player];
 
             emitter.sendstate(room,constants.validContext.player_leave);
@@ -80,6 +81,7 @@ function handle(room,token){
 
             room = deletePlayerStatus(room,token);
             room = adjustPlayerTurn(room,token);
+            room.player--;
             let newToken = room.player_order[room.current_player];
 
             emitter.sendstate(room,constants.validContext.player_leave);
