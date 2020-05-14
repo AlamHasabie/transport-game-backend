@@ -266,18 +266,7 @@ function registerValidPlayer(socket,token){
 function handleDisconnectEvent(room,token,msg){
 
     gameState[room] = playerLeaveHandler.handle(gameState[room],token);
-    sendcurrentstatedata(room,validContext.player_leave);
-    if(isRoomState(room,validState.current_player_leave)){
-        /** Point next player */
-        let playing_token = gameState[room].player_order[gameState[room].current_player];
-        gameState[room].state = validState.rolling;
-        sendcurrentstatedata(room,validContext.turn);
-        gameState[room].timeout_id = setTimeout(timeout,
-            delayLength,
-            room,
-            playing_token);
-    }
-    deleteroomifempty(room);
+    
 }
 
 function registerValidSpectator(socket,token){
@@ -397,7 +386,7 @@ function activatesquare(room,token){
                         room,
                         token
                     );
-                } else {
+                } else if(isRoomState(room,validState.finished)) {
                     setTimeout(finishturn,delayLength,room,token);
                 }
                 break;
@@ -429,11 +418,13 @@ function activatesquare(room,token){
 
             case validSquare.service :
                 service(room,token);
+                gameState[room].state = validState.finished;
                 setTimeout(finishturn,delayLength,room,token);
                 break;
 
             case validSquare.start :
             case validSquare.empty :
+                gameState[room].state = validState.finished;
                 finishturn(room,token);
                 break;
         }
@@ -455,10 +446,24 @@ function changetonextplayer(room){
 }
 
 function finishturn(room,token){
-
-    if(isPlayingToken(token,room)&&(isRoomState(room,validState.finished))){
+    let next_token;
+    if(isRoomState(room,validState.current_player_leave)){
+        if(gameState[room].player==0){
+            gameState[room] = validState.ended;
+            setTimeout(finishGame,delayLength,room);
+        }
+        next_token = gameState[room].player_order[gameState[room].current_player]
+        gameState[room].state = validState.rolling;
+        sendcurrentstatedata(room,validContext.turn);
+        gameState[room].timeout_id = setTimeout(
+            timeout,
+            timeoutLength,
+            room,
+            next_token
+        )
+    } else if(isPlayingToken(token,room)&&(isRoomState(room,validState.finished))){
         gameState[room].current_player = changetonextplayer(room);
-        let next_token = gameState[room].player_order[gameState[room].current_player];
+        next_token = gameState[room].player_order[gameState[room].current_player];
         gameState[room].state = validState.rolling;
         sendcurrentstatedata(room,validContext.turn);
         gameState[room].timeout_id = setTimeout(
@@ -522,6 +527,12 @@ function handleFirstRollEvent(room,token,msg){
 
         if(gameState[room].roll_wait.size == 0){
             gameState[room] = room_module.startGame(gameState[room]);   
+            gameState[room].timeout_id = setTimeout(
+                timeout,
+                timeoutLength,
+                room,
+                token
+                )
         }
     }
 }
@@ -599,16 +610,19 @@ function handleTeleportEvent(room,token,msg){
 function finishGame(room){
     gameState[room].state = validState.ended;
     sendcurrentstatedata(room,validContext.finish);
+    deleteroomifempty(room);
 }
 
 /** TIMEOUTS */
 function treasureFail(room,token){
 
     /** Wrong answer or timed out*/
-    gameState[room] = question_module.releaseAnsweredQuestions(gameState[room],token);
     delete gameState[room].timeout_id;
+    if(!isRoomState(room,validState.current_player_leave)){
+        gameState[room].state = validState.finished;
+        gameState[room] = question_module.releaseAnsweredQuestions(gameState[room],token);
+    }
     sendcurrentstatedata(room,validContext.treasure_failed);
-    gameState[room].state = validState.finished;
     setTimeout(finishturn,delayLength,room,token);
 }
 
@@ -622,7 +636,9 @@ function timeout(room,token){
 
     delete gameState[room].timeout_id;
     console.log("timeout called");
-    gameState[room].state = validState.finished;
+    if(!isRoomState(room,validState.current_player_leave)){
+        gameState[room].state = validState.finished;
+    }
     sendcurrentstatedata(room,validContext.timeout);
     finishturn(room,token);
 }

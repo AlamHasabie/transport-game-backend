@@ -18,9 +18,9 @@ function handle(room){
 
     if(question_module.playerHasQuestion(room,token)){
         room = giveKey(room); 
+    } else {
+        room.state = constants.validState.finished;
     }
-
-
     return room;
 }
 

@@ -31,6 +31,7 @@ function handle(room){
 
     } else {
 
+        room.repeated_roll = 0;
         emitter.sendstate(room,constants.validContext.move);
         room.state = constants.validState.activation;
 

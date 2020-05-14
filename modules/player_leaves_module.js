@@ -16,7 +16,7 @@ function init(emitter_in){
 
 function handle(room,token){
 
-    let newToken;
+    let timeoutId, isPlaying;
 
     switch (room.state) {
         case constants.validState.prepare:
@@ -33,9 +33,9 @@ function handle(room,token){
                 delete room.player_ready;
 
                 // Set to game ready
-                room.state = validState.ready;
+                room.state = constant.validState.ready;
                 emitter.sendstate(room,constants.validContext.player_leave);
-                emitter.sendstate(room,validContext.game_ready); 
+                emitter.sendstate(room,constants.validContext.game_ready); 
             }
 
             break;
@@ -62,39 +62,69 @@ function handle(room,token){
             break;
 
         case constants.validState.activation :
-        case constants.validState.treasure_wait:
-        case constants.validState.rolling:
+        case constants.validState.treasure_wait :
+        case constants.validState.rolling :
 
-            room = deletePlayerStatus(room,token);
-            room = adjustPlayerTurn(room,token);
-            room.player--;
-            newToken = room.player_order[room.current_player];
 
-            emitter.sendstate(room,constants.validContext.player_leave);
-            if(token!=newToken){
-                clearTimeout(room.timeout_id);
-                delete room.timeout_id;
-                room.state = constants.validState.current_player_leave;
-            }
             
+            if(room.player>1){
+                isPlaying = (token==room.player_order[room.current_player]);
+                room = deletePlayerStatus(room,token);
+                room = adjustPlayerTurn(room,token);
+                room.player--;
+
+                timeoutId = room.timeout_id;
+                room.timeout_id = null;
+
+                emitter.sendstate(room,constants.validContext.player_leave);
+
+                room.timeout_id = timeoutId;
+    
+                if(isPlaying){
+                    room.state = constants.validState.current_player_leave;
+                } 
+            } else {
+                room = deletePlayerStatus(room,token);
+                room.state = constants.validState.current_player_leave;
+                room.player_order = [];
+                room.current_player = null;
+                room.player = 0;
+
+                room.timeout_id = null;
+
+                emitter.sendstate(room,constants.validContext.player_leave);
+            }
+
             break;
 
         case constants.validState.answer_wait:
 
-            room = deletePlayerStatus(room,token);
-            room = adjustPlayerTurn(room,token);
-            room.player--;
-            newToken = room.player_order[room.current_player];
+            if(room.player>1){
+                isPlaying = (token==room.player_order[room.current_player]);
+                room = deletePlayerStatus(room,token);
+                room = adjustPlayerTurn(room,token);
+                room.player--;
 
-            emitter.sendstate(room,constants.validContext.player_leave);
-            if(token!=newToken){
-                clearTimeout(room.timeout_id);
-                delete room.timeout_id;
+                timeoutId = room.timeout_id;
+                room.timeout_id = null;
 
-                room.answer = null;
-                room.answers_drawed = 0;
+                emitter.sendstate(room,constants.validContext.player_leave);
+
+                room.timeout_id = timeoutId;
+    
+                if(isPlaying){
+                    room.state = constants.validState.current_player_leave;
+                }
+            } else {
+                room = deletePlayerStatus(room,token);
                 room.state = constants.validState.current_player_leave;
+                room.player_order = [];
+                room.current_player = null;
+                room.player = 0;
 
+                room.timeout_id = null;
+
+                emitter.sendstate(room,constants.validContext.player_leave);
             }
             break;
     
@@ -113,7 +143,7 @@ function adjustPlayerTurn(room,token){
     let next_tok;
     if(token == playing_token){
         room = fetchNewPlayer(room,token);
-    } 
+    }
 
     next_tok = room.player_order[room.current_player];
     room.player_order = room.player_order
@@ -121,6 +151,8 @@ function adjustPlayerTurn(room,token){
 
     let index = room.player_order.indexOf(next_tok);
     room.current_player = index;
+
+    console.log("Finished adjust player turn");
 
     return room;
 
@@ -150,6 +182,10 @@ function deletePlayerStatus(room,token){
     room = question_module.releaseQuestions(room,token);
     delete room.player_status[token];
     room.player--;
+
+    console.log("Finished delete player status");
+
+    return room;
 }
 
 
