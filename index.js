@@ -72,9 +72,9 @@ app.post('/gm',(req,res)=>{
         }
 
         res.statusCode = 200;
-        res.render('game',{
+        res.send({
             token : id
-        });
+        })
 
     } else {
         res.status(403);

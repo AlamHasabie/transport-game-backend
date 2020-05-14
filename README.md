@@ -61,10 +61,12 @@ io.emit("answer",{
 
 4. Treasure answer. Answer is between [A,E]
 ```js
-io.emit("roll",{
+io.emit("treasure answer",{
     selected : true
 })
 ```
+
+5. 
 
 
 
@@ -92,7 +94,6 @@ Context sent by server can be seen in the constans.json file, and can be one of 
 7. move : sent when the currnet player had moved its position.
 8. reward : sent when the current player receives a reward
 9. question : sent when the current player receives a question
-10. key : sent when the current player is offered a key. Exists only in answer_wait state, otherwise deleted.
 11. treasure : sent when the current player is landed on the treasure. Exists only in treasure_wait state, otherwise deleted
 12. event : sent when the player lands on the event square
 13. service : sent when current player lands on service
@@ -116,32 +117,31 @@ Note that contexts are registered within every "update" event emit of the socket
 - player_order : Order of player for every turn as an array. Contains tokens of players
 - offered_answer : answer card currently used
 - current_player : current player, as an index of the player order
-- event_pointer : points to which event card will be drawed next
-- reward_pointer : points to which reward card will be drawed next
-- key_pointer : points to which key card will be drawed next
-- question_pointer : points to which question card will be drawed next 
+- event_pointer : points to the event drawed
+- reward_pointer : points to the reward drawed
+- key_pointer : points to the key card drawed
+- question_pointer : points to question card drawed
 - player_status : object of player status. Accessible with player token (player_status[token])
 
 ### player_status
 - money : money
 - square : which square the player is in
-- question_answered : number of answers correctly answered by the player
-- question : question currently held by player. null if no question is held:
+- question_answered :questions owned by user
+- held_question : question currently held by player. null if no question is held.
 
-### question (in player_status_
-- no : the id of the question
-- text : the question (i.e. what is your name ?)
+### question (in player_status)
+
 
 Examples :
 ```js
 {
     state : 1,
     player : 3,
-    spectator : Set{SFWWFWG2352, SFDFR54634EGE, SFWFER674},
+    spectator : Set{"SFWWFWG2352", "SFDFR54634EGE", "SFWFER674"},
     taken_questions : Set{0,4,5},
-    skipped : Set{PFFWFBH3333},
-    player_order : [PFFWFBH3333,P35252,P252c2cec]
-    current_player : 2
+    skipped : Set{"PFFWFBH3333"},
+    player_order : ["PFFWFBH3333","P35252","P252c2cec"]
+    current_player : 3
     event_pointer : 4
     reward_pointer : 10
     key_pointer : 8
@@ -151,23 +151,20 @@ Examples :
             username : "Kucing",
             money : 100,
             square : 25,
-            question_answered : 2
-            question : {
-                no : 3,
-                text : "Tiga + dua sama dengan ?"
-            }
+            question_answered : Set{0}
+            question : null
         P35252 : {
             username : "Kia",
             money : 100,
             square : 25,
-            question_answered : 2,
+            question_answered : Set{4,5},
             question : null,
         }
         P252c2cec : {
             username : "Telo",
             money : 100,
             square : 39,
-            question_answered : 0,
+            question_answered : Set{},
             question : null,
         }
     }
