@@ -15,6 +15,9 @@ const validConstants = require('./constants.json');
 const question_module = require('./modules/question_module');
 const rewards_module = require('./modules/reward_module');
 const room_module = require("./modules/room_module");
+const event_module = require("./modules/event_module");
+const event_types = require("./assets/events.json").type;
+const event_effects = require("./modules/event_module").eventEffect;
 
 /** Config */
 const config = require("./config.json");
@@ -310,7 +313,6 @@ function registerValidGameMaster(socket,token){
         finishGame(room);
     });
 }
-
 function createnewroom(roomname){
 
     gameState[roomname] = room_module.newRoom();
@@ -363,6 +365,9 @@ function deleteroomifempty(room){
         gameState[room].spectator.size==0&&
         gameState[room].gamemaster.size==0){
         delete gameState[room];
+
+        console.log("Room " + room + " is deleted");
+
     }
 }
 
@@ -502,10 +507,6 @@ function handleReadyEvent(room,token,msg){
             sendcurrentstatedata(room,validContext.game_ready); 
         }
     }
-
-
-
-
 }
 function handleFirstRollEvent(room,token,msg){
     if(isRoomState(room,validState.ready)){
@@ -577,6 +578,23 @@ function handleTreasureAnswerEvent(room,token,msg){
         }
     }
 }
+
+function handleTeleportEvent(room,token,msg){
+    if(isPlayingToken(token,room)&&
+    isRoomState(room,validState.teleport_offer)){
+        var to = msg.to;
+        
+        gameState[room].player_status[token].square = to%board.length;
+        sendcurrentstatedata(room,validContext.move);
+
+        gameState[room].state = validState.finish_turn;
+        setTimeout(finishturn,timeoutLength,room,token);
+    }
+
+    
+
+}
+
 
 function finishGame(room){
     gameState[room].state = validState.ended;

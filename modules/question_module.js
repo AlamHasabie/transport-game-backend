@@ -40,9 +40,9 @@ function givequestion(roomstate,token){
 
 function releaseAnsweredQuestions(roomstate,token){
     roomstate.player_status[token].questions_answered.forEach(function(el){
-        roomstate.taken_questions.delete(el);
+        roomstate.taken_questions.delete(el.no);
     });
-    roomstate.player_status[token].questions_answered = new Set();
+    roomstate.player_status[token].questions_answered.clear();
 
     return roomstate;
 }
@@ -66,6 +66,21 @@ function releaseHeldQuestion(roomstate,token){
 
 function playerHasQuestion(roomstate,token){
     return roomstate.player_status[token].held_question != null;
+}
+
+function releaseAQuestion(roomstate,token){
+
+    if(roomstate.player_status[token].questions_answered.size>0){
+        // Fetch an iterator and send it
+        const iterator1 = roomstate.player_status[token].questions_answered.values();
+        var value = iterator1.next().value;
+
+        roomstate.player_status[token].questions_answered.delete(value);
+        roomstate.taken_questions.delete(value);
+    }
+
+    return roomstate;
+
 }
 
 
@@ -94,6 +109,7 @@ module.exports = {
     playerHasQuestion : playerHasQuestion,
     releaseAnsweredQuestions : releaseAnsweredQuestions,
     releaseHeldQuestion : releaseHeldQuestion,
+    releaseAQuestion  : releaseAQuestion,
     releaseQuestions : releaseQuestions,
     givequestion : givequestion,
     init : init,

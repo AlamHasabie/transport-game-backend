@@ -15,11 +15,23 @@
     <button type="submit" id="first-dice-btn" name="first-dice-btn">Draw first dice</button>
     <button type="submit" id="dice-btn" name="dice-btn">Roll dice !</button>
     <button type="submit" id="answer-btn" name="answer-btn">Answer</button>
-    <button type="submit" id="no-answer-btn" name="no-answer-btn">Not Answering</button>\
+    <button type="submit" id="no-answer-btn" name="no-answer-btn">Not Answering</button>
     <button type="submit" id="finish-btn" name="finish-btn">Finish</button><br>
     <label for="treasure-answer">Jawaban Treasure</label>
     <input type="text" id="treasure-answer" name="treasure-answer"><br>
     <button type="submit" id="treasure-btn" name="treasure-btn">Treasure!</button>
+    <br>
+    <br>
+    <label for="teleport">Teleport ke kotak</label>
+    <input type="number" id="teleport" name="teleport" min="0" max="40"><br>
+    <button type="submit" id="teleport-btn" name="teleport-btn">Teleport</button>
+    <br><br><br>
+    <label for="target-token">Target token</label>
+    <input type="text" id="target-token" name="target-token"><br>
+    <label for="equipment-id">Eq id</label>
+    <input type="number" id="equipment-id" name="equipment-id"><br>
+    <button type="submit" id="equip-btn" name="equip-btn">Use Equipment</button>
+    
   </body>
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
@@ -119,6 +131,20 @@
           socket.emit("treasure answer",{
             answer : $("#treasure-answer").val()
           });
+        })
+
+        $("#teleport-btn").click(function(e){
+          e.preventDefault();
+          socket.emit("teleport",{
+            to : parseInt($("#teleport").val())
+          });
+        })
+
+        $("#equip-btn").click(function(e){
+          e.preventDefault();
+          socket.emit("use equipment",{
+            card_id : parseInt($("#equipment-id").val())
+          })
         })
 
 

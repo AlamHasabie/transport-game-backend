@@ -38,13 +38,17 @@
         "key" : "key",
         "treasure" : "treasure",
         "treasure_failed" : "treasure_failed",
+        "equipment_activated" : "equipment_activated",
         "event" : "event",
+        "equipment" : "equipment",
         "service" : "service",
         "turn" : "turn",
         "timeout" : "timeout",
         "answer_true" : "answer_true",
         "answer_false" : "answer_false",
         "no_answer" : "no_answer",
-        "finish" : "finish"
+        "finish" : "finish",
+        "teleportOffer" : "teleportOffer",
+        "equipmentOffer" : "equipmentOffer"
     }
 }
