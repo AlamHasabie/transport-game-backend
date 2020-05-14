@@ -16,6 +16,8 @@ function init(emitter_in){
 
 function handle(room,token){
 
+    let newToken;
+
     switch (room.state) {
         case constants.validState.prepare:
 
@@ -66,7 +68,7 @@ function handle(room,token){
             room = deletePlayerStatus(room,token);
             room = adjustPlayerTurn(room,token);
             room.player--;
-            let newToken = room.player_order[room.current_player];
+            newToken = room.player_order[room.current_player];
 
             emitter.sendstate(room,constants.validContext.player_leave);
             if(token!=newToken){
@@ -82,7 +84,7 @@ function handle(room,token){
             room = deletePlayerStatus(room,token);
             room = adjustPlayerTurn(room,token);
             room.player--;
-            let newToken = room.player_order[room.current_player];
+            newToken = room.player_order[room.current_player];
 
             emitter.sendstate(room,constants.validContext.player_leave);
             if(token!=newToken){
