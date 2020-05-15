@@ -6,18 +6,12 @@ var bodyParser = require('body-parser');
 var crypto = require("crypto");
 
 /** Assets library  */
-const questions = require('./assets/questions.json');
-const answers = require('./assets/answers.json');
 const board = require('./assets/board.json');
 const validConstants = require('./constants.json');
 
 /** Modules */
 const question_module = require('./modules/question_module');
-const rewards_module = require('./modules/reward_module');
 const room_module = require("./modules/room_module");
-const event_module = require("./modules/event_module");
-const event_types = require("./assets/events.json").type;
-const event_effects = require("./modules/event_module").eventEffect;
 
 /** Config */
 const config = require("./config.json");
@@ -26,17 +20,13 @@ const delayLength = config.delay;
 const timeoutLength = config.timeout;
 const answerTimeoutLength = config.answer_timeout
 const treasureAnswerTimeoutLength = config.treasure_timeout;
-
-const minimumAnswertoTreasure = config.treasure_minimal_questions;
 const treasure = require("./assets/treasure.json");
-
-
-/** Server initialization */
-global.gameState = {};
-global.userInfo = {};
 const validState = validConstants.validState;
 const validSquare = validConstants.validSquare;
 const validContext = validConstants.validContext;
+
+global.gameState = {};
+global.userInfo = {};
 
 
 /** This is for testing purpose only */
@@ -235,7 +225,6 @@ function registerValidPlayer(socket,token){
     var user = userInfo[token];
     var room = user.roomname;
 
-    /** Join socket to room */
     socket.join(room);
     addnewplayertoroom(room,token);
     
@@ -264,16 +253,12 @@ function registerValidPlayer(socket,token){
 }
 
 function handleDisconnectEvent(room,token,msg){
-
     gameState[room] = playerLeaveHandler.handle(gameState[room],token);
     sendcurrentstatedata(room,validContext.player_leave);
     if(isRoomState(room,validState.current_player_leave)){
         clearTimeout(gameState[room].timeout_id);
         addTimeout(finishturn,delayLength,room,token);
-    }
-
-    /** Later , we can add a part such that we not need to */
-    
+    }    
 }
 
 function registerValidSpectator(socket,token){
@@ -343,7 +328,6 @@ function deleteroomifempty(room){
                 gameState[room].spectator.size==0&&
                 gameState[room].gamemaster.size==0){
                 delete gameState[room];
-        
                 console.log("Room " + room + " is deleted");
             }
         }
@@ -495,6 +479,7 @@ function handleFirstRollEvent(room,token,msg){
         }
     }
 }
+
 function handleRollEvent(room,token,msg){
     if(isRoomState(room,validState.rolling)&&
     isPlayingToken(token,room)){
@@ -527,6 +512,7 @@ function handleAnswerEvent(room,token,msg){
         }
     }
 }
+
 function handleTreasureAnswerEvent(room,token,msg){
 
     if(isPlayingToken(token,room)&&
@@ -549,8 +535,6 @@ function finishGame(room){
 
 /** TIMEOUTS */
 function treasureFail(room,token){
-
-    /** Wrong answer or timed out*/
     gameState[room].state = validState.finished;
     gameState[room] = question_module.releaseAnsweredQuestions(gameState[room],token);
     sendcurrentstatedata(room,validContext.treasure_failed);
