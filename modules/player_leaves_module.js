@@ -37,7 +37,6 @@ function handle(room,token){
                 room = emitter.sendstate(room,constants.validContext.player_leave);
                 room = emitter.sendstate(room,constants.validContext.game_ready); 
             }
-
             break;
 
         case constants.validState.ready:
@@ -51,17 +50,10 @@ function handle(room,token){
             room.player--;            
             room = emitter.sendstate(room,constants.validContext.player_leave);
 
-            // Start game
             if(room.roll_wait.size == 0){
                 room = room_module.startGame(room);
             }
-
-
             break;
-
-            // TODO
-            break;
-
 
         case constants.validState.treasure_wait :
         case constants.validState.finished : 
@@ -75,15 +67,12 @@ function handle(room,token){
                 if(isPlaying){
                     room.state = constants.validState.current_player_leave;
                 }
-
             } else {
                 deleteLastPlayer(room,token);
             }
-
             break;
 
         case constants.validState.answer_wait:
-
             if(room.player>1){
                 isPlaying = (token==room.player_order[room.current_player]);
                 room = deletePlayer(room,token);
@@ -97,11 +86,7 @@ function handle(room,token){
                 deleteLastPlayer(room,token);
             }
             break;
-        
-        /** 
-         * When games ended, do not delete data
-         * Just wait for the gameroom to be deleted 
-         */
+
         case constants.validState.ended :
         default:
 
@@ -162,7 +147,6 @@ function fetchNewPlayer(room,token){
         }
     }
     room.current_player = next_player;
-
     return room;
 }
 
@@ -184,7 +168,6 @@ function deletePlayer(room,token){
     room = emitter.sendstate(room,constants.validContext.player_leave);
     return room;
 }
-
 
 module.exports = {
     init : init,
