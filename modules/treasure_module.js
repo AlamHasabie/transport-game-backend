@@ -23,6 +23,7 @@ function handle(room){
     } else {
 
         room.state = constants.validState.finished;
+        
     }
 
     return room;

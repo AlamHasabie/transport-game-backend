@@ -56,33 +56,26 @@ function handle(room,token){
                 room = room_module.startGame(room);
             }
 
+
             break;
-        case constants.validState.finished : 
+
             // TODO
             break;
 
-        case constants.validState.activation :
+
         case constants.validState.treasure_wait :
+        case constants.validState.finished : 
+        case constants.validState.activation :
         case constants.validState.rolling :
 
-
-            
             if(room.player>1){
                 isPlaying = (token==room.player_order[room.current_player]);
+
                 room = deletePlayerStatus(room,token);
-                room = adjustPlayerTurn(room,token);
-                room.player--;
-
-                timeoutId = room.timeout_id;
-                room.timeout_id = null;
-
-                emitter.sendstate(room,constants.validContext.player_leave);
-
-                room.timeout_id = timeoutId;
-    
                 if(isPlaying){
                     room.state = constants.validState.current_player_leave;
-                } 
+                }
+
             } else {
                 room = deletePlayerStatus(room,token);
                 room.state = constants.validState.current_player_leave;
@@ -101,19 +94,12 @@ function handle(room,token){
 
             if(room.player>1){
                 isPlaying = (token==room.player_order[room.current_player]);
-                room = deletePlayerStatus(room,token);
-                room = adjustPlayerTurn(room,token);
-                room.player--;
-
-                timeoutId = room.timeout_id;
-                room.timeout_id = null;
-
-                emitter.sendstate(room,constants.validContext.player_leave);
-
-                room.timeout_id = timeoutId;
+                room = deletePlayer(room,token);
     
                 if(isPlaying){
                     room.state = constants.validState.current_player_leave;
+                    room.answer = null;
+                    room.answers_drawed = 0;
                 }
             } else {
                 room = deletePlayerStatus(room,token);
@@ -127,7 +113,13 @@ function handle(room,token){
                 emitter.sendstate(room,constants.validContext.player_leave);
             }
             break;
-    
+        
+        /** 
+         * When games ended, do not delete data
+         * Just wait for the gameroom to be deleted 
+         */
+
+        case constants.validState.ended :
         default:
 
             break;
@@ -184,6 +176,22 @@ function deletePlayerStatus(room,token){
     room.player--;
 
     console.log("Finished delete player status");
+
+    return room;
+}
+
+
+function deletePlayer(room,token){
+
+    room = deletePlayerStatus(room,token);
+    room = adjustPlayerTurn(room,token);
+    room.player--;
+    timeoutId = room.timeout_id;
+    room.timeout_id = null;
+
+    emitter.sendstate(room,constants.validContext.player_leave);
+
+    room.timeout_id = timeoutId;
 
     return room;
 }
