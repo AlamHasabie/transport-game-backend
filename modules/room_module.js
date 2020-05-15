@@ -45,8 +45,8 @@ function startGame(room){
 
     delete room.roll_wait;
 
-    emitter.sendstate(room,constants.validContext.game_start);
-    emitter.sendstate(room,constants.validContext.turn);
+    room = emitter.sendstate(room,constants.validContext.game_start);
+    room = emitter.sendstate(room,constants.validContext.turn);
 
     return room;
 }

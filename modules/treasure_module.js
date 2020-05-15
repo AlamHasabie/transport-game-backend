@@ -18,12 +18,12 @@ function handle(room){
     if(n_questions >= config.treasure_minimal_questions){
 
         room.state = constants.validState.treasure_wait;
-        emitter.sendstate(room,constants.validContext.treasure);
+        room = emitter.sendstate(room,constants.validContext.treasure);
 
     } else {
 
         room.state = constants.validState.finished;
-        
+
     }
 
     return room;

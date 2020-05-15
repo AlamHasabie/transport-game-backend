@@ -27,12 +27,12 @@ function handle(room){
     if(dice_1==dice_2&&rolled<2){
 
         room.repeated_roll++;
-        emitter.sendstate(room,constants.validContext.roll_again);
+        room = emitter.sendstate(room,constants.validContext.roll_again);
 
     } else {
 
         room.repeated_roll = 0;
-        emitter.sendstate(room,constants.validContext.move);
+        room = emitter.sendstate(room,constants.validContext.move);
         room.state = constants.validState.activation;
 
     }

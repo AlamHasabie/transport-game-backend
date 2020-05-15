@@ -31,7 +31,7 @@ function giveKey(room){
     room.key_pointer = (room.key_pointer+1)%answers.length;
     room.answers_drawed++;
 
-    emitter.sendstate(room,constants.validContext.key);
+    room = emitter.sendstate(room,constants.validContext.key);
 
     return room;
 }
@@ -45,7 +45,7 @@ function handleAnswerEvent(room){
 
     if(!is_answer){
         if(room.answers_drawed>=2){
-            emitter.sendstate(room,constants.validContext.no_answer);
+            room = emitter.sendstate(room,constants.validContext.no_answer);
             room.answers_drawed = 0;
             room.answer = null;
             room.state = constants.validState.finished;
@@ -56,11 +56,11 @@ function handleAnswerEvent(room){
         }
     } else {
         if(questions[no].answer.includes(answer)){
-            emitter.sendstate(room,constants.validContext.answer_true);
+            room = emitter.sendstate(room,constants.validContext.answer_true);
             room = question_module.addAnsweredQuestion(room,token);
             room.player_status[token].money+=config.answer_reward;
         } else {
-            emitter.sendstate(room,constants.validContext.answer_false);
+            room = emitter.sendstate(room,constants.validContext.answer_false);
         }
 
         room.answers_drawed = 0;

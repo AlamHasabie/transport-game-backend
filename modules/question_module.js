@@ -93,7 +93,7 @@ function handle(room){
     } else {
 
         room = givequestion(room,token);
-        sender.sendstate(room,constanst.validContext.question);
+        room = sender.sendstate(room,constanst.validContext.question);
 
     }
 

@@ -17,7 +17,7 @@ function handle(room){
     room.player_status[token].money += reward.nominal;
     room.reward_pointer = (room.reward_pointer+1)%rewards.length;
 
-    emitter.sendstate(room,constants.validContext.reward);
+    room = emitter.sendstate(room,constants.validContext.reward);
 
     room.state = constants.validState.finished;
 

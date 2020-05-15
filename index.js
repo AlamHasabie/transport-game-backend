@@ -266,6 +266,11 @@ function registerValidPlayer(socket,token){
 function handleDisconnectEvent(room,token,msg){
 
     gameState[room] = playerLeaveHandler.handle(gameState[room],token);
+    sendcurrentstatedata(room,validContext.player_leave);
+    if(isRoomState(room,validState.current_player_leave)){
+        clearTimeout(gameState[room].timeout_id);
+        addTimeout(finishturn,delayLength,room,token);
+    }
 
     /** Later , we can add a part such that we not need to */
     
@@ -330,26 +335,34 @@ function addnewplayertoroom(room,token){
 }
 
 function deleteroomifempty(room){
-    if(gameState[room].player==0&&
-        gameState[room].spectator.size==0&&
-        gameState[room].gamemaster.size==0){
-        delete gameState[room];
-
-        console.log("Room " + room + " is deleted");
-
+    if(gameState.hasOwnProperty(room)){
+        if(gameState.hasOwnProperty(player)&&
+        gameState.hasOwnProperty(spectator)&&
+        gameState.hasOwnProperty(gamemaster)){
+            if(gameState[room].player==0&&
+                gameState[room].spectator.size==0&&
+                gameState[room].gamemaster.size==0){
+                delete gameState[room];
+        
+                console.log("Room " + room + " is deleted");
+            }
+        }
     }
 }
 
 function sendcurrentstatedata(room,context){
+    let timeout = gameState[room].timeout_id;
+    delete gameState[room].timeout_id;
     io.to(room).emit("update",{
         context : context,
         game_status : gameState[room]
-    })
+    });
+    gameState[room].timeout_id = timeout;
 }
 
 function activatesquare(room,token){
     if(isRoomState(room,validState.current_player_leave)){
-        finishturn(room.token);
+        finishturn(room,token);
         return;
     }
 
@@ -358,27 +371,21 @@ function activatesquare(room,token){
         switch(board[position]){
             case validSquare.question :
                 gameState[room] = questionHandler.handle(gameState[room]);
-                setTimeout(finishturn,delayLength,room,token);
+                addTimeout(finishturn,delayLength.room,token);
                 break;
 
             case validSquare.key :
                 gameState[room] = answerHandler.handle(gameState[room]);
                 if(isRoomState(room,validState.answer_wait)){
-                    gameState[room].timeout_id = setTimeout(
-                        answerTimeout,
-                        answerTimeoutLength,
-                        room,
-                        token
-                    );
+                    addTimeout(answerTimeout,answerTimeoutLength,room,token);
                 } else if(isRoomState(room,validState.finished)) {
-                    setTimeout(finishturn,delayLength,room,token);
+                    addTimeout(finishturn,delayLength,room,token);
                 }
                 break;
 
             case validSquare.reward :
                 gameState[room] = rewardHandler.handle(gameState[room]);
-                setTimeout(finishturn,delayLength,room,token);
-
+                addTimeout(finishturn,delayLength,room,token);
                 break;
 
             case validSquare.event :
@@ -388,21 +395,16 @@ function activatesquare(room,token){
             case validSquare.treasure :
                 gameState[room] = treasureHandler.handle(gameState[room]);
                 if(isRoomState(room,validState.finished)){
-                    setTimeout(finishturn,delayLength,room,token);
+                    addTimeout(finishturn,delayLength,room,token);
                 } else if (isRoomState(room,validState.treasure_wait)){
-                    gameState[room].timeout_id = setTimeout(
-                        treasureFail,
-                        treasureAnswerTimeoutLength,
-                        room,
-                        token
-                    );
+                    addTimeout(treasureFail,treasureAnswerTimeoutLength,room,token);
                 }
                 break;
 
             case validSquare.service :
                 service(room,token);
                 gameState[room].state = validState.finished;
-                setTimeout(finishturn,delayLength,room,token);
+                addTimeout(finishturn,delayLength,room,token);
                 break;
 
             case validSquare.start :
@@ -433,28 +435,18 @@ function finishturn(room,token){
     if(isRoomState(room,validState.current_player_leave)){
         if(gameState[room].player==0){
             gameState[room] = validState.ended;
-            setTimeout(finishGame,delayLength,room);
+            addTimeout(finishGame,delayLength,room,null);
         }
         next_token = gameState[room].player_order[gameState[room].current_player]
         gameState[room].state = validState.rolling;
         sendcurrentstatedata(room,validContext.turn);
-        gameState[room].timeout_id = setTimeout(
-            timeout,
-            timeoutLength,
-            room,
-            next_token
-        )
+        addTimeout(timeout,timeoutLength,room,next_token);
     } else if(isPlayingToken(token,room)&&(isRoomState(room,validState.finished))){
         gameState[room].current_player = changetonextplayer(room);
         next_token = gameState[room].player_order[gameState[room].current_player];
         gameState[room].state = validState.rolling;
         sendcurrentstatedata(room,validContext.turn);
-        gameState[room].timeout_id = setTimeout(
-            timeout,
-            timeoutLength,
-            room,
-            next_token
-        );
+        addTimeout(timeout,timeoutLength,room,next_token);
     }
 }
 
@@ -464,25 +456,19 @@ function service(room,token){
 
     sendcurrentstatedata(room,validContext.service);
     gameState[room].state = validState.finished;
-    setTimeout(finishturn,delayLength,room,token);
+    addTimeout(finishturn,delayLength,room,token);
 }
 
 function giveEvent(room,token){
     sendcurrentstatedata(room,validContext.event);
     gameState[room].state = validState.finished;
-    setTimeout(finishturn,delayLength,room,token);
+    addTimeout(finishturn,delayLength,room,token);
 }
 
 function handleReadyEvent(room,token,msg){
     if(isRoomState(room,validState.prepare)){
         gameState[room].player_ready.delete(token);
-
-        io.to(room).emit("update",{
-            context : validContext.player_ready,
-            token : token,
-            game_status : gameState[room]
-        })
-
+        sendcurrentstatedata(room,validContext.player_ready);
         gameState[room].roll_wait.add(token);
 
         if(gameState[room].player_ready.size==0&&gameState[room].player>=config.minimal_player){
@@ -503,15 +489,9 @@ function handleFirstRollEvent(room,token,msg){
             token : token,
             dice : dice
         });
-
         if(gameState[room].roll_wait.size == 0){
             gameState[room] = room_module.startGame(gameState[room]);   
-            gameState[room].timeout_id = setTimeout(
-                timeout,
-                timeoutLength,
-                room,
-                token
-                )
+            addTimeout(timeout,timeoutLength,room,token);
         }
     }
 }
@@ -525,14 +505,9 @@ function handleRollEvent(room,token,msg){
 
         gameState[room] = rollHandler.handle(gameState[room]);
         if(isRoomState(room,validState.activation)){
-            setTimeout(activatesquare,delayLength,room,token);
+            addTimeout(activatesquare,delayLength,room,token);
         } else if (isRoomState(room,validState.rolling)){
-            gameState[room].timeout_id = setTimeout(
-                timeout,
-                timeoutLength,
-                room,
-                token
-            )
+            addTimeout(timeout,timeoutLength,room,token);
         }
     }
 }
@@ -546,9 +521,9 @@ function handleAnswerEvent(room,token,msg){
         gameState[room] = answerHandler.handleAnswerEvent(gameState[room]);
 
         if(isRoomState(room,validState.finished)){
-            setTimeout(finishturn,delayLength,room,token);
+            addTimeout(timeout,timeoutLength,room,token);
         } else if(isRoomState(room,validState.answer_wait)){
-            setTimeout(answerTimeout,answerTimeoutLength,room,token);
+            addTimeout(answerTimeout,answerTimeoutLength,room,token);
         }
     }
 }
@@ -556,13 +531,11 @@ function handleTreasureAnswerEvent(room,token,msg){
 
     if(isPlayingToken(token,room)&&
     isRoomState(room,validState.treasure_wait)){
-
         clearTimeout(gameState[room].timeout_id);
-        
         if(msg.answer==treasure.answer){
-            gameState[room].state = validState.ended;
             gameState[room].player_status[token].money+=config.treasure_reward;
-            setTimeout(finishGame, delayLength, room);
+            gameState[room].state = validState.ended;
+            addTimeout(finishGame,delayLength,room,null);
         } else {
             treasureFail(room,token);
         }
@@ -570,7 +543,6 @@ function handleTreasureAnswerEvent(room,token,msg){
 }
 
 function finishGame(room){
-    gameState[room].state = validState.ended;
     sendcurrentstatedata(room,validContext.finish);
     deleteroomifempty(room);
 }
@@ -579,13 +551,10 @@ function finishGame(room){
 function treasureFail(room,token){
 
     /** Wrong answer or timed out*/
-    delete gameState[room].timeout_id;
-    if(!isRoomState(room,validState.current_player_leave)){
-        gameState[room].state = validState.finished;
-        gameState[room] = question_module.releaseAnsweredQuestions(gameState[room],token);
-    }
+    gameState[room].state = validState.finished;
+    gameState[room] = question_module.releaseAnsweredQuestions(gameState[room],token);
     sendcurrentstatedata(room,validContext.treasure_failed);
-    setTimeout(finishturn,delayLength,room,token);
+    addTimeout(finishturn,delayLength,room,token);
 }
 
 function answerTimeout(room,token){
@@ -595,16 +564,26 @@ function answerTimeout(room,token){
 }
 
 function timeout(room,token){
-
-    delete gameState[room].timeout_id;
-    console.log("timeout called");
-    if(!isRoomState(room,validState.current_player_leave)){
-        gameState[room].state = validState.finished;
-    }
+    gameState[room].state = validState.finished;
     sendcurrentstatedata(room,validContext.timeout);
     finishturn(room,token);
 }
 
-function addTimeout(timeout,delay,room,token){
-    gameState[room].timeout_id;
+function addTimeout(timeout_func,delay,room,token){
+    if(token==null){
+        gameState[room].timeout_id = setTimeout(
+            timeout_func,
+            delay,
+            room
+        );
+    }
+    else {
+        gameState[room].timeout_id = setTimeout(
+            timeout_func,
+            delay,
+            room,
+            token
+        );
+    }
+
 }
