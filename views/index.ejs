@@ -5,7 +5,7 @@
   </head>
   <body>
     <ul id="messages"></ul>
-    <form action="/test" method="POST">
+    <form action="/test" method="POST" id="myForm">
       <label for="username">Username</label>
       <input type="text" id="username" name="username"><br>
       <label for="room">Game Room</label>
@@ -14,7 +14,26 @@
       <label for="player">Player</label>
       <input type="radio" id="spectator" name="role" value="spectator">
       <label for="spectator">Spectator</label><br>
-      <button class="button" type="submit">Join</button>
+      <button class="button" type="submit" id="submitform">Join</button>
     </form>
   </body>
 </html>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+  
+  $('#myForm').on('submit', function(event){
+    var formData = JSON.stringify($("#myForm").serializeArray());
+    $.ajax({
+        type: 'POST',
+        url: 'http://localhost:3000/test',
+        dataType: 'json',
+        data: formData,
+        contentType : 'application/json',
+        success: function(data) {
+            alert(data)
+        }
+    });
+  return false;
+});
+</script>
+<script>

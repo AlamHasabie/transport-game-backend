@@ -90,7 +90,6 @@ app.post('/gm',(req,res)=>{
 app.set('view engine', 'ejs');
 app.post('/game',(req,res)=>{
 
-    console.log(req.body);
     var roomname = req.body["room"];
     var role = req.body["role"];
     var username = req.body["username"];
@@ -141,7 +140,6 @@ app.post('/test',(req,res)=>{
     var roomname = req.body["room"];
     var role = req.body["role"];
     var username = req.body["username"];
-
     if(!((role=="player")||(role=="spectator"))){
         res.statusCode = 403;
         res.send("Forbidden");
