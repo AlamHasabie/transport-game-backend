@@ -29,10 +29,6 @@ global.gameState = {};
 global.userInfo = {};
 
 
-/** This is for testing purpose only */
-app.use(bodyParser.urlencoded());
-
-/** CORS */
 app.use(function(req, res, next) {
 
     res.header("Access-Control-Allow-Origin", "*");
@@ -40,6 +36,12 @@ app.use(function(req, res, next) {
     next();
   
 });
+
+/** This is for testing purpose only */
+app.use(bodyParser.json());
+
+/** CORS */
+
 app.get('/',(req,res)=>{
     res.render('index.ejs');
 });
@@ -88,21 +90,27 @@ app.post('/gm',(req,res)=>{
 app.set('view engine', 'ejs');
 app.post('/game',(req,res)=>{
 
+    console.log(req.body);
     var roomname = req.body["room"];
     var role = req.body["role"];
     var username = req.body["username"];
+
+    console.log(role);
+    console.log(role=="player");
+    if(!((role=="player")||(role=="spectator"))){
+        res.statusCode = 403;
+        res.send("Forbidden, role undefined\n");
+
+        return;
+    } 
     
     if(gameState.hasOwnProperty(roomname)){
-
-        if(!(role=="player"||role=="spectator")){
-            res.statusCode = 400;
-            return;
-        }
-
         if(role=="player"&&gameState[roomname].player>=4){
             res.statusCode = 403;
+            res.send("Forbidden, room full\n");
             return;
         }
+
     } else {
         createnewroom(roomname);
     }
@@ -133,37 +141,35 @@ app.post('/test',(req,res)=>{
     var roomname = req.body["room"];
     var role = req.body["role"];
     var username = req.body["username"];
+
+    if(!((role=="player")||(role=="spectator"))){
+        res.statusCode = 403;
+        res.send("Forbidden");
+
+        return;
+    } 
     
     if(gameState.hasOwnProperty(roomname)){
-
-        if(!(role=="player"||role=="spectator")){
-            res.statusCode = 400;
-            res.send("Bad request, role not defined");
-            return;
-        }
-
         if(role=="player"&&gameState[roomname].player>=4){
             res.statusCode = 403;
-            res.send("Forbidden : full gameroom");
+            res.send("Forbidden");
             return;
         }
+
     } else {
         createnewroom(roomname);
     }
     
-    // Generate token
     var id = crypto.randomBytes(20).toString('hex');
     while(userInfo.hasOwnProperty(id)){
         id = crypto.randomBytes(20).toString('hex');
     }
     
-    // Add user info
     userInfo[id] = {
         roomname : roomname,
         role : role,
         username : username
     }
-    /**Add number of player */
     if(role=="player"){
         gameState[roomname].player++;
     }
