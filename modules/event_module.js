@@ -22,6 +22,8 @@ function next_event(room){
         }
     }
     room.event_pointer = current_event;
+
+    return room;
 }
 
 function handle(room){
@@ -30,44 +32,58 @@ function handle(room){
 
     let token = room.player_order[room.current_player];
     let event = event_cards[room.event_pointer];
-
-    emitter.sendstate(room,constants.validContext.event);
-
+    
+    
+    room.state = constants.validState.finished;
     switch(event.type){
         case event_types.event :
-            room = handle_event_event(room,event);
+            room = handle_event_event(room,event,token);
             break;
         case event_types.equipment :
-            room = handle_equipment_event(room,event);
+            room = handle_equipment_event(room,event,token);
             break;
     }
-    
+
+
+    emitter.sendstate(room,constants.validContext.event);
     return room;
 }
 
-function handle_event_event(room,event){
-
+function handle_event_event(room,event,token){
     switch(event.effect){
-
-
         case event_effects.remove_question :
+            room = question_module.releaseHeldQuestion(room,token);
             break;
 
         case event_effects.remove_key :
+            room = question_module.releaseAQuestion(room,token);
+            break;
+
+        case event_effects.stolen :
+            room = question_module.releaseQuestions(room,token);
             break;
 
         case event_effects.skip :
+            room.skipped.add(token);
             break;
         
         case event_effects.cash :
+            room.player_status[token].money += event.nominal; 
             break;
 
         case event_effects.start :
+            room.player_status[token].square = 0;
             break;
 
-        case event_effects.
-        
+        case event_effects.roll :
+            room.state = constants.validState.rolling;
+            room.repeated_roll = 2;
 
+            break;
+
+        default :
+            break;
+    
     }
     
     return room;

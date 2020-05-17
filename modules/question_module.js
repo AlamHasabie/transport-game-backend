@@ -56,7 +56,7 @@ function releaseQuestions(roomstate,token){
     
 }
 function releaseHeldQuestion(roomstate,token){
-    if(roomstate.player_status[token].held_question!=null){
+    if(playerHasQuestion(roomstate,token)){
         roomstate.taken_questions.delete(roomstate.player_status[token].held_question.no);
         roomstate.player_status[token].held_question = null;
     }
@@ -91,9 +91,7 @@ function handle(room){
     
     let token = room.player_order[room.current_player];
 
-    if(playerHasQuestion(room,token)){
-
-    } else {
+    if(!playerHasQuestion(room,token)){
 
         room = givequestion(room,token);
         room = sender.sendstate(room,constanst.validContext.question);

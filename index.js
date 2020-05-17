@@ -225,15 +225,18 @@ const rollHandler = require("./modules/roll_module");
 const answerHandler = require("./modules/answer_module");
 const treasureHandler = require("./modules/treasure_module");
 const playerLeaveHandler = require("./modules/player_leaves_module");
+const eventHandler = require("./modules/event_module");
 
 
 emitter.init(io);
+
 questionHandler.init(emitter);
 rewardHandler.init(emitter);
 rollHandler.init(emitter);
 answerHandler.init(emitter);
 treasureHandler.init(emitter);
 playerLeaveHandler.init(emitter);
+eventHandler.init(emitter);
 room_module.init(emitter);
 
 
@@ -284,6 +287,7 @@ function registerPlayerEvent(socket,token){
 function handleDisconnectEvent(room,token,msg){
     gameState[room] = playerLeaveHandler.handle(gameState[room],token);
     sendcurrentstatedata(room,validContext.player_leave);
+    deleteroomifempty(room);
 }
 
 function registerValidSpectator(socket,token){
@@ -345,9 +349,9 @@ function addnewplayertoroom(room,token){
 
 function deleteroomifempty(room){
     if(gameState.hasOwnProperty(room)){
-        if(gameState.hasOwnProperty(player)&&
-        gameState.hasOwnProperty(spectator)&&
-        gameState.hasOwnProperty(gamemaster)){
+        if(gameState.hasOwnProperty("player")&&
+        gameState.hasOwnProperty("spectator")&&
+        gameState.hasOwnProperty("gamemaster")){
             if(gameState[room].player==0&&
                 gameState[room].spectator.size==0&&
                 gameState[room].gamemaster.size==0){
@@ -395,8 +399,20 @@ function activatesquare(room,token){
                 break;
 
             case validSquare.event :
-                giveEvent(room,token);
+                gameState[room] = eventHandler.handle(gameState[room]);
+                if(isRoomState(room,validState.finished)){
+                    addTimeout(finishturn,delayLength,room,token);
+                    break;
+
+                } else if(isRoomState(room,validState.rolling)){
+                    addTimeout(timeout,timeoutLength,room,token);
+                
+                } else {
+                    addTimeout(finishturn,delayLength,room,token);
+                }
+
                 break;
+
 
             case validSquare.treasure :
                 gameState[room] = treasureHandler.handle(gameState[room]);
@@ -452,12 +468,6 @@ function service(room,token){
     gameState[room].player_status[token].money -= 15;
 
     sendcurrentstatedata(room,validContext.service);
-    gameState[room].state = validState.finished;
-    addTimeout(finishturn,delayLength,room,token);
-}
-
-function giveEvent(room,token){
-    sendcurrentstatedata(room,validContext.event);
     gameState[room].state = validState.finished;
     addTimeout(finishturn,delayLength,room,token);
 }

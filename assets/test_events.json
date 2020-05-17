@@ -1,8 +1,8 @@
 [
     {
-        "title" : "Boots of Speed [Equipment]",
-        "text" : "Roll again",
-        "type" : "equipment",
-        "effect" : "roll"
+        "title" : "Event",
+        "text" : "You got an extra ticket. Roll once more",
+        "effect" : "roll",
+        "type" : "event"
     }
 ]
