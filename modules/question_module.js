@@ -12,7 +12,7 @@ function init(sender_in){
 
 function addAnsweredQuestion(room,token){
     let no = room.player_status[token].held_question;
-    room.player_status[token].questions_answered.add(no);
+    room.player_status[token].questions_answered.push(no);
     room.player_status[token].held_question = null;
 
     return room;
@@ -42,7 +42,7 @@ function releaseAnsweredQuestions(roomstate,token){
     roomstate.player_status[token].questions_answered.forEach(function(el){
         roomstate.taken_questions.delete(el.no);
     });
-    roomstate.player_status[token].questions_answered.clear();
+    roomstate.player_status[token].questions_answered = [];
 
     return roomstate;
 }
@@ -70,12 +70,15 @@ function playerHasQuestion(roomstate,token){
 
 function releaseAQuestion(roomstate,token){
 
-    if(roomstate.player_status[token].questions_answered.size>0){
+    if(roomstate.player_status[token].questions_answered.length>0){
         // Fetch an iterator and send it
         const iterator1 = roomstate.player_status[token].questions_answered.values();
         var value = iterator1.next().value;
 
-        roomstate.player_status[token].questions_answered.delete(value);
+        roomstate.player_status[token].questions_answered =
+            roomstate.player_status[token].questions_answered.filter(function(el){
+                return el != value;
+            })
         roomstate.taken_questions.delete(value);
     }
 

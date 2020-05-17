@@ -4,129 +4,84 @@ const event_types = event_data.type;
 const event_effects = event_data.effect;
 const question_module = require("./question_module");
 const constants = require("../constants.json");
+var emitter;
 
 
+function init(emitter_in){
+    emitter = emitter_in;
+}
 
-function nextEvent(room,token){
-
-    var candidate = room.event_pointer;
-    var valid_event = false;
+function next_event(room){
+    let current_event = room.event_pointer;
+    let valid_event  = false;
     while(!valid_event){
-        if(room.taken_event_cards.has(candidate)){
-            candidate = (candidate+1)%event_cards.length;
+        if(room.taken_event_cards.has(current_event)){
+            current_event = (current_event+1)%event_cards.length;
         } else {
             valid_event = true;
         }
     }
+    room.event_pointer = current_event;
+}
 
-    // Equipment should be hidden from other player(s)
-    // For now we could just send em all
-    room.event_pointer = (candidate+1)%event_cards.length;
-    room.current_event = {}
-    room.current_event.type = event_cards[candidate].type;
+function handle(room){
 
-    if(event_cards[candidate].type == event_types.equipment){
-        room = addEquipment(room,token,candidate);
-    } else {
-        
-        room = processEvent(room,token,candidate);
+    room = next_event(room);
+
+    let token = room.player_order[room.current_player];
+    let event = event_cards[room.event_pointer];
+
+    emitter.sendstate(room,constants.validContext.event);
+
+    switch(event.type){
+        case event_types.event :
+            room = handle_event_event(room,event);
+            break;
+        case event_types.equipment :
+            room = handle_equipment_event(room,event);
+            break;
     }
-
+    
     return room;
 }
 
-function addEquipment(room,token,index){
-
-    var card = event_cards[index];
-    room.player_status[token].equipment[index] = card;
-    room.player_status[token].n_equipments++;
-    room.taken_event_cards.add(index);
-
-    if(card.effect == event_effects.cancel){
-        room.player_status[token].hasCancel = true;
-    }
-
-    if(card.effect == event_effects.reverse){
-        room.player_status[token].hasReverse = true;
-    }
-
-    room.state = constants.validState.finish_activation;
-    room.current_event = {}
-    room.current_event.type = event_types.equipment;
-
-    return room;
-};
-
-function processEvent(room,token,index){
-
-
-    var event = event_cards[index];
-
-    room.current_event = event;
+function handle_event_event(room,event){
 
     switch(event.effect){
-        case event_effects.start :
-            room.player_status[token].square = 0;
-            room.state = constants.validState.finish_activation;
-            break;
-        
-        case event_effects.stolen :
-            room = question_module.releaseQuestions(room,token);
-            room.state = constants.validState.finish_activation;
+
+
+        case event_effects.remove_question :
             break;
 
+        case event_effects.remove_key :
+            break;
+
+        case event_effects.skip :
+            break;
+        
         case event_effects.cash :
-            room.player_status[token].money += event.nominal;
-            room.state = constants.validState.finish_activation;
             break;
 
-        case event_effects.skip : 
-            room.skipped.add(token);
-            room.state = constants.validState.finish_turn;
+        case event_effects.start :
             break;
 
-        case event_effects.roll : 
-            room.state = constants.validState.roll_again;
-            room.repeated_roll = 2;
-            break;
-
-        case event_effects.remove_key : 
-            room = question_module.releaseAQuestion(room,token);
-            room.state = constants.validState.finish_activation;
-            break;
+        case event_effects.
         
-        case event_effects.teleport :
-            room.state = constants.validState.teleport_offer;
-            break;
 
-        default :
-            break;
-    }  
-
-    return room;
-}
-
-
-function releaseUsedEquipment(room,token){
-
-    var id = room.activated_equipment;
+    }
     
-    delete room.player_status[token].equipment[id];
-    room.player_status[token].n_equipments--;
-    room.activated_equipment = null;
-    room.taken_event_cards.delete(id);
+    return room;
+}
+
+function handle_equipment_event(room,event){
 
     return room;
-
-
-
 }
 
 
-module.exports = {
-    eventCards : event_cards,
-    eventEffect : event_effects,
-    eventType : event_types,
-    nextEvent : nextEvent,
-    releaseUsedEquipment : releaseUsedEquipment
+module.exports={
+    init :init,
+    handle : handle
 }
+
+

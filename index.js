@@ -338,7 +338,7 @@ function addnewplayertoroom(room,token){
         money : 150,
         square : 0,
         held_question : null,
-        questions_answered : new Set(),
+        questions_answered : [],
         equipment : new Set()
     }
 }

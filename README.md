@@ -161,20 +161,20 @@ Examples :
             username : "Kucing",
             money : 100,
             square : 25,
-            questions_answered : Set{0}
+            questions_answered : [0]
             held_question : null
         "P35252" : {
             username : "Kia",
             money : 100,
             square : 25,
-            questions_answered : Set{4},
+            questions_answered : [4],
             held_question : 5,
         }
         P252c2cec : {
             username : "Telo",
             money : 100,
             square : 39,
-            questions_answered : Set{},
+            questions_answered : [],
             held_question : null,
         }
     }
