@@ -38,7 +38,7 @@ app.use(function(req, res, next) {
 });
 
 /** This is for testing purpose only */
-app.use(bodyParser.json());
+app.use(bodyParser());
 
 /** CORS */
 

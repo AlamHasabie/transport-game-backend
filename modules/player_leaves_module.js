@@ -4,6 +4,7 @@ var room_module = require("./room_module");
 var question_module = require("./question_module");
 var emitter;
 
+/** This game assumes that leaving player after ready state will join again in the future */
 
 
 function init(emitter_in){
@@ -19,6 +20,9 @@ function handle(room,token){
     let isPlaying;
 
     switch (room.state) {
+
+        /** When prepare, user could still leave the room */
+        /** Open new room for a new player */
         case constants.validState.prepare:
 
             delete room.player_status[token];
@@ -41,131 +45,36 @@ function handle(room,token){
 
         case constants.validState.ready:
 
-            room.first_roll = room.first_roll
-                .filter(function(item){return item != token});
-
-            room.roll_wait.delete(token);
-            delete room.player_status[token];
-
-            room.player--;            
-            room = emitter.sendstate(room,constants.validContext.player_leave);
-
-            if(room.roll_wait.size == 0){
-                room = room_module.startGame(room);
-            }
             break;
 
         case constants.validState.treasure_wait :
         case constants.validState.finished : 
         case constants.validState.activation :
         case constants.validState.rolling :
-
-            if(room.player>1){
-                isPlaying = (token==room.player_order[room.current_player]);
-
-                room = deletePlayerStatus(room,token);
-                if(isPlaying){
-                    room.state = constants.validState.current_player_leave;
-                }
-            } else {
-                deleteLastPlayer(room,token);
+            isPlaying = (token==room.player_order[room.current_player]);
+            if(isPlaying){
+                room.state = constants.validState.current_player_leave;
             }
+
             break;
 
         case constants.validState.answer_wait:
-            if(room.player>1){
-                isPlaying = (token==room.player_order[room.current_player]);
-                room = deletePlayer(room,token);
-    
-                if(isPlaying){
-                    room.state = constants.validState.current_player_leave;
-                    room.answer = null;
-                    room.answers_drawed = 0;
-                }
-            } else {
-                deleteLastPlayer(room,token);
+            isPlaying = (token==room.player_order[room.current_player]);
+            if(isPlaying){
+                room.state = constants.validState.current_player_leave;
+                room.answer = null;
+                room.answers_drawed = 0;
             }
             break;
 
+        /** Just delete the player here */
+        /** We would just reduce the player count to 0 */
+        /** Later , the server would delete the room eventually */
         case constants.validState.ended :
         default:
-
+            room.player = room.player - 1;
             break;
     }
-    return room;
-}
-
-function deleteLastPlayer(room,token){
-
-    room = deletePlayerStatus(room,token);
-    room.state = constants.validState.current_player_leave;
-
-    room.player_order = [];
-    room.current_player = null;
-    room.player_status = null;
-    room.player = 0;
-
-    room.timeout_id = null;
-
-    room = emitter.sendstate(room,constants.validContext.player_leave);
-
-    return room;
-}
-
-function adjustPlayerTurn(room,token){
-
-    let playing_token = room.player_order[room.current_player];
-    let next_tok;
-    if(token == playing_token){
-        room = fetchNewPlayer(room,token);
-    }
-
-    next_tok = room.player_order[room.current_player];
-    room.player_order = room.player_order
-        .filter(function(item){return item!=token});
-
-    let index = room.player_order.indexOf(next_tok);
-    room.current_player = index;
-
-    console.log("Finished adjust player turn");
-
-    return room;
-
-}
-
-function fetchNewPlayer(room,token){
-    let valid_player = false;
-    let next_player = room.current_player;
-    while(!valid_player){
-        next_player = (next_player+1)%room.player_order.length;
-        if(room.skipped.has(room.player_order[next_player])){
-            room.skipped.delete(room.player_order[next_player]);
-        } else {
-            if(room.player_order[next_player]!=token){
-                valid_player = true;
-            }
-        }
-    }
-    room.current_player = next_player;
-    return room;
-}
-
-
-function deletePlayerStatus(room,token){
-
-    room = question_module.releaseQuestions(room,token);
-    delete room.player_status[token];
-    room.player--;
-    return room;
-}
-
-
-function deletePlayer(room,token){
-
-    room = deletePlayerStatus(room,token);
-    room = adjustPlayerTurn(room,token);
-    room.player--;
-    room = emitter.sendstate(room,constants.validContext.player_leave);
     return room;
 }
 
