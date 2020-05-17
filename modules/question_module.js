@@ -94,7 +94,6 @@ function handle(room){
 
         room = givequestion(room,token);
         room = sender.sendstate(room,constanst.validContext.question);
-
     }
 
     room.state = constanst.validState.finished;

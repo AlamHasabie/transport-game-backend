@@ -192,11 +192,10 @@ io.on('connection',(socket)=>{
 
         if(role == "player"){
             if(isRoomState(room,validState.prepare)){
-                registerValidPlayer(socket,token);
-            } else {
-                gameState[room].player--;
-                socket.disconnect();
+                registerNewPlayer(socket,token);
             }
+
+            registerPlayerEvent(socket,token);
         } else if (role=="spectator") {
             registerValidSpectator(socket,token);
         } else if (role=="gamemaster"){
@@ -233,7 +232,7 @@ http.listen(3000,()=>{
 });
 
 
-function registerValidPlayer(socket,token){
+function registerNewPlayer(socket,token){
 
     var user = userInfo[token];
     var room = user.roomname;
@@ -242,8 +241,12 @@ function registerValidPlayer(socket,token){
     addnewplayertoroom(room,token);
     
     gameState[room].player_ready.add(token);
-
     sendcurrentstatedata(room,validContext.player_join);
+}
+
+function registerPlayerEvent(socket,token){
+    let user = userInfo[token];
+    let room = user.roomname;
 
     socket.on('ready',function(msg){
         handleReadyEvent(room,token,msg);
@@ -263,6 +266,9 @@ function registerValidPlayer(socket,token){
     socket.on("disconnect",function(msg){
         handleDisconnectEvent(room,token,msg);
     });
+
+
+
 }
 
 function handleDisconnectEvent(room,token,msg){
@@ -368,7 +374,8 @@ function activatesquare(room,token){
         switch(board[position]){
             case validSquare.question :
                 gameState[room] = questionHandler.handle(gameState[room]);
-                addTimeout(finishturn,delayLength.room,token);
+                console.log(gameState[room]);
+                addTimeout(finishturn,delayLength,room,token);
                 break;
 
             case validSquare.key :
@@ -438,7 +445,7 @@ function finishturn(room,token){
         gameState[room].state = validState.rolling;
         sendcurrentstatedata(room,validContext.turn);
         addTimeout(timeout,timeoutLength,room,next_token);
-    } else if(isPlayingToken(token,room)&&(isRoomState(room,validState.finished))){
+    } else if(isRoomState(room,validState.finished)){
         gameState[room].current_player = changetonextplayer(room);
         next_token = gameState[room].player_order[gameState[room].current_player];
         gameState[room].state = validState.rolling;
