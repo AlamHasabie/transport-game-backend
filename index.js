@@ -194,10 +194,11 @@ io.on('connection',(socket)=>{
 
         if(role == "player"){
 
-            // Player was in the room
-            if(gameState[room].player_status.hasOwnProperty(token)){                                
+            
+            // Reconnect before game ended
+            if(gameState[room].player_status.hasOwnProperty(token)&&
+            !isRoomState(room,validState.ended)){                                
                 registerPlayerEvent(socket,token);
-
             } else {
                 if(isRoomState(room,validState.prepare)){
                     registerNewPlayer(socket,token);
@@ -286,7 +287,6 @@ function handleDisconnectEvent(room,token,msg){
 }
 
 function registerValidSpectator(socket,token){
-
     var user = userInfo[token];
     var room = user.roomname;
 
@@ -371,11 +371,6 @@ function sendcurrentstatedata(room,context){
 }
 
 function activatesquare(room,token){
-    if(isRoomState(room,validState.current_player_leave)){
-        finishturn(room,token);
-        return;
-    }
-
     if(isPlayingToken(token,room)&&isRoomState(room,validState.activation)){
         var position = gameState[room].player_status[token].square;
         switch(board[position]){
@@ -443,16 +438,7 @@ function changetonextplayer(room){
 
 function finishturn(room,token){
     let next_token;
-    if(isRoomState(room,validState.current_player_leave)){
-        if(gameState[room].player==0){
-            gameState[room] = validState.ended;
-            addTimeout(finishGame,delayLength,room,null);
-        }
-        next_token = gameState[room].player_order[gameState[room].current_player]
-        gameState[room].state = validState.rolling;
-        sendcurrentstatedata(room,validContext.turn);
-        addTimeout(timeout,timeoutLength,room,next_token);
-    } else if(isRoomState(room,validState.finished)){
+    if(isRoomState(room,validState.finished)){
         gameState[room].current_player = changetonextplayer(room);
         next_token = gameState[room].player_order[gameState[room].current_player];
         gameState[room].state = validState.rolling;

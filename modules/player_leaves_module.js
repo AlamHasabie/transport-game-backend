@@ -33,13 +33,7 @@ function handle(room,token){
         case constants.validState.activation :
         case constants.validState.rolling :
         case constants.validState.answer_wait : 
-            isPlaying = (token==room.player_order[room.current_player]);
-            if(isPlaying){
-                room.state = constants.validState.current_player_leave;
-            }
-
             break;
-
         /** Just delete the player here */
         /** We would just reduce the player count to 0 */
         /** Later , the server would delete the room eventually */
