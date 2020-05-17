@@ -16,7 +16,7 @@ function handle(room){
     let token = room.player_order[room.current_player];
 
     if(room.player_status[token].coupons.length>0){
-        coupon_used = room.player_status.coupons.pop();
+        coupon_used = room.player_status[token].coupons.pop();
         room.taken_event_cards.delete(coupon_used);
         emitter.sendstate(room,constants.validContext.coupon_use);
     } else {

@@ -404,6 +404,7 @@ function activatesquare(room,token){
 
             case validSquare.event :
                 gameState[room] = eventHandler.handle(gameState[room]);
+                console.log(gameState[room].state);
                 if(isRoomState(room,validState.finished)){
                     addTimeout(finishturn,delayLength,room,token);
                     break;

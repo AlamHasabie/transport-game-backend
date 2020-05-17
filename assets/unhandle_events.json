@@ -147,18 +147,6 @@
             "text" : "Free service",
             "effect" : "service",
             "type" : "event"
-        },
-        {
-            "title" : "Coupon",
-            "text" : "Free service",
-            "effect" : "service",
-            "type" : "event"
-        },
-        {
-            "title" : "Event",
-            "text" : "There's a problem with your car. Skip a turn.",
-            "type" : "event",
-            "effect" : "skip"
         }
     ],
     "type" : {
