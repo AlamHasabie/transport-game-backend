@@ -21,28 +21,9 @@ function handle(room,token){
 
     switch (room.state) {
 
-        /** When prepare, user could still leave the room */
-        /** Open new room for a new player */
+
+        /** Assume that only valid player would be able to enter the room */
         case constants.validState.prepare:
-
-            delete room.player_status[token];
-            room.player_ready.delete(token);
-            room.roll_wait.delete(token);
-            room.player--;
-
-            // If player ready becomes zero, then kickstart the game earlier.
-            if(room.player_ready.size==0&&room.player>=config.minimal_player){
-
-                // Delete player_ready element
-                delete room.player_ready;
-
-                // Set to game ready
-                room.state = constants.validState.ready;
-                room = emitter.sendstate(room,constants.validContext.player_leave);
-                room = emitter.sendstate(room,constants.validContext.game_ready); 
-            }
-            break;
-
         case constants.validState.ready:
 
             break;

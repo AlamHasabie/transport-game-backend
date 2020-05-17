@@ -195,10 +195,7 @@ io.on('connection',(socket)=>{
         if(role == "player"){
 
             // Player was in the room
-            if(gameState[room].player_status.hasOwnProperty(token)){
-                if(isRoomState(room,validState.prepare)){
-                    gameState[room].player++;
-                }
+            if(gameState[room].player_status.hasOwnProperty(token)){                                
                 registerPlayerEvent(socket,token);
 
             } else {
@@ -364,6 +361,8 @@ function deleteroomifempty(room){
 function sendcurrentstatedata(room,context){
     let timeout = gameState[room].timeout_id;
     delete gameState[room].timeout_id;
+    console.log(context + "==============");
+    console.log(gameState[room]);
     io.to(room).emit("update",{
         context : context,
         game_status : gameState[room]
