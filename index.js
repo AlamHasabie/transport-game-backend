@@ -99,12 +99,9 @@ app.post('/game',(req,res)=>{
     var roomname = req.body["room"];
     var role = req.body["role"];
     var username = req.body["username"];
-
-    console.log(role);
-    console.log(role=="player");
     if(!((role=="player")||(role=="spectator"))){
         res.statusCode = 403;
-        res.send("Forbidden, role undefined\n");
+        res.send("Forbidden");
 
         return;
     } 
@@ -112,7 +109,7 @@ app.post('/game',(req,res)=>{
     if(gameState.hasOwnProperty(roomname)){
         if(role=="player"&&gameState[roomname].player>=4){
             res.statusCode = 403;
-            res.send("Forbidden, room full\n");
+            res.send("Forbidden");
             return;
         }
 
@@ -130,7 +127,6 @@ app.post('/game',(req,res)=>{
         role : role,
         username : username
     }
-
     if(role=="player"){
         gameState[roomname].player++;
     }
@@ -271,7 +267,6 @@ function registerPlayerEvent(socket,token){
         handleFirstRollEvent(room,token,msg);
     });
     socket.on("roll",function(msg){
-        console.log(token + " is rolling !");
         handleRollEvent(room,token,msg);
     });
     socket.on("answer",function(msg){

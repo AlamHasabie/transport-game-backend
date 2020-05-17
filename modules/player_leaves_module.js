@@ -37,7 +37,7 @@ function handle(room,token){
                 delete room.player_ready;
 
                 // Set to game ready
-                room.state = constant.validState.ready;
+                room.state = constants.validState.ready;
                 room = emitter.sendstate(room,constants.validContext.player_leave);
                 room = emitter.sendstate(room,constants.validContext.game_ready); 
             }
