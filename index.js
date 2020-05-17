@@ -226,10 +226,12 @@ const answerHandler = require("./modules/answer_module");
 const treasureHandler = require("./modules/treasure_module");
 const playerLeaveHandler = require("./modules/player_leaves_module");
 const eventHandler = require("./modules/event_module");
+const serviceHandler = require("./modules/service_module");
 
 
 emitter.init(io);
 
+serviceHandler.init(emitter);
 questionHandler.init(emitter);
 rewardHandler.init(emitter);
 rollHandler.init(emitter);
@@ -252,6 +254,8 @@ function registerNewPlayer(socket,token){
 
     socket.join(room);
     addnewplayertoroom(room,token);
+    gameState[room].player_status[token] =
+        serviceHandler.addFieldToPlayer(gameState[room].player_status[token]);
     gameState[room].player_ready.add(token);
     registerPlayerEvent(socket,token);
 }
@@ -424,8 +428,8 @@ function activatesquare(room,token){
                 break;
 
             case validSquare.service :
-                service(room,token);
-                gameState[room].state = validState.finished;
+
+                gameState[room] = serviceHandler.handle(gameState[room]);
                 addTimeout(finishturn,delayLength,room,token);
                 break;
 

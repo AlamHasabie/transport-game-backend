@@ -32,6 +32,7 @@
         "game_ready" : "game_ready",
         "game_start" : "game_start",
         "roll_again" : "roll_again",
+        "coupon_use" : "coupon_use",
         "move" : "move",
         "reward" : "reward",
         "question" : "question",

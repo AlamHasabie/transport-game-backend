@@ -79,6 +79,10 @@ function handle_event_event(room,event,token){
             room.state = constants.validState.rolling;
             room.repeated_roll = 2;
 
+        case event_effects.service :
+            room.player_status[token].coupons.push(room.event_pointer);
+            room.taken_event_cards.add(room.event_pointer);
+
             break;
 
         default :
