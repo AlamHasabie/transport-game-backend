@@ -96,24 +96,6 @@
         },
         {
             "title" : "Event",
-            "text" : "There's a problem with your car. Skip a turn.",
-            "type" : "event",
-            "effect" : "skip"
-        },
-        {
-            "title" : "Event",
-            "text" : "Your flight is cancelled. Skip a turn.",
-            "type" : "event",
-            "effect" : "skip"
-        },
-        { 
-            "title" : "Event",
-            "text" : "Your bag is stolen. Lose your question card",
-            "type" : "event",
-            "effect" : "remove question"
-        },
-        {
-            "title" : "Event",
             "text" : "Free holiday ! Move to a square you want.",
             "effect" : "teleport",
             "type" : "event"
@@ -134,18 +116,6 @@
             "title" : "Event",
             "text" : "Free holiday ! Move to a square you want.",
             "effect" : "teleport",
-            "type" : "event"
-        },
-        {
-            "title" : "Coupon",
-            "text" : "Free service",
-            "effect" : "service",
-            "type" : "event"
-        },
-        {
-            "title" : "Coupon",
-            "text" : "Free service",
-            "effect" : "service",
             "type" : "event"
         }
     ],

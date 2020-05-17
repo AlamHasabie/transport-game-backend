@@ -106,6 +106,7 @@ Context sent by server can be seen in the constans.json file, and can be one of 
 16. answer_true : send when the answer of a player is true
 17. answer_false : send when the answer of a player is false
 18. no_answer : send when the player does not answer. 
+19. coupon_use : send when a player lands in service but has a coupon.
 
 Note that contexts are registered within every "update" event emit of the socket.
 
@@ -119,6 +120,7 @@ Note that contexts are registered within every "update" event emit of the socket
 - skipped : Set of skipped players
 - first_roll : Array to save the first roll dice, used to create order of the turns.
 - player_order : Order of player for every turn as an array. Contains tokens of players
+- taken_event_cards : Event cars held by players
 - offered_answer : answer card currently used
 - current_player : current player, as an index of the player order
 - event_pointer : points to the event drawed
@@ -133,8 +135,9 @@ Note that contexts are registered within every "update" event emit of the socket
 ### player_status
 - money : money
 - square : which square the player is in
-- question_answered :questions owned by user
+- question_answered :questions owned by user, represented as an array
 - held_question : question currently held by player. null if no question is held.
+- coupons : coupon for services held by user.
 
 ### question (in player_status)
 
@@ -147,6 +150,7 @@ Examples :
     spectator : Set{"SFWWFWG2352", "SFDFR54634EGE", "SFWFER674"},
     taken_questions : Set{0,4,5},
     skipped : Set{"PFFWFBH3333"},
+    taken_event_cards : Set{0,2},
     player_order : ["PFFWFBH3333","P35252","P252c2cec"],
     current_player : 3,
     event_pointer : 4,
@@ -161,18 +165,21 @@ Examples :
             username : "Kucing",
             money : 100,
             square : 25,
+	    coupons : [0,2]
             questions_answered : [0]
             held_question : null
         "P35252" : {
             username : "Kia",
             money : 100,
             square : 25,
+            coupons : [],
             questions_answered : [4],
             held_question : 5,
         }
         P252c2cec : {
             username : "Telo",
             money : 100,
+ 	    coupons : [],
             square : 39,
             questions_answered : [],
             held_question : null,
