@@ -87,6 +87,12 @@ app.post('/gm',(req,res)=>{
 
 })
 
+app.get('/reconnect/:token',(req,res)=>{
+    res.render('reconnect',{
+        token : req.params.token
+    })
+})
+
 app.set('view engine', 'ejs');
 app.post('/game',(req,res)=>{
 
@@ -191,18 +197,28 @@ io.on('connection',(socket)=>{
         var room = userInfo[token].roomname;
 
         if(role == "player"){
-            if(isRoomState(room,validState.prepare)){
-                registerNewPlayer(socket,token);
-            }
 
-            registerPlayerEvent(socket,token);
+            // Player was in the room
+            if(gameState[room].player_status.hasOwnProperty(token)){
+                if(isRoomState(room,validState.prepare)){
+                    gameState[room].player++;
+                }
+                registerPlayerEvent(socket,token);
+
+            } else {
+                if(isRoomState(room,validState.prepare)){
+                    registerNewPlayer(socket,token);
+                } else {
+                    // Invalid rejoining
+                }
+            }
         } else if (role=="spectator") {
             registerValidSpectator(socket,token);
         } else if (role=="gamemaster"){
             registerValidGameMaster(socket,token);
         } else {
             console.log("Role unknown, illegal argument");
-            socket.disconnect--;
+            socket.disconnect;
         }
     }
 });
@@ -239,15 +255,15 @@ function registerNewPlayer(socket,token){
 
     socket.join(room);
     addnewplayertoroom(room,token);
-    
     gameState[room].player_ready.add(token);
-    sendcurrentstatedata(room,validContext.player_join);
+    registerPlayerEvent(socket,token);
 }
 
 function registerPlayerEvent(socket,token){
     let user = userInfo[token];
     let room = user.roomname;
 
+    socket.join(room);
     socket.on('ready',function(msg){
         handleReadyEvent(room,token,msg);
     });
@@ -255,6 +271,7 @@ function registerPlayerEvent(socket,token){
         handleFirstRollEvent(room,token,msg);
     });
     socket.on("roll",function(msg){
+        console.log(token + " is rolling !");
         handleRollEvent(room,token,msg);
     });
     socket.on("answer",function(msg){
@@ -267,17 +284,13 @@ function registerPlayerEvent(socket,token){
         handleDisconnectEvent(room,token,msg);
     });
 
-
+    sendcurrentstatedata(room,validContext.player_join);
 
 }
 
 function handleDisconnectEvent(room,token,msg){
     gameState[room] = playerLeaveHandler.handle(gameState[room],token);
     sendcurrentstatedata(room,validContext.player_leave);
-    if(isRoomState(room,validState.current_player_leave)){
-        clearTimeout(gameState[room].timeout_id);
-        addTimeout(finishturn,delayLength,room,token);
-    }    
 }
 
 function registerValidSpectator(socket,token){
@@ -589,5 +602,4 @@ function addTimeout(timeout_func,delay,room,token){
             token
         );
     }
-
 }

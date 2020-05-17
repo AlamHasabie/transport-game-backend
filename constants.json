@@ -28,7 +28,7 @@
         "spectator_join" : "spectator join",
         "player_join" :"player join",
         "player_ready" : "player ready",
-        "player_leave" : "player leave",
+        "player_leave" : "player disconnected",
         "game_ready" : "game_ready",
         "game_start" : "game_start",
         "roll_again" : "roll_again",
