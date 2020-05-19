@@ -11,12 +11,19 @@ function init(emitter_in){
 
 }
 
-function handle(room){
+function validRollEvent(room,token,msg){
+    let playing_token = room.player_order[room.current_player];
+    return(
+        (room.state==constants.validState.rolling)&&
+        (token==playing_token)
+    );
+}
 
-    let dice_1 = room.dice_1;
-    let dice_2 = room.dice_2;
+function handleRollEvent(room,token,msg){
+
+    let dice_1 = msg.dice_1;
+    let dice_2 = msg.dice_2;
     let rolled = room.repeated_roll;
-    let token = room.player_order[room.current_player];
 
     let movement = dice_1 + dice_2;
     let current_square = room.player_status[token].square
@@ -42,5 +49,6 @@ function handle(room){
 
 module.exports = {
     init:init,
-    handle : handle
+    handleRollEvent : handleRollEvent,
+    validRollEvent : validRollEvent
 }

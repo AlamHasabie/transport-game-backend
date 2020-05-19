@@ -347,7 +347,9 @@ function addnewplayertoroom(room,token){
         square : 0,
         held_question : null,
         questions_answered : [],
-        equipment : new Set()
+        equipment : [],
+        reflector : [],
+        nullifier : []
     }
 }
 
@@ -486,7 +488,6 @@ function handleFirstRollEvent(room,token,msg){
     if(isRoomState(room,validState.ready)){
         gameState[room].roll_wait.delete(token);
 
-        // Get dice number
         let dice = msg.dice_1 + msg.dice_2;
         gameState[room].first_roll.push({
             token : token,
@@ -500,14 +501,9 @@ function handleFirstRollEvent(room,token,msg){
 }
 
 function handleRollEvent(room,token,msg){
-    if(isRoomState(room,validState.rolling)&&
-    isPlayingToken(token,room)){
-
+    if(rollHandler.validRollEvent(gameState[room],token,msg)){
         clearTimeout(gameState[room].timeout_id);
-        gameState[room].dice_1 = msg.dice_1;
-        gameState[room].dice_2 = msg.dice_2;
-
-        gameState[room] = rollHandler.handle(gameState[room]);
+        gameState[room] = rollHandler.handleRollEvent(gameState[room],token,msg);
         if(isRoomState(room,validState.activation)){
             addTimeout(activatesquare,delayLength,room,token);
         } else if (isRoomState(room,validState.rolling)){
@@ -522,7 +518,7 @@ function handleAnswerEvent(room,token,msg){
         gameState[room].answer = msg.selected;
         gameState[room] = answerHandler.handleAnswerEvent(gameState[room]);
         if(isRoomState(room,validState.finished)){
-            addTimeout(timeout,delayLength,room,token);
+            addTimeout(finishturn,delayLength,room,token);
         } else if(isRoomState(room,validState.answer_wait)){
             addTimeout(answerTimeout,answerTimeoutLength,room,token);
         }
@@ -585,4 +581,8 @@ function addTimeout(timeout_func,delay,room,token){
             token
         );
     }
+}
+
+function useEquipment(room,token){
+
 }
