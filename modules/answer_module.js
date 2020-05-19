@@ -45,7 +45,7 @@ function validAnswerEvent(room,token,msg){
 function handleAnswerEvent(room,token,msg){
 
     let no = room.player_status[token].held_question;
-    let is_answer = msg.answer;
+    let is_answer = msg.selected;
     let answer = answers[room.key_pointer];
 
     if(!is_answer){

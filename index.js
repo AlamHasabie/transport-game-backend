@@ -512,6 +512,7 @@ function handleRollEvent(room,token,msg){
 }
 
 function handleAnswerEvent(room,token,msg){
+    console.log(msg);
     if(answerHandler.validAnswerEvent(gameState[room],token,msg)){
         clearTimeout(gameState[room].timeout_id);
         gameState[room] = answerHandler.handleAnswerEvent(gameState[room],token,msg);
@@ -588,6 +589,9 @@ function useEquipment(room,token){
     if(gameState[room].player_status[token].equipment.length > 0){
 
         // Do something
+        console.log("Has equipment");
+        gameState[room].state = validState.finished;
+        finishturn(room,token);
     
     } else {
         gameState[room].state = validState.finished;
