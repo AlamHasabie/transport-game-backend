@@ -6,10 +6,12 @@
         "activation" : 3,
         "answer_wait" : 4,
         "treasure_wait" : 5,
-        "finished" : 6,
-        "ended" : 7,
-        "player_empty" : 8,
-        "current_player_leave" : 9
+        "equipment_use" : 6,
+        "reflect" : 7,
+        "equipment_activate" : 8,
+        "finished" : 9,
+        "ended" : 10,
+        "player_empty" : 11
     },
     
     "validSquare" : {
