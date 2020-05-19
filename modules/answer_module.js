@@ -17,7 +17,7 @@ function handle(room){
     if(question_module.playerHasQuestion(room,token)){
         room = giveKey(room); 
     } else {
-        room.state = constants.validState.finished;
+        room.state = constants.validState.equipment_use;
     }
     return room;
 }
@@ -42,11 +42,10 @@ function validAnswerEvent(room,token,msg){
     );
 }
 
-function handleAnswerEvent(room){
+function handleAnswerEvent(room,token,msg){
 
-    let token = room.player_order[room.current_player];
     let no = room.player_status[token].held_question;
-    let is_answer = room.answer;
+    let is_answer = msg.answer;
     let answer = answers[room.key_pointer];
 
     if(!is_answer){
@@ -54,7 +53,7 @@ function handleAnswerEvent(room){
             room = emitter.sendstate(room,constants.validContext.no_answer);
             room.answers_drawed = 0;
             room.answer = null;
-            room.state = constants.validState.finished;
+            room.state = constants.validState.equipment_use;
             return room;
         } else {
             return giveKey(room);
@@ -70,7 +69,7 @@ function handleAnswerEvent(room){
 
         room.answers_drawed = 0;
         room.answer = null;
-        room.state = constants.validState.finished;
+        room.state = constants.validState.equipment_use;
         return room;
     }
 }

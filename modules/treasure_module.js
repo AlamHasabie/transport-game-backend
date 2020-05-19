@@ -22,7 +22,7 @@ function handle(room){
 
     } else {
 
-        room.state = constants.validState.finished;
+        room.state = constants.validState.equipment_use;
 
     }
 

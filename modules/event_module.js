@@ -34,7 +34,7 @@ function handle(room){
     let event = event_cards[room.event_pointer];
     
     
-    room.state = constants.validState.finished;
+    room.state = constants.validState.equipment_use;
     switch(event.type){
         case event_types.event :
             room = handle_event_event(room,event,token);

@@ -10,8 +10,9 @@
         "reflect" : 7,
         "equipment_activate" : 8,
         "finished" : 9,
-        "ended" : 10,
-        "player_empty" : 11
+        "skipeed" : 10,
+        "ended" : 11,
+        "player_empty" : 12
     },
     
     "validSquare" : {
@@ -51,7 +52,6 @@
         "answer_false" : "answer_false",
         "no_answer" : "no_answer",
         "finish" : "finish",
-        "teleportOffer" : "teleportOffer",
-        "equipmentOffer" : "equipmentOffer"
+        "answer_timeout" : "answer_timeout"
     }
 }

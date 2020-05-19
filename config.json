@@ -6,5 +6,7 @@
     "timeout" : 10000,
     "treasure_timeout" : 10000,
     "answer_reward" : 50,
-    "treasure_reward" : 150
+    "treasure_reward" : 150,
+    "equipment_use_timeout" : 5000,
+    "reflect_timeout" : 50000
 }

@@ -97,7 +97,7 @@ function handle(room){
         room = sender.sendstate(room,constanst.validContext.question);
     }
 
-    room.state = constanst.validState.finished;
+    room.state = constanst.validState.equipment_use;
 
     return room;
 }
