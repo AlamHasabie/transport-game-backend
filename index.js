@@ -468,15 +468,6 @@ function finishturn(room,token){
     }
 }
 
-function service(room,token){
-    gameState[room].skipped.add(token);
-    gameState[room].player_status[token].money -= 15;
-
-    sendcurrentstatedata(room,validContext.service);
-    gameState[room].state = validState.finished;
-    addTimeout(finishturn,delayLength,room,token);
-}
-
 function handleReadyEvent(room,token,msg){
     if(isRoomState(room,validState.prepare)){
         gameState[room].player_ready.delete(token);
@@ -526,15 +517,12 @@ function handleRollEvent(room,token,msg){
 }
 
 function handleAnswerEvent(room,token,msg){
-    if(isPlayingToken(token,room)&&
-    isRoomState(room,validState.answer_wait)&&
-    question_module.playerHasQuestion(gameState[room],token)){
+    if(answerHandler.validAnswerEvent(gameState[room],token,msg)){
         clearTimeout(gameState[room].timeout_id);
         gameState[room].answer = msg.selected;
         gameState[room] = answerHandler.handleAnswerEvent(gameState[room]);
-
         if(isRoomState(room,validState.finished)){
-            addTimeout(timeout,timeoutLength,room,token);
+            addTimeout(timeout,delayLength,room,token);
         } else if(isRoomState(room,validState.answer_wait)){
             addTimeout(answerTimeout,answerTimeoutLength,room,token);
         }
