@@ -52,6 +52,8 @@
         "answer_false" : "answer_false",
         "no_answer" : "no_answer",
         "finish" : "finish",
-        "answer_timeout" : "answer_timeout"
+        "answer_timeout" : "answer_timeout",
+        "equipment_full" : "equipment_full",
+        "equipment_use" : "equipment_use"
     }
 }

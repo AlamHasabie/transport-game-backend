@@ -20,6 +20,7 @@ const delayLength = config.delay;
 const timeoutLength = config.timeout;
 const answerTimeoutLength = config.answer_timeout
 const treasureAnswerTimeoutLength = config.treasure_timeout;
+const equipmentTimeoutLength = config.equipment_use_timeout;
 const treasure = require("./assets/treasure.json");
 const validState = validConstants.validState;
 const validSquare = validConstants.validSquare;
@@ -256,6 +257,8 @@ function registerNewPlayer(socket,token){
     addnewplayertoroom(room,token);
     gameState[room].player_status[token] =
         serviceHandler.addFieldToPlayer(gameState[room].player_status[token]);
+    gameState[room].player_status[token] = 
+        eventHandler.addFieldToPlayer(gameState[room].player_status[token]);
     gameState[room].player_ready.add(token);
     registerPlayerEvent(socket,token);
 }
@@ -279,6 +282,9 @@ function registerPlayerEvent(socket,token){
     });
     socket.on("treasure answer",function(msg){
         handleTreasureAnswerEvent(room,token,msg);
+    });
+    socket.on("equipment",function(msg){
+        handleEquipmentUseEvent(room,token,msg);
     });
     socket.on("disconnect",function(msg){
         handleDisconnectEvent(room,token,msg);
@@ -346,10 +352,7 @@ function addnewplayertoroom(room,token){
         money : 150,
         square : 0,
         held_question : null,
-        questions_answered : [],
-        equipment : [],
-        reflector : [],
-        nullifier : []
+        questions_answered : []
     }
 }
 
@@ -409,7 +412,6 @@ function activatesquare(room,token){
                 if(isRoomState(room,validState.equipment_use)){
                     addTimeout(useEquipment,delayLength,room,token);
                     break;
-
                 } else if(isRoomState(room,validState.rolling)){
                     addTimeout(timeout,timeoutLength,room,token);
                 
@@ -539,6 +541,19 @@ function handleTreasureAnswerEvent(room,token,msg){
     }
 }
 
+function handleEquipmentUseEvent(room,token,msg){
+
+    let target_token = msg.target_token;
+    let card_user = msg.equipment;
+
+    gameState[room].target_token = null;
+
+    // if equipment has no targetor target has no reflector, execute directly
+    // else wait for the reflector
+
+
+}
+
 function finishGame(room){
     sendcurrentstatedata(room,validContext.finish);
     deleteroomifempty(room);
@@ -562,6 +577,9 @@ function answerTimeout(room,token){
 }
 
 function timeout(room,token){
+    gameState[room].target_token = null;
+    gameState[room].equipment_used = null;
+    gameState[room].reply_equipment = null;
     gameState[room].state = validState.finished;
     sendcurrentstatedata(room,validContext.timeout);
     finishturn(room,token);
@@ -587,11 +605,8 @@ function addTimeout(timeout_func,delay,room,token){
 
 function useEquipment(room,token){
     if(gameState[room].player_status[token].equipment.length > 0){
-
-        // Do something
-        console.log("Has equipment");
-        gameState[room].state = validState.finished;
-        finishturn(room,token);
+        sendcurrentstatedata(room,validContext.equipment_use);
+        addTimeout(timeout,equipmentTimeoutLength,room,token);
     
     } else {
         gameState[room].state = validState.finished;

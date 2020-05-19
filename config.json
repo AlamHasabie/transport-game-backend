@@ -8,5 +8,6 @@
     "answer_reward" : 50,
     "treasure_reward" : 150,
     "equipment_use_timeout" : 5000,
-    "reflect_timeout" : 50000
+    "reflect_timeout" : 50000,
+    "max_allowed_equipments" : 2
 }

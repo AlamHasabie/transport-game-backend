@@ -4,11 +4,19 @@ const event_types = event_data.type;
 const event_effects = event_data.effect;
 const question_module = require("./question_module");
 const constants = require("../constants.json");
+const config = require("../config.json");
 var emitter;
 
 
 function init(emitter_in){
     emitter = emitter_in;
+}
+
+function addFieldToPlayer(player){
+    player.equipment = [];
+    player.nullifier = [];
+    player.reflector = [];
+    return player;
 }
 
 function next_event(room){
@@ -45,7 +53,7 @@ function handle(room){
     }
 
 
-    emitter.sendstate(room,constants.validContext.event);
+
     return room;
 }
 
@@ -53,36 +61,47 @@ function handle_event_event(room,event,token){
     switch(event.effect){
         case event_effects.remove_question :
             room = question_module.releaseHeldQuestion(room,token);
+            emitter.sendstate(room,constants.validContext.event);
             break;
 
         case event_effects.remove_key :
             room = question_module.releaseAQuestion(room,token);
+            emitter.sendstate(room,constants.validContext.event);
             break;
 
         case event_effects.stolen :
             room = question_module.releaseQuestions(room,token);
+            emitter.sendstate(room,constants.validContext.event);
             break;
 
         case event_effects.skip :
             room.skipped.add(token);
+            emitter.sendstate(room,constants.validContext.event);
             break;
         
         case event_effects.cash :
             room.player_status[token].money += event.nominal; 
+            emitter.sendstate(room,constants.validContext.event);
             break;
 
         case event_effects.start :
             room.player_status[token].square = 0;
+            emitter.sendstate(room,constants.validContext.event);
             break;
 
         case event_effects.roll :
             room.state = constants.validState.rolling;
+            emitter.sendstate(room,constants.validContext.event);
             room.repeated_roll = 2;
 
         case event_effects.service :
-            room.player_status[token].coupons.push(room.event_pointer);
-            room.taken_event_cards.add(room.event_pointer);
-
+            if(allowedToStoreCard(room,token)){
+                room.player_status[token].coupons.push(room.event_pointer);
+                room.taken_event_cards.add(room.event_pointer);
+                emitter.sendstate(room,constants.validContext.event);
+            } else {
+                emitter.sendstate(room,constants.validContext.equipment_full);
+            }
             break;
 
         default :
@@ -93,15 +112,68 @@ function handle_event_event(room,event,token){
     return room;
 }
 
-function handle_equipment_event(room,event){
-
+function handle_equipment_event(room,event,token){
+    if(allowedToStoreCard(room,token)){
+        switch(event.effect){
+            case event_effects.cancel :
+                room.player_status[token].nullifier.push(room.event_pointer);
+                break;
+            case event_effects.reverse :
+                room.player_status[token].reflector.push(room.event_pointer);
+                break;
+            default :
+                room.player_status[token].equipment.push(room.event_pointer);
+                break;
+        }
+        room.taken_event_cards.add(room.event_pointer);
+        emitter.sendstate(room,constants.validContext.equipment);
+    } else {
+        emitter.sendstate(room,constants.validContext.equipment_full);
+    }
     return room;
 }
 
-
-module.exports={
-    init :init,
-    handle : handle
+function numberOfHeldEquipment(room,token){
+    let player = room.player_status[token];
+    let n = 0;
+    n += player.nullifier.length;
+    n += player.equipment.length;
+    n += player.reflector.length;
+    n += player.coupons.length;
+    return n;
 }
 
+function allowedToStoreCard(room,token){
+    return numberOfHeldEquipment(room,token) <= config.max_allowed_equipments;
+}
 
+function validEquipmentUseEvent(room,token,msg){
+    let playing_token = room.player_order[room.current_player];
+    let target_token = msg.target_token;
+    let equipment = msg.equipment;
+
+    if(target_token==null){
+        return(
+            (token==playing_token)&&
+            (room.player_status[token].equipment.includes(equipment))&&
+            (room.player_status.hasOwnProperty(target_token))
+        );
+    } else {
+        return(
+            (token==playing_token)&&
+            (room.player_status[token].equipment.includes(equipment))
+        );
+    }
+}
+
+function handleEquipmentUseEvent(room,token,msg){
+    let msg
+
+}
+module.exports={
+    init :init,
+    handle : handle,
+    addFieldToPlayer : addFieldToPlayer,
+    validEquipmentUseEvent : validEquipmentUseEvent,
+    handleEquipmentUseEvent : handleEquipmentUseEvent
+}

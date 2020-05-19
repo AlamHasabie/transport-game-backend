@@ -32,7 +32,11 @@ function newRoom(){
         answers_drawed: 0,
         key_pointer : 0,
         question_pointer : 0,
-        player_status : {}
+        player_status : {},
+        from_token : null,
+        target_token : null,
+        equipment_used : null,
+        reply_equipment : null,
     }
 }
 

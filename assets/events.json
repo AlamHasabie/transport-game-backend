@@ -5,94 +5,80 @@
             "title" : "Wand of Mind [Equipment]",
             "text" : "Can be used to take one question or key card",
             "type" : "equipment",
-            "effect" : "take",
-            "target" : "other"
+            "effect" : "take"
         },
         {
             "title" : "Mask of Hypnotize [Equipment]",
             "text" : "Can be used to take one question or key card",
             "type" : "equipment",
-            "effect" : "take",
-            "target" : "other"
+            "effect" : "take"
         },
         {
             "title" : "Token of Teleporation [Equipment]",
             "text" : "Can be used to move another player or yourself to the desired place",
             "type" : "equipment",
-            "effect" : "teleport",
-            "target" : "one"
+            "effect" : "teleport"
         },
         {
             "title" : "Staff of Electricity [Equipment]",
             "text" : "Can be used to make another player skip a turn",
             "type" : "equipment",
-            "effect" : "skip",
-            "target" : "other"
+            "effect" : "skip"
         },
         {
             "title" : "Mantle of Invisibility [Equipment]",
             "text" : "Take $20 off another player",
             "type" : "equipment",
-            "effect" : "rob",
-            "nominal" : 20,
-            "target" : "other"
+            "effect" : "rob"
         },
         {
             "title" : "Slinger [Equipment]",
             "text" : "Can be used to make another player skip a turn",
             "type" : "equipment",
-            "effect" : "skip",
-            "target" : "other"
+            "effect" : "skip"
         },
         {
             "title" : "Mirror of Reflection [Equipment]",
             "text" : "Returns the equipment effect received to the sender",
             "type" : "equipment",
-            "effect" : "reverse",
-            "target" : "other"
+            "effect" : "reverse"
         },
         {
             "title" : "Compass of Truth [Equipment]",
             "text" : "Can be used to move yourself to the desired space",
             "type" : "equipment",
-            "effect" : "skip",
-            "target" : "other"
+            "effect" : "teleport"
         },
         {
             "title" : "Gloves of Thief [Equipment]",
             "text" : "Steal $10 off your enemy",
             "type" : "equipment",
             "effect" : "rob",
-            "nominal" : 10,
-            "target" : "other"
+            "nominal" : 10
         },
         {
             "title" : "Fire Bullet [Equipment]",
             "text" : "Remove a question of another player",
             "type" : "equipment",
-            "effect" : "remove question",
-            "target" : "other"
+            "effect" : "remove question"
         },
         {
             "title" : "Boots of Speed [Equipment]",
             "text" : "Roll again",
             "type" : "equipment",
-            "effect" : "roll",
-            "target" : "other"
+            "effect" : "roll"
         },
         {
             "title" : "Ball of Smoke [Equipment]",
             "text" : "Cancel the equipment effect",
             "type" : "equipment",
-            "effect" : "cancel",
-            "target" : "self"
+            "effect" : "cancel"
         },
         {
             "title" : "Boots of Evasion [Equipment]",
             "text" : "Cancel the effect casted on yourself.",
             "type" : "equipment",
-            "effect" : "cancel",
-            "target" : "self"
+            "effect" : "cancel"
         },
         {
             "title" : "Event",
