@@ -31,17 +31,13 @@ function handleRollEvent(room,token,msg){
 
     room.player_status[token].square = to_square;
     
+    room = emitter.sendstate(room,constants.validContext.move);
     if(dice_1==dice_2&&rolled<2){
-
         room.repeated_roll++;
-        room = emitter.sendstate(room,constants.validContext.roll_again);
-
+        room.state = constants.validState.roll_again;
     } else {
-
         room.repeated_roll = 0;
-        room = emitter.sendstate(room,constants.validContext.move);
         room.state = constants.validState.activation;
-
     }
 
     return room;

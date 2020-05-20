@@ -12,7 +12,9 @@
         "finished" : 9,
         "skipeed" : 10,
         "ended" : 11,
-        "player_empty" : 12
+        "player_empty" : 12,
+        "roll_received" : 13,
+        "roll_again" : 14
     },
     
     "validSquare" : {

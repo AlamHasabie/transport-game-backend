@@ -409,9 +409,9 @@ function activatesquare(room,token){
                 if(isRoomState(room,validState.equipment_use)){
                     addTimeout(useEquipment,delayLength,room,token);
                     break;
-                } else if(isRoomState(room,validState.rolling)){
-                    addTimeout(timeout,timeoutLength,room,token);
-                
+                } else if(isRoomState(room,validState.roll_again)){
+                    setTimeout(rollAgain,delayLength,room,token);
+                    break;
                 } else {
                     addTimeout(finishturn,delayLength,room,token);
                 }
@@ -499,15 +499,27 @@ function handleFirstRollEvent(room,token,msg){
 }
 
 function handleRollEvent(room,token,msg){
+    /** TODO : Postpone call of handling after rolling, preferably using another state */
     if(rollHandler.validRollEvent(gameState[room],token,msg)){
         clearTimeout(gameState[room].timeout_id);
-        gameState[room] = rollHandler.handleRollEvent(gameState[room],token,msg);
-        if(isRoomState(room,validState.activation)){
-            addTimeout(activatesquare,delayLength,room,token);
-        } else if (isRoomState(room,validState.rolling)){
-            addTimeout(timeout,timeoutLength,room,token);
-        }
+        gameState[room].state = validState.roll_received;
+        setTimeout(delayedRollEventHandling,delayLength,room,token,msg);
     }
+}
+
+function delayedRollEventHandling(room,token,msg){
+    gameState[room] = rollHandler.handleRollEvent(gameState[room],token,msg);
+    if(isRoomState(room,validState.activation)){
+        addTimeout(activatesquare,delayLength,room,token);
+    } else if (isRoomState(room,validState.roll_again)){
+        setTimeout(rollAgain,delayLength,room,token);
+    }
+}
+
+function rollAgain(room,token){
+    gameState[room].state = validState.rolling;
+    sendcurrentstatedata(room,validContext.roll_again);
+    addTimeout(timeout,timeoutLength,room,token);
 }
 
 function handleAnswerEvent(room,token,msg){

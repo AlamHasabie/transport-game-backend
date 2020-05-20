@@ -90,7 +90,7 @@ function handle_event_event(room,event,token){
             break;
 
         case event_effects.roll :
-            room.state = constants.validState.rolling;
+            room.state = constants.validState.roll_again;
             emitter.sendstate(room,constants.validContext.event);
             room.repeated_roll = 2;
 
