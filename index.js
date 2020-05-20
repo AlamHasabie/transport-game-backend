@@ -460,13 +460,11 @@ function changetonextplayer(room){
 
 function finishturn(room,token){
     let next_token;
-    if(isRoomState(room,validState.finished)){
-        gameState[room].current_player = changetonextplayer(room);
-        next_token = gameState[room].player_order[gameState[room].current_player];
-        gameState[room].state = validState.rolling;
-        sendcurrentstatedata(room,validContext.turn);
-        addTimeout(timeout,timeoutLength,room,next_token);
-    }
+    gameState[room].current_player = changetonextplayer(room);
+    next_token = gameState[room].player_order[gameState[room].current_player];
+    gameState[room].state = validState.rolling;
+    sendcurrentstatedata(room,validContext.turn);
+    addTimeout(timeout,timeoutLength,room,next_token);
 }
 
 function handleReadyEvent(room,token,msg){
@@ -569,9 +567,11 @@ function handleEquipmentUseEvent(room,token,msg){
 function deferredHandleEquipmentUseEvent(room,token,msg){
     gameState[room] = eventHandler.handleEquipmentUseEvent(room,token,msg);
     if(isRoomState(room,validState.finished)){
-        setTimeout(finishturn,delayLength,room,token)
+        setTimeout(finishturn,delayLength,room,token);
     } else if (isRoomState(room,validState.roll_again)){
         setTimeout(rollAgain,delayLength,room,token);
+    } else {
+        setTimeout(finishturn,delayLength,room,token);
     }
 }
 

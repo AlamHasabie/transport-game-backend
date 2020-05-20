@@ -200,7 +200,7 @@ function handleEquipmentUseEvent(room,token,msg){
     if(card.toOther){
 
     } else {
-        emitter.sendstate(room,constants.validContext.event);
+
         switch(card.effect){
             case event_effects.roll:
                 room.state = constants.validState.roll_again;
@@ -209,6 +209,17 @@ function handleEquipmentUseEvent(room,token,msg){
                 room.state = constants.validState.finished;
                 break;
         }
+        // Delete card from player and taken event cards
+        room.taken_event_cards.delete(equipment);
+        room.player_status[token].equipment = 
+            room.player_status[token].equipment.filter(function(el){
+                return el!=equipment;
+            });
+        
+        emitter.sendstate(room,constants.validContext.event);
+        room.from_token = null;
+        room.target_token = null;
+        room.equipment_used = null;
     }
 
     return room;
