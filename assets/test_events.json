@@ -1,23 +1,9 @@
 [
     {
-        "title" : "Fire Bullet [Equipment]",
-        "text" : "Remove a question of another player",
-        "type" : "equipment",
-        "effect" : "remove question",
-        "target" : "other"
-    },
-    {
         "title" : "Boots of Speed [Equipment]",
         "text" : "Roll again",
         "type" : "equipment",
         "effect" : "roll",
-        "target" : "other"
-    },
-    {
-        "title" : "Boots of Speed [Equipment]",
-        "text" : "Roll again",
-        "type" : "equipment",
-        "effect" : "roll",
-        "target" : "other"
+        "toOther" : false
     }
 ]

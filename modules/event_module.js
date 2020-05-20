@@ -154,14 +154,20 @@ function validEquipmentUseEvent(room,token,msg){
     let target_token = msg.target_token;
     let equipment = msg.equipment;
 
+    if((room.state==constants.validState.equipment_use_ready)&&equipment==null){
+        return true;
+    }
+
     if(target_token==null){
         return(
+            (room.state==constants.validState.equipment_use_ready)&&
             (token==playing_token)&&
             (room.player_status[token].equipment.includes(equipment))&&
             (room.player_status.hasOwnProperty(target_token))
         );
     } else {
         return(
+            (room.state==constants.validState.equipment_use_ready)&&
             (token==playing_token)&&
             (room.player_status[token].equipment.includes(equipment))
         );
@@ -169,8 +175,46 @@ function validEquipmentUseEvent(room,token,msg){
 }
 
 function handleEquipmentUseEvent(room,token,msg){
-  
+    
+    let equipment = msg.equipment;
+    let target_token = msg.target_token;
+    if(equipment==null){
+        room.state = constants.validState.finished;
+        return room;    
+    }
+
+    let card = event_cards[equipment%event_cards.length];
+    if(card.type==event_types.event){
+        // Invalid. How even it goes here ?
+        room.state = constants.validState.finished;
+        return room;
+    }
+
+    // Register event to room
+    room.from_token = token;
+    room.target_token = target_token;
+    room.equipment_used = equipment;
+
+    // TODO : Check if others can be hit
+    // If so , then execute
+    if(card.toOther){
+
+    } else {
+        emitter.sendstate(room,constants.validContext.event);
+        switch(card.effect){
+            case event_effects.roll:
+                room.state = constants.validState.roll_again;
+                break;
+            default :
+                room.state = constants.validState.finished;
+                break;
+        }
+    }
+
     return room;
+
+    
+
 
 }
 module.exports={

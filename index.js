@@ -395,7 +395,7 @@ function activatesquare(room,token){
                 if(isRoomState(room,validState.answer_wait)){
                     addTimeout(answerTimeout,answerTimeoutLength,room,token);
                 } else if(isRoomState(room,validState.equipment_use)) {
-                    addTimeout(finishturn,delayLength,room,token);
+                    addTimeout(useEquipment,delayLength,room,token);
                 }
                 break;
 
@@ -431,7 +431,8 @@ function activatesquare(room,token){
             case validSquare.service :
 
                 gameState[room] = serviceHandler.handle(gameState[room]);
-                addTimeout(finishturn,delayLength,room,token);
+                // Either coupon or not, this player shall be skipped
+                setTimeout(finishturn,delayLength,room,token);
                 break;
 
             case validSquare.start :
@@ -554,12 +555,24 @@ function handleEquipmentUseEvent(room,token,msg){
     let target_token = msg.target_token;
     let card_user = msg.equipment;
 
-    // Do nothing for now
+    if(eventHandler.validEquipmentUseEvent(gameState[room],token,msg)){
+        // Defer handling
+        gameState[room].state = validState.equipment_activate;
+        clearTimeout(gameState[room].timeout_id);
+        setTimeout(deferredHandleEquipmentUseEvent,delayLength,room,token,msg);
+    }
 
-    // if equipment has no targetor target has no reflector, execute directly
-    // else wait for the reflector
 
+}
 
+// Handle occurs here
+function deferredHandleEquipmentUseEvent(room,token,msg){
+    gameState[room] = eventHandler.handleEquipmentUseEvent(room,token,msg);
+    if(isRoomState(room,validState.finished)){
+        setTimeout(finishturn,delayLength,room,token)
+    } else if (isRoomState(room,validState.roll_again)){
+        setTimeout(rollAgain,delayLength,room,token);
+    }
 }
 
 function finishGame(room){
@@ -613,12 +626,11 @@ function addTimeout(timeout_func,delay,room,token){
 
 function useEquipment(room,token){
     if(gameState[room].player_status[token].equipment.length > 0){
+        gameState[room].state = validState.equipment_use_ready;
         sendcurrentstatedata(room,validContext.equipment_use);
         addTimeout(timeout,equipmentTimeoutLength,room,token);
-
     } else {
         gameState[room].state = validState.finished;
         finishturn(room,token);
     }
-
 }

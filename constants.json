@@ -7,14 +7,15 @@
         "answer_wait" : 4,
         "treasure_wait" : 5,
         "equipment_use" : 6,
-        "reflect" : 7,
-        "equipment_activate" : 8,
-        "finished" : 9,
-        "skipeed" : 10,
-        "ended" : 11,
-        "player_empty" : 12,
-        "roll_received" : 13,
-        "roll_again" : 14
+        "equipment_use_ready" : 7,
+        "reflect" : 8,
+        "equipment_activate" : 9,
+        "finished" : 10,
+        "skipeed" : 11,
+        "ended" : 12,
+        "player_empty" : 13,
+        "roll_received" : 14,
+        "roll_again" : 15
     },
     
     "validSquare" : {
