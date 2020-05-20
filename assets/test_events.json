@@ -1,8 +1,23 @@
 [
     {
-        "title" : "Event",
-        "text" : "Your suitcase is stolen ! You lose all your questions.",
-        "effect" : "stolen",
-        "type" : "event"
+        "title" : "Fire Bullet [Equipment]",
+        "text" : "Remove a question of another player",
+        "type" : "equipment",
+        "effect" : "remove question",
+        "target" : "other"
+    },
+    {
+        "title" : "Boots of Speed [Equipment]",
+        "text" : "Roll again",
+        "type" : "equipment",
+        "effect" : "roll",
+        "target" : "other"
+    },
+    {
+        "title" : "Boots of Speed [Equipment]",
+        "text" : "Roll again",
+        "type" : "equipment",
+        "effect" : "roll",
+        "target" : "other"
     }
 ]

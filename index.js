@@ -374,8 +374,6 @@ function deleteroomifempty(room){
 function sendcurrentstatedata(room,context){
     let timeout = gameState[room].timeout_id;
     delete gameState[room].timeout_id;
-    console.log(context + "==============");
-    console.log(gameState[room]);
     io.to(room).emit("update",{
         context : context,
         game_status : gameState[room]
@@ -408,7 +406,6 @@ function activatesquare(room,token){
 
             case validSquare.event :
                 gameState[room] = eventHandler.handle(gameState[room]);
-                console.log(gameState[room].state);
                 if(isRoomState(room,validState.equipment_use)){
                     addTimeout(useEquipment,delayLength,room,token);
                     break;
@@ -514,7 +511,6 @@ function handleRollEvent(room,token,msg){
 }
 
 function handleAnswerEvent(room,token,msg){
-    console.log(msg);
     if(answerHandler.validAnswerEvent(gameState[room],token,msg)){
         clearTimeout(gameState[room].timeout_id);
         gameState[room] = answerHandler.handleAnswerEvent(gameState[room],token,msg);
@@ -546,7 +542,7 @@ function handleEquipmentUseEvent(room,token,msg){
     let target_token = msg.target_token;
     let card_user = msg.equipment;
 
-    gameState[room].target_token = null;
+    // Do nothing for now
 
     // if equipment has no targetor target has no reflector, execute directly
     // else wait for the reflector
@@ -607,7 +603,7 @@ function useEquipment(room,token){
     if(gameState[room].player_status[token].equipment.length > 0){
         sendcurrentstatedata(room,validContext.equipment_use);
         addTimeout(timeout,equipmentTimeoutLength,room,token);
-    
+
     } else {
         gameState[room].state = validState.finished;
         finishturn(room,token);

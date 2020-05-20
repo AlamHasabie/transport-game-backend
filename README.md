@@ -66,6 +66,8 @@ io.emit("treasure answer",{
 })
 ```
 
+5. Equipment. Equi
+
 
 
 ### Status Change Updates
@@ -165,7 +167,10 @@ Examples :
             username : "Kucing",
             money : 100,
             square : 25,
-	    coupons : [0,2]
+            coupons : [0]
+            equipment : [],
+            nullifier : [],
+            reflector : [],
             questions_answered : [0]
             held_question : null
         "P35252" : {
@@ -173,13 +178,19 @@ Examples :
             money : 100,
             square : 25,
             coupons : [],
+            equipment : [],
+            nullifier : [2],
+            reflector : [],
             questions_answered : [4],
             held_question : 5,
         }
         P252c2cec : {
             username : "Telo",
             money : 100,
- 	    coupons : [],
+            coupons : [],
+            equipment : [],
+            nullifier : [],
+            reflector : [],
             square : 39,
             questions_answered : [],
             held_question : null,

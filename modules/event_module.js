@@ -144,7 +144,9 @@ function numberOfHeldEquipment(room,token){
 }
 
 function allowedToStoreCard(room,token){
-    return numberOfHeldEquipment(room,token) <= config.max_allowed_equipments;
+    console.log(numberOfHeldEquipment(room,token));
+    console.log(config.max_allowed_equipments);
+    return (numberOfHeldEquipment(room,token) < config.max_allowed_equipments);
 }
 
 function validEquipmentUseEvent(room,token,msg){
@@ -167,7 +169,8 @@ function validEquipmentUseEvent(room,token,msg){
 }
 
 function handleEquipmentUseEvent(room,token,msg){
-    let msg
+  
+    return room;
 
 }
 module.exports={
