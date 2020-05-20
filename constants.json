@@ -57,6 +57,7 @@
         "finish" : "finish",
         "answer_timeout" : "answer_timeout",
         "equipment_full" : "equipment_full",
-        "equipment_use" : "equipment_use"
+        "equipment_use" : "equipment_use",
+        "no_equipment" : "no_equipment"
     }
 }

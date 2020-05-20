@@ -162,14 +162,14 @@ function validEquipmentUseEvent(room,token,msg){
         return(
             (room.state==constants.validState.equipment_use_ready)&&
             (token==playing_token)&&
-            (room.player_status[token].equipment.includes(equipment))&&
-            (room.player_status.hasOwnProperty(target_token))
+            (room.player_status[token].equipment.includes(equipment))
         );
     } else {
         return(
             (room.state==constants.validState.equipment_use_ready)&&
             (token==playing_token)&&
-            (room.player_status[token].equipment.includes(equipment))
+            (room.player_status[token].equipment.includes(equipment))&&
+            (room.player_status.hasOwnProperty(target_token))
         );
     }
 }
@@ -179,6 +179,7 @@ function handleEquipmentUseEvent(room,token,msg){
     let equipment = msg.equipment;
     let target_token = msg.target_token;
     if(equipment==null){
+        emitter.sendstate(room,constants.validContext.no_equipment);
         room.state = constants.validState.finished;
         return room;    
     }

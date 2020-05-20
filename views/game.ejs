@@ -31,6 +31,7 @@
     <label for="equipment-id">Eq id</label>
     <input type="number" id="equipment-id" name="equipment-id"><br>
     <button type="submit" id="equip-btn" name="equip-btn">Use Equipment</button>
+    <button type="submit" id="no-equip-btn" name="no-equip-btn">Use No Equipment</button>
     
   </body>
   <script src="/socket.io/socket.io.js"></script>
@@ -142,10 +143,24 @@
 
         $("#equip-btn").click(function(e){
           e.preventDefault();
-          socket.emit("use equipment",{
-            card_id : parseInt($("#equipment-id").val())
-          })
-        })
+          let target = $("#target-token").val();
+          let equipment = parseInt($("#equipment-id").val());
+          target = target=="" ? null : target;
+          console.log(target);
+          console.log(equipment);
+          socket.emit("equipment",{
+            equipment : parseInt(equipment),
+            target : target
+          });
+        });
+
+        $("#no-equip-btn").click(function(e){
+          socket.emit("equipment",{
+            equipment : null
+          });
+        });
+
+
 
 
   });

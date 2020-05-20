@@ -549,23 +549,17 @@ function handleTreasureAnswerEvent(room,token,msg){
 }
 
 function handleEquipmentUseEvent(room,token,msg){
-
-    let target_token = msg.target_token;
-    let card_user = msg.equipment;
-
     if(eventHandler.validEquipmentUseEvent(gameState[room],token,msg)){
-        // Defer handling
         gameState[room].state = validState.equipment_activate;
         clearTimeout(gameState[room].timeout_id);
         setTimeout(deferredHandleEquipmentUseEvent,delayLength,room,token,msg);
     }
-
-
 }
 
 // Handle occurs here
 function deferredHandleEquipmentUseEvent(room,token,msg){
-    gameState[room] = eventHandler.handleEquipmentUseEvent(room,token,msg);
+    gameState[room] = eventHandler.handleEquipmentUseEvent(gameState[room],token,msg);
+    console.log(gameState[room]);
     if(isRoomState(room,validState.finished)){
         setTimeout(finishturn,delayLength,room,token);
     } else if (isRoomState(room,validState.roll_again)){
