@@ -16,7 +16,8 @@
         "player_empty" : 13,
         "roll_received" : 14,
         "roll_again" : 15,
-        "equipment_answer" : 16
+        "equipment_answer" : 16,
+        "shield_offer" : 17
     },
     
     "validSquare" : {
@@ -61,6 +62,9 @@
         "equipment_full" : "equipment_full",
         "equipment_use" : "equipment_use",
         "no_equipment" : "no_equipment",
-        "cancel" :"cancel"
+        "shield_offer" : "shield_offer",
+        "shield_activated" : "shield_activated",
+        "cancel" :"cancel",
+        "reverse" : "reverse"
     }
 }

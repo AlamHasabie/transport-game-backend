@@ -289,6 +289,9 @@ function registerPlayerEvent(socket,token){
     socket.on("disconnect",function(msg){
         handleDisconnectEvent(room,token,msg);
     });
+    socket.on("shield",function(msg){
+        handleShieldEvent(room,token,msg);
+    })
 
     sendcurrentstatedata(room,validContext.player_join);
 
@@ -555,15 +558,35 @@ function handleEquipmentUseEvent(room,token,msg){
         setTimeout(deferredHandleEquipmentUseEvent,delayLength,room,token,msg);
     }
 }
-
-// Handle occurs here
 function deferredHandleEquipmentUseEvent(room,token,msg){
     gameState[room] = eventHandler.handleEquipmentUseEvent(gameState[room],token,msg);
-    console.log(gameState[room]);
+    transitionAfterEquipment(room,token);
+}
+
+function handleShieldEvent(room,token,msg){
+    if(eventHandler.validShieldEvent(gameState[room],token,msg)){
+        clearTimeout(gameState[room].timeout_id);
+        gameState[room].state = validState.equipment_activate;
+        sendcurrentstatedata(room,validContext.shield_activated);
+        let playing_token = gameState[room].player_order[gameState[room].current_player];
+        setTimeout(deferredHandleShieldEvent,delayLength,room,playing_token,msg);
+    }
+}
+
+function deferredHandleShieldEvent(room,token,msg){
+    room = eventHandler.handleShieldEvent(gameState[room],playing_token,msg);
+    transitionAfterEquipment(room,playing_token,msg);
+}
+
+function transitionAfterEquipment(room,token){
     if(isRoomState(room,validState.finished)){
         setTimeout(finishturn,delayLength,room,token);
     } else if (isRoomState(room,validState.roll_again)){
         setTimeout(rollAgain,delayLength,room,token);
+    } else if (isRoomState(room,validState.answer_wait)){
+        addTimeout(answerTimeout,answerTimeoutLength,room,token);
+    } else if (isRoomState(room,validState.shield_offer)){
+        addTimeout(shieldTimeout(room))
     } else {
         setTimeout(finishturn,delayLength,room,token);
     }
@@ -589,6 +612,20 @@ function answerTimeout(room,token){
     sendcurrentstatedata(room,validContext.answer_timeout);
     addTimeout(useEquipment,delayLength,room,token);
 
+}
+
+function shieldTimeout(room,token){
+    sendcurrentstatedata(room,validContext.timeout);
+    gameState[room].state = validState.equipment_activate;
+    setTimeout(deferredShieldTimeout,delayLength,room);
+}
+
+function deferredShieldTimeout(room){
+    let msg = {};
+    let playing_token = gameState[room].player_order[gameState[room].current_player];
+    msg.equipment = null;
+    room = eventHandler.handleShieldEvent(gameState[room],playing_token,msg);
+    transitionAfterEquipment(room,playing_token);
 }
 
 function timeout(room,token){

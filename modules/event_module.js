@@ -3,6 +3,7 @@ const event_cards = require("../assets/test_events.json");
 const event_types = event_data.type;
 const event_effects = event_data.effect;
 const question_module = require("./question_module");
+const answer_module = require("./answer_module");
 const constants = require("../constants.json");
 const config = require("../config.json");
 var emitter;
@@ -39,8 +40,6 @@ function handle(room){
 
     let token = room.player_order[room.current_player];
     let event = event_cards[room.event_pointer];
-    
-    
     room.state = constants.validState.equipment_use;
     switch(event.type){
         case event_types.event :
@@ -50,9 +49,6 @@ function handle(room){
             room = handle_equipment_event(room,event,token);
             break;
     }
-
-
-
     return room;
 }
 
@@ -199,12 +195,10 @@ function handleEquipmentUseEvent(room,token,msg){
     room.target_token = target_token;
     room.equipment_used = equipment;
     room.reply_equipment = null;
-
-    // TODO : Check if others can be hit
-    // If so , then execute
     if(card.toOther){
         if(room.player_status[target_token].shield.length>0){
-            
+            room.state = constants.validState.shield_offer;
+            emitter.sendstate(room,constants.validContext.shield_offer);
         } else {
             room = executeEquipment(room);
         }
@@ -213,6 +207,35 @@ function handleEquipmentUseEvent(room,token,msg){
     }
 
     return room;
+}
+
+function validShieldEvent(room,token,msg){
+
+    if(room.state!=constants.validState.shield_offer){
+        return false;
+    }
+    if(room.target_token!=token){
+        return false;
+    }
+
+    let card_no = msg.equipment;
+    if(card_no==null){
+        return true;
+    }
+
+    let card = event_cards[card_no%event_cards.length];
+    if(!(card.effect==event_effects.cancel||card.event_effects==event_effects.reverse)){
+        return false;
+    }
+    if(!room.player_status[token].shield.includes(card_no)){
+        return false;
+    }
+    return true;
+}
+
+function handleShieldEvent(room,token,msg){
+    room.reply_equipment = msg.equipment;
+    return executeEquipment(room);
 }
 
 
@@ -232,6 +255,7 @@ function executeEquipment(room){
             room.state = constants.validState.finished;
             return room;
         } else if(reply_card.effect==event_effects.reverse){
+            emitter.sendstate(room,constants.validContext.reverse);
             let temp = execute_from;
             execute_from = execute_to;
             execute_to = temp;
@@ -242,6 +266,7 @@ function executeEquipment(room){
     switch(card.effect){
         
         case event_effects.roll:
+            emitter.sendstate(room,constants.validContext.equipment_use);
             room.state = constants.validState.roll_again;
             room.repeated_roll = 1;
             break;
@@ -250,22 +275,26 @@ function executeEquipment(room){
             if(!question_module.playerHasQuestion(room,execute_from)){
                 room = question_module.givequestion(room,execute_from);
             }
+            emitter.sendstate(room,constants.validContext.equipment_use);
             room.state = constants.validState.finished;
             break;
 
         case event_effects.take_answer:
             room.answers_drawed = 1;
-            room.state = constants.validState.equipment_answer;
+            room.state = answer_module.handle(room);
+            emitter.sendstate(room,constants.validContext.key);
             break;
 
         case event_effects.rob : 
             room.player_status[execute_from].money+=card.nominal;
             room.player_status[execute_to].money-=card.nominal;
+            emitter.sendstate(room,constants.validContext.equipment_use);
             room.state = constants.validState.finished;
             break;
 
         case event_effects.remove_question :
             room = question_module.releaseHeldQuestion(room,execute_to);
+            emitter.sendstate(room,constants.validContext.equipment_use);
             room.state = constants.validState.finished;
             break;
 
@@ -306,5 +335,7 @@ module.exports={
     handle : handle,
     addFieldToPlayer : addFieldToPlayer,
     validEquipmentUseEvent : validEquipmentUseEvent,
-    handleEquipmentUseEvent : handleEquipmentUseEvent
+    handleEquipmentUseEvent : handleEquipmentUseEvent,
+    validShieldEvent : validShieldEvent,
+    handleShieldEvent : handleShieldEvent
 }
