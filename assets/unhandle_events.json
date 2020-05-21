@@ -73,14 +73,7 @@
             "type" : "equipment",
             "effect" : "remove question",
             "toOther" : true
-        },
-        {
-            "title" : "Boots of Speed [Equipment]",
-            "text" : "Roll again",
-            "type" : "equipment",
-            "effect" : "roll",
-            "toOther" : false
-        },
+        }
         {
             "title" : "Ball of Smoke [Equipment]",
             "text" : "Cancel the equipment effect",

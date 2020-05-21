@@ -5,23 +5,16 @@
             "title" : "Wand of Mind [Equipment]",
             "text" : "Can be used to take one question or key card",
             "type" : "equipment",
-            "effect" : "take",
+            "effect" : "take question",
             "toOther" : false
         },
         {
             "title" : "Mask of Hypnotize [Equipment]",
             "text" : "Can be used to take one question or key card",
             "type" : "equipment",
-            "effect" : "take",
+            "effect" : "take answer",
             "toOther" : false
  
-        },
-        {
-            "title" : "Token of Teleporation [Equipment]",
-            "text" : "Can be used to move another player or yourself to the desired place",
-            "type" : "equipment",
-            "effect" : "teleport",
-            "toOther" : true
         },
         {
             "title" : "Staff of Electricity [Equipment]",
@@ -35,6 +28,7 @@
             "text" : "Take $20 off another player",
             "type" : "equipment",
             "effect" : "rob",
+            "nominal" : 20,
             "toOther" : true
         },
         {
@@ -51,13 +45,6 @@
             "effect" : "reverse",
             "toOther" : true
 
-        },
-        {
-            "title" : "Compass of Truth [Equipment]",
-            "text" : "Can be used to move yourself to the desired space",
-            "type" : "equipment",
-            "effect" : "teleport",
-            "toOther" : false
         },
         {
             "title" : "Gloves of Thief [Equipment]",
@@ -256,7 +243,8 @@
         "equipment" : "equipment"
     },
     "effect" : {
-        "take" : "take",
+        "take_question" : "take question",
+        "take_answer" : "take answer",
         "reverse" : "reverse",
         "skip" : "skip",
         "rob" : "rob",

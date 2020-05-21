@@ -37,6 +37,7 @@ function newRoom(){
         target_token : null,
         equipment_used : null,
         reply_equipment : null,
+        is_equipment_used : false
     }
 }
 
