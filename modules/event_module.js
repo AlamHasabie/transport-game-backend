@@ -134,8 +134,6 @@ function numberOfHeldEquipment(room,token){
 }
 
 function allowedToStoreCard(room,token){
-    console.log(numberOfHeldEquipment(room,token));
-    console.log(config.max_allowed_equipments);
     return (numberOfHeldEquipment(room,token) < config.max_allowed_equipments);
 }
 
@@ -327,8 +325,6 @@ function resetCardsAfterEquipmentUse(room){
     room.equipment_used = null;
     room.reply_equipment = null;
     room.is_equipment_used = true;
-
-    console.log(room);
     return room;
         
 }
