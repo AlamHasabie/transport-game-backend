@@ -195,6 +195,8 @@ function handleEquipmentUseEvent(room,token,msg){
     room.target_token = target_token;
     room.equipment_used = equipment;
     room.reply_equipment = null;
+
+    let card = event_cards[equipment%event_cards.length];
     if(card.toOther){
         if(room.player_status[target_token].shield.length>0){
             room.state = constants.validState.shield_offer;
@@ -261,8 +263,6 @@ function executeEquipment(room){
             execute_to = temp;
         }
     }
-
-
     switch(card.effect){
         
         case event_effects.roll:
@@ -310,13 +310,13 @@ function executeEquipment(room){
 function resetCardsAfterEquipmentUse(room){
     room.taken_event_cards.delete(room.equipment_used);
     room.player_status[room.from_token].equipment = 
-    room.player_status[from_token].equipment.filter(function(el){
+    room.player_status[room.from_token].equipment.filter(function(el){
         return el!=room.equipment_used;
     });
     if(room.reply_equipment!=null){
         room.taken_event_cards.delete(room.reply_equipment);
         room.player_status[room.to_token].equipment = 
-        room.player_status[to_token].equipment.filter(function(el){
+        room.player_status[room.to_token].equipment.filter(function(el){
             return el!=room.reply_equipment;
         });
     }
