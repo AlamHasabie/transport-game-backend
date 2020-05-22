@@ -225,13 +225,19 @@ function validShieldEvent(room,token,msg){
         return true;
     }
 
-    let card = event_cards[card_no%event_cards.length];
-    if(!(card.effect==event_effects.cancel||card.event_effects==event_effects.reverse)){
-        return false;
-    }
     if(!room.player_status[token].shield.includes(card_no)){
         return false;
     }
+
+    let card = event_cards[card_no%event_cards.length];
+    if(card.effect==event_effects.cancel){
+        return true;
+    }
+
+    if(card.effect==event_effects.reverse){
+        return true;
+    }
+
     return true;
 }
 
