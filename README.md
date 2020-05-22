@@ -209,8 +209,7 @@ Examples :
             square : 25,
             coupons : [0]
             equipment : [],
-            nullifier : [],
-            reflector : [],
+            shield : [],
             questions_answered : [0]
             held_question : null
         "P35252" : {
@@ -239,7 +238,7 @@ Examples :
 
 
 ## Game Master
-Game Master should be registered before being able to change game state, with the following post request :
+Game Master should be registered before being able to change game state, with the following post request to /gm path.
 ```json
 {
     "username" : "username",
