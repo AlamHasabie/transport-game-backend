@@ -263,7 +263,6 @@ function executeEquipment(room){
             execute_to = temp;
         }
     }
-    console.log(card.effect);
     switch(card.effect){
         
         case event_effects.roll:
@@ -321,8 +320,8 @@ function resetCardsAfterEquipmentUse(room){
     });
     if(room.reply_equipment!=null){
         room.taken_event_cards.delete(room.reply_equipment);
-        room.player_status[room.to_token].equipment = 
-        room.player_status[room.to_token].equipment.filter(function(el){
+        room.player_status[room.target_token].equipment = 
+        room.player_status[room.target_token].equipment.filter(function(el){
             return el!=room.reply_equipment;
         });
     }

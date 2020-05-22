@@ -14,8 +14,6 @@ function sendstate(room,context){
     let roomname = room.roomname;
 
     delete room.timeout_id;
-
-    console.log("Send context : " + context);
     io.to(roomname).emit("update",{
         context : context,
         game_status : room

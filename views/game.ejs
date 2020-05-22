@@ -164,7 +164,8 @@
 
         $("#shield-btn").click(function(e){
           e.preventDefault();
-          let shield = parseInt($("shield-eq").val());
+          let shield = parseInt($("#shield-eq").val());
+          console.log(shield);
           socket.emit("shield",{
             equipment : shield
           });

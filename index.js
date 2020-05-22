@@ -565,6 +565,7 @@ function deferredHandleEquipmentUseEvent(room,token,msg){
 
 function handleShieldEvent(room,token,msg){
     if(eventHandler.validShieldEvent(gameState[room],token,msg)){
+        console.log(msg);
         clearTimeout(gameState[room].timeout_id);
         gameState[room].state = validState.equipment_activate;
         sendcurrentstatedata(room,validContext.shield_activated);
@@ -574,8 +575,8 @@ function handleShieldEvent(room,token,msg){
 }
 
 function deferredHandleShieldEvent(room,token,msg){
-    room = eventHandler.handleShieldEvent(gameState[room],playing_token,msg);
-    transitionAfterEquipment(room,playing_token,msg);
+    gameState[room] = eventHandler.handleShieldEvent(gameState[room],token,msg);
+    transitionAfterEquipment(room,token,msg);
 }
 
 function transitionAfterEquipment(room,token){
@@ -586,7 +587,7 @@ function transitionAfterEquipment(room,token){
     } else if (isRoomState(room,validState.answer_wait)){
         addTimeout(answerTimeout,answerTimeoutLength,room,token);
     } else if (isRoomState(room,validState.shield_offer)){
-        addTimeout(shieldTimeout(room))
+        addTimeout(shieldTimeout,timeoutLength,room,token);
     } else {
         setTimeout(finishturn,delayLength,room,token);
     }
@@ -624,7 +625,7 @@ function deferredShieldTimeout(room){
     let msg = {};
     let playing_token = gameState[room].player_order[gameState[room].current_player];
     msg.equipment = null;
-    room = eventHandler.handleShieldEvent(gameState[room],playing_token,msg);
+    gameState[room] = eventHandler.handleShieldEvent(gameState[room],playing_token,msg);
     transitionAfterEquipment(room,playing_token);
 }
 

@@ -1,9 +1,17 @@
 [
     {
-        "title" : "Fire Bullet [Equipment]",
-        "text" : "Remove a question of another player",
+        "title" : "Ball of Smoke [Equipment]",
+        "text" : "Cancel the equipment effect",
         "type" : "equipment",
-        "effect" : "remove question",
+        "effect" : "cancel",
+        "toOther" : false
+    },
+    {
+        "title" : "Mantle of Invisibility [Equipment]",
+        "text" : "Take $20 off another player",
+        "type" : "equipment",
+        "effect" : "rob",
+        "nominal" : 20,
         "toOther" : true
     }
 ]
