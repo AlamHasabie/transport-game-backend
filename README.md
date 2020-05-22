@@ -254,7 +254,7 @@ The following are event valid for the game master :
 io.emit("finish");
 ```
 
-2. Change the timeout
+2. Change the timeout. Put the new timeout in milliseconds unit.
 ```js
 io.emit("timeout change",{
     timeout : 45000000
