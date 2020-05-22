@@ -163,7 +163,7 @@ function validEquipmentUseEvent(room,token,msg){
     }
 
     let card = event_cards[equipment%event_cards.length];
-    if(!card.type == event_types.equipment){
+    if(!(card.type == event_types.equipment)){
         return false;
     }
     if (!card.toOther){
@@ -300,7 +300,10 @@ function executeEquipment(room){
             emitter.sendstate(room,constants.validContext.equipment_use);
             room.state = constants.validState.finished;
             break;
-
+        case event_effects.skip:
+            room.skipped.add(execute_to);
+            emitter.sendstate(room,constants.validContext.equipment_use);
+            room.state = constants.validState.finished;
         default :
             room.state = constants.validState.finished;
             break;

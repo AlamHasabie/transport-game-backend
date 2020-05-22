@@ -2,14 +2,6 @@
     "cards" : 
     [
         {
-            "title" : "Mask of Hypnotize [Equipment]",
-            "text" : "Can be used to take one question or key card",
-            "type" : "equipment",
-            "effect" : "take",
-            "toOther" : false
- 
-        },
-        {
             "title" : "Staff of Electricity [Equipment]",
             "text" : "Can be used to make another player skip a turn",
             "type" : "equipment",
@@ -37,7 +29,7 @@
             "effect" : "reverse",
             "toOther" : true
 
-        }
+        },
         {
             "title" : "Gloves of Thief [Equipment]",
             "text" : "Steal $10 off your enemy",
@@ -52,7 +44,7 @@
             "type" : "equipment",
             "effect" : "remove question",
             "toOther" : true
-        }
+        },
         {
             "title" : "Ball of Smoke [Equipment]",
             "text" : "Cancel the equipment effect",

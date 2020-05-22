@@ -149,11 +149,9 @@
           let target = $("#target-token").val();
           let equipment = parseInt($("#equipment-id").val());
           target = target=="" ? null : target;
-          console.log(target);
-          console.log(equipment);
           socket.emit("equipment",{
             equipment : parseInt(equipment),
-            target : target
+            target_token : target
           });
         });
 

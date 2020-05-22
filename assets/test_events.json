@@ -1,9 +1,9 @@
 [
     {
-        "title" : "Wand of Mind [Equipment]",
-        "text" : "Can be used to take one question or key card",
+        "title" : "Slinger [Equipment]",
+        "text" : "Can be used to make another player skip a turn",
         "type" : "equipment",
-        "effect" : "take answer",
-        "toOther" : false
+        "effect" : "skip",
+        "toOther" : true
     }
 ]

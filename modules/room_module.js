@@ -60,7 +60,7 @@ function buildTurnOrder(room){
 
     let current_max_dice,current_index,token;
 
-    for(var i = 0 ; i < room.player ; i++){
+    while(room.first_roll.length > 0){
         current_max_dice = 0;
         current_index = 0;
         for(var k = 0; k < room.first_roll.length ; k++){
