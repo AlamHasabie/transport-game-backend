@@ -7,21 +7,6 @@
             "type" : "equipment",
             "effect" : "reverse",
             "toOther" : true
-
-        },
-        {
-            "title" : "Ball of Smoke [Equipment]",
-            "text" : "Cancel the equipment effect",
-            "type" : "equipment",
-            "effect" : "cancel",
-            "toOther" : false
-        },
-        {
-            "title" : "Boots of Evasion [Equipment]",
-            "text" : "Cancel the effect casted on yourself.",
-            "type" : "equipment",
-            "effect" : "cancel",
-            "toOther" : false
         }
     ],
     "type" : {

@@ -257,7 +257,6 @@ function executeEquipment(room){
             room.state = constants.validState.finished;
             return room;
         } else if(reply_card.effect==event_effects.reverse){
-            emitter.sendstate(room,constants.validContext.reverse);
             let temp = execute_from;
             execute_from = execute_to;
             execute_to = temp;
@@ -332,6 +331,7 @@ function resetCardsAfterEquipmentUse(room){
     room.reply_equipment = null;
     room.is_equipment_used = true;
 
+    console.log(room);
     return room;
         
 }

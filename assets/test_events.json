@@ -1,10 +1,10 @@
 [
     {
-        "title" : "Ball of Smoke [Equipment]",
-        "text" : "Cancel the equipment effect",
+        "title" : "Mirror of Reflection [Equipment]",
+        "text" : "Returns the equipment effect received to the sender",
         "type" : "equipment",
-        "effect" : "cancel",
-        "toOther" : false
+        "effect" : "reverse",
+        "toOther" : true
     },
     {
         "title" : "Mantle of Invisibility [Equipment]",
