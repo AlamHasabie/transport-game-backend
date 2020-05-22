@@ -65,6 +65,8 @@
         "shield_offer" : "shield_offer",
         "shield_activated" : "shield_activated",
         "cancel" :"cancel",
-        "reverse" : "reverse"
+        "reverse" : "reverse",
+        "game_timeout" : "game_timeout",
+        "game_timeout_change" : "game_timeout_change"
     }
 }

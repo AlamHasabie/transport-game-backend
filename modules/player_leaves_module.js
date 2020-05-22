@@ -38,7 +38,9 @@ function handle(room,token){
         /** We would just reduce the player count to 0 */
         /** Later , the server would delete the room eventually */
         case constants.validState.ended :
-            room.player = room.player - 1;
+            room.player_order = room.player_order.filter(function(el){
+                return el != token;
+            });
             break;
         default:
             break;

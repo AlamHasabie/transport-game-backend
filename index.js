@@ -28,6 +28,7 @@ const validContext = validConstants.validContext;
 
 global.gameState = {};
 global.userInfo = {};
+global.gameTimeout = {};
 
 
 app.use(function(req, res, next) {
@@ -80,12 +81,9 @@ app.post('/gm',(req,res)=>{
         res.send({
             token : id
         })
-
     } else {
         res.status(403);
     }
-
-
 })
 
 app.get('/reconnect/:token',(req,res)=>{
@@ -122,7 +120,6 @@ app.post('/game',(req,res)=>{
     while(userInfo.hasOwnProperty(id)){
         id = crypto.randomBytes(20).toString('hex');
     }
-    
     userInfo[id] = {
         roomname : roomname,
         role : role,
@@ -195,8 +192,6 @@ io.on('connection',(socket)=>{
 
         if(role == "player"){
 
-            
-            // Reconnect before game ended
             if(gameState[room].player_status.hasOwnProperty(token)&&
             !isRoomState(room,validState.ended)){                                
                 registerPlayerEvent(socket,token);
@@ -241,19 +236,12 @@ treasureHandler.init(emitter);
 playerLeaveHandler.init(emitter);
 eventHandler.init(emitter);
 room_module.init(emitter);
-
-
 http.listen(3000,()=>{
     console.log('listening on 3000');
 });
-
-
 function registerNewPlayer(socket,token){
-
     var user = userInfo[token];
     var room = user.roomname;
-
-    socket.join(room);
     addnewplayertoroom(room,token);
     gameState[room].player_status[token] =
         serviceHandler.addFieldToPlayer(gameState[room].player_status[token]);
@@ -313,7 +301,6 @@ function registerValidSpectator(socket,token){
 
     socket.on("disconnect",function(msg){
         gameState[room].spectator.delete(token);
-
         deleteroomifempty(room);
     });
 }
@@ -330,10 +317,12 @@ function registerValidGameMaster(socket,token){
         gameState[room].gamemaster.delete(token);
         deleteroomifempty(room);
     });
-
     socket.on("finish",function(msg){
         finishGame(room);
     });
+    socket.on("timeout change",function(msg){
+        handleTimeoutChangeEvent(room,msg);
+    })
 }
 function createnewroom(roomname){
 
@@ -361,13 +350,16 @@ function addnewplayertoroom(room,token){
 
 function deleteroomifempty(room){
     if(gameState.hasOwnProperty(room)){
-        if(gameState.hasOwnProperty("player")&&
+        if(gameState.hasOwnProperty("player_order")&&
         gameState.hasOwnProperty("spectator")&&
         gameState.hasOwnProperty("gamemaster")){
-            if(gameState[room].player==0&&
+            if(gameState[room].player_order.length==0&&
                 gameState[room].spectator.size==0&&
                 gameState[room].gamemaster.size==0){
+                clearTimeout(gameState[room].timeout_id);
+                clearTimeout(gameTimeout[room]);
                 delete gameState[room];
+                delete gameTimeout[room];
                 console.log("Room " + room + " is deleted");
             }
         }
@@ -494,6 +486,9 @@ function handleFirstRollEvent(room,token,msg){
             dice : dice
         });
         if(gameState[room].roll_wait.size == 0){
+            gameState[room].start_time = new Date();
+            let game_timeout = gameState[room].game_timeout;
+            gameTimeout[room] = setTimeout(gameTimeoutHandle,game_timeout,room);
             gameState[room] = room_module.startGame(gameState[room]);   
             addTimeout(timeout,timeoutLength,room,token);
         }
@@ -501,7 +496,6 @@ function handleFirstRollEvent(room,token,msg){
 }
 
 function handleRollEvent(room,token,msg){
-    /** TODO : Postpone call of handling after rolling, preferably using another state */
     if(rollHandler.validRollEvent(gameState[room],token,msg)){
         clearTimeout(gameState[room].timeout_id);
         gameState[room].state = validState.roll_received;
@@ -537,13 +531,13 @@ function handleAnswerEvent(room,token,msg){
 }
 
 function handleTreasureAnswerEvent(room,token,msg){
-
     if(isPlayingToken(token,room)&&
     isRoomState(room,validState.treasure_wait)){
         clearTimeout(gameState[room].timeout_id);
         if(msg.answer==treasure.answer){
             gameState[room].player_status[token].money+=config.treasure_reward;
             gameState[room].state = validState.ended;
+            clearTimeout(gameTimeout[room]);
             addTimeout(finishGame,delayLength,room,null);
         } else {
             treasureFail(room,token);
@@ -594,6 +588,7 @@ function transitionAfterEquipment(room,token){
 }
 
 function finishGame(room){
+    gameState[room].state = validState.ended;
     sendcurrentstatedata(room,validContext.finish);
     deleteroomifempty(room);
 }
@@ -662,5 +657,38 @@ function useEquipment(room,token){
     } else {
         gameState[room].state = validState.finished;
         finishturn(room,token);
+    }
+}
+
+
+function gameTimeoutHandle(room){
+    sendcurrentstatedata(room,validContext.game_timeout);
+    if(gameState[room].timeout_id!=null){
+        clearTimeout(gameState[room].timeout_id);
+    }
+    gameState[room].state = validState.ended;
+    setTimeout(finishGame,delayLength,room);
+}
+
+function handleTimeoutChangeEvent(room,msg){
+    if(msg.timeout!=null){
+        if(gameTimeout(room)!=null){
+            let current_time = new Date();
+            let time_diff = current_time - gameState[room].start_time;
+            if(msg.timeout >= time_diff){
+                clearTimeout(gameTimeout[room]);
+                gameState[room].game_timeout = msg.timeout;
+                gameTimeout[room] = setTimeout(
+                    gameTimeoutHandle,
+                    gameState[room].gameTimeout - time_diff,
+                    room
+                );
+                sendcurrentstatedata(room,validContext.game_timeout_change);
+            }
+        } else {
+            let new_timeout = msg.timeout;
+            gameState[room].game_timeout = new_timeout;
+            sendcurrentstatedata(room,validContext.game_timeout_change);
+        }
     }
 }

@@ -234,3 +234,27 @@ Examples :
 ```
 
 
+## Game Master
+Game Master should be registered before being able to change game state, with the following post request :
+```json
+{
+    "username" : "username",
+    "password" : "password",
+    "room" : "room"
+}
+```
+The gamemaster would then receive a token for the socket handshake
+
+The following are event valid for the game master :
+1. Finish the game
+```js
+io.emit("finish");
+```
+
+2. Change the timeout
+```js
+io.emit("timeout change",{
+    timeout : 45000000
+})
+```
+Note that timeout will be change only when the new timeout is bigger than current gametime or the game has not started yet. An emit with game_timeout_change context will be sent.

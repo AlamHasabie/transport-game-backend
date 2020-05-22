@@ -11,7 +11,6 @@ function init(emitter_in){
     emitter = emitter_in;
 }
 
-
 function handle(room){
     let token = room.player_order[room.current_player];
     let n_questions = room.player_status[token].questions_answered.length;

@@ -1,4 +1,5 @@
 var constants = require("../constants.json");
+var config = require("../config.json");
 var emitter;
 
 function init(emitter_in){
@@ -34,7 +35,9 @@ function newRoom(){
         target_token : null,
         equipment_used : null,
         reply_equipment : null,
-        is_equipment_used : false
+        is_equipment_used : false,
+        game_timeout : config.default_game_length,
+        start_time : null
     }
 }
 
