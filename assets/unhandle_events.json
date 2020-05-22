@@ -10,21 +10,6 @@
 
         },
         {
-            "title" : "Gloves of Thief [Equipment]",
-            "text" : "Steal $10 off your enemy",
-            "type" : "equipment",
-            "effect" : "rob",
-            "nominal" : 10,
-            "toOther" : true
-        },
-        {
-            "title" : "Fire Bullet [Equipment]",
-            "text" : "Remove a question of another player",
-            "type" : "equipment",
-            "effect" : "remove question",
-            "toOther" : true
-        },
-        {
             "title" : "Ball of Smoke [Equipment]",
             "text" : "Cancel the equipment effect",
             "type" : "equipment",

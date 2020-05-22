@@ -1,10 +1,9 @@
 [
     {
-        "title" : "Mantle of Invisibility [Equipment]",
-        "text" : "Take $20 off another player",
+        "title" : "Fire Bullet [Equipment]",
+        "text" : "Remove a question of another player",
         "type" : "equipment",
-        "effect" : "rob",
-        "toOther" : true,
-        "nominal" : 20
+        "effect" : "remove question",
+        "toOther" : true
     }
 ]
