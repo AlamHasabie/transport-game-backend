@@ -1,9 +1,9 @@
 [
     {
-        "title" : "Boots of Speed [Equipment]",
-        "text" : "Roll again",
+        "title" : "Wand of Mind [Equipment]",
+        "text" : "Can be used to take one question or key card",
         "type" : "equipment",
-        "effect" : "roll",
+        "effect" : "take answer",
         "toOther" : false
     }
 ]

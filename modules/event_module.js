@@ -150,7 +150,7 @@ function validEquipmentUseEvent(room,token,msg){
         return false;
     }
 
-    if(!room.state==constants.validState.equipment_offer){
+    if(!(room.state==constants.validState.equipment_offer)){
         return false;
     }
 
@@ -263,6 +263,7 @@ function executeEquipment(room){
             execute_to = temp;
         }
     }
+    console.log(card.effect);
     switch(card.effect){
         
         case event_effects.roll:
@@ -281,8 +282,10 @@ function executeEquipment(room){
 
         case event_effects.take_answer:
             room.answers_drawed = 1;
-            room.state = answer_module.handle(room);
-            emitter.sendstate(room,constants.validContext.key);
+            room = answer_module.handle(room);
+            if(!(room.state==constants.validState.answer_wait)){
+                room.state = constants.validState.finished;
+            } 
             break;
 
         case event_effects.rob : 
