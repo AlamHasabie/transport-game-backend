@@ -2,27 +2,6 @@
     "cards" : 
     [
         {
-            "title" : "Staff of Electricity [Equipment]",
-            "text" : "Can be used to make another player skip a turn",
-            "type" : "equipment",
-            "effect" : "skip",
-            "toOther" : true
-        },
-        {
-            "title" : "Mantle of Invisibility [Equipment]",
-            "text" : "Take $20 off another player",
-            "type" : "equipment",
-            "effect" : "rob",
-            "toOther" : true
-        },
-        {
-            "title" : "Slinger [Equipment]",
-            "text" : "Can be used to make another player skip a turn",
-            "type" : "equipment",
-            "effect" : "skip",
-            "toOther" : true
-        },
-        {
             "title" : "Mirror of Reflection [Equipment]",
             "text" : "Returns the equipment effect received to the sender",
             "type" : "equipment",

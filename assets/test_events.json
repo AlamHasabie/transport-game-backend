@@ -1,9 +1,10 @@
 [
     {
-        "title" : "Slinger [Equipment]",
-        "text" : "Can be used to make another player skip a turn",
+        "title" : "Mantle of Invisibility [Equipment]",
+        "text" : "Take $20 off another player",
         "type" : "equipment",
-        "effect" : "skip",
-        "toOther" : true
+        "effect" : "rob",
+        "toOther" : true,
+        "nominal" : 20
     }
 ]
