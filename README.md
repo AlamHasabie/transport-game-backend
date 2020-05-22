@@ -62,10 +62,30 @@ io.emit("answer",{
 4. Treasure answer. Answer is between [A,E]
 ```js
 io.emit("treasure answer",{
-    selected : true
+    answer : "B"
 })
 ```
+### Equipment
+After each turn (except when landed in service), player would be offered a chance to use their equipment, if there is any.
+There will be **equipment_offer** context sent. To use an equipment, the player sends the following emit :
+```js
+io.emit("treasure answer",{
+    equipment : 3,
+    target_token : "abe62910f"
+})
+```
+equipment field is the card id in the stack. Target token should be filled if the equipment will be used against other, but can be emptied for some (example is roll equipment). If the user does not want to use the offer, he can simply put **null** into the equipment field.<br>
+There will be a timeout , and the server will decide the next player.<br>
+There are several possible outcomes from the equipment use. If the equipment used is to take an answer, then the server will emit key context instead of equipment use, and the player should send the answer as usual. If the equipment is roll again, then a roll again context will be sent, in which the player should roll before timeouts.
 
+#### Shielding
+If the targeted player has a shield(eiter cancel/reverse), the a shield offer emit would be sent. In that case, the targeted player should reply as the following :
+```js
+io.emit("shield",{
+    equipment : 2
+})
+```
+If valid, then the card effect is either cancelled or reversed. Should the player does not want to use its shield, he could simply put **null** into the equipment field.
 
 
 ### Status Change Updates
@@ -103,10 +123,17 @@ Context sent by server can be seen in the constans.json file, and can be one of 
 13. service : sent when current player lands on service
 14. turn : notify that the playing player should roll the dice. Called after every turn
 15. timeout : sent when timeout occurs. It normally should be followed with a turn context, since the next player should play
-16. answer_true : send when the answer of a player is true
-17. answer_false : send when the answer of a player is false
-18. no_answer : send when the player does not answer. 
-19. coupon_use : send when a player lands in service but has a coupon.
+16. answer_true : sent when the answer of a player is true
+17. answer_false : sent when the answer of a player is false
+18. no_answer : sent when the player does not answer. 
+19. coupon_use : sent when a player lands in service but has a coupon.
+20. equipment_full : sent when a player gets an equipment, but it has maximum number of equipments being held
+21. equipment_offer : sent when a player is offered to use an equipment
+22. equipment_use : sent when an equipment is used.
+23. shield_offer : sent when the targeted player has a shield and is offered to use it
+24. shield_activated : sent when a targeted player activates its shield
+25. cancel : notifies that current used equipment effect is cancelled due to the shield
+26. no_equipment : sent when the offered player does not use his equipment
 
 Note that contexts are registered within every "update" event emit of the socket.
 
@@ -131,6 +158,11 @@ Note that contexts are registered within every "update" event emit of the socket
 - answer_drawed : number of consecutive drawn answers, used during answer_wait state.
 - answer : answer by the player during answer_wait state. null in other state.
 - player_status : object of player status. Accessible with player token (player_status[token])
+- from_token : owner of the executed equipment
+- to_token : target of the executed equipment
+- equipment_used : id of the card of used equipment in execution
+- reply_equipment : id of the card of the shield equipment in execution
+- is_equipment_used : used just for indicator for rolling and answer_wait state after equipment execution
 
 ### player_status
 - money : money
@@ -138,7 +170,8 @@ Note that contexts are registered within every "update" event emit of the socket
 - question_answered :questions owned by user, represented as an array
 - held_question : question currently held by player. null if no question is held.
 - coupons : coupon for services held by user.
-
+- equipment : equipment cards held by player
+- equipment
 ### question (in player_status)
 
 
@@ -160,12 +193,20 @@ Examples :
     repeated_roll : 0,
     answers_drawed : 0,
     answer : null,
+    from_token : null,
+    target_token : null,
+    equipment_used : null,
+    reply_equipment : null,
+    is_equipment_used : false,
     player_status : {
         "PFFWFBH3333" : {
             username : "Kucing",
             money : 100,
             square : 25,
-	    coupons : [0,2]
+            coupons : [0]
+            equipment : [],
+            nullifier : [],
+            reflector : [],
             questions_answered : [0]
             held_question : null
         "P35252" : {
@@ -173,21 +214,23 @@ Examples :
             money : 100,
             square : 25,
             coupons : [],
+            equipment : [],
+            shield : [2]
             questions_answered : [4],
             held_question : 5,
         }
         P252c2cec : {
             username : "Telo",
             money : 100,
- 	    coupons : [],
+            coupons : [],
+            equipment : [],
+            shield : [],
             square : 39,
             questions_answered : [],
             held_question : null,
         }
     }
-
 }
-
 ```
 
 

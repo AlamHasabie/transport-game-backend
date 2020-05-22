@@ -19,7 +19,7 @@ function handle(room){
 
     room = emitter.sendstate(room,constants.validContext.reward);
 
-    room.state = constants.validState.finished;
+    room.state = constants.validState.equipment_use;
 
     return room;
 

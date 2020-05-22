@@ -31,6 +31,10 @@
     <label for="equipment-id">Eq id</label>
     <input type="number" id="equipment-id" name="equipment-id"><br>
     <button type="submit" id="equip-btn" name="equip-btn">Use Equipment</button>
+    <button type="submit" id="no-equip-btn" name="no-equip-btn">Use No Equipment</button>
+    <label for="shield-eq">Shield</label>
+    <input type="text" id="shield-eq" name="shield-eq"><br>
+    <button type="submit" id="shield-btn" name="shield-btn">Use Shield</button>
     
   </body>
   <script src="/socket.io/socket.io.js"></script>
@@ -142,10 +146,32 @@
 
         $("#equip-btn").click(function(e){
           e.preventDefault();
-          socket.emit("use equipment",{
-            card_id : parseInt($("#equipment-id").val())
-          })
-        })
+          let target = $("#target-token").val();
+          let equipment = parseInt($("#equipment-id").val());
+          target = target=="" ? null : target;
+          socket.emit("equipment",{
+            equipment : parseInt(equipment),
+            target_token : target
+          });
+        });
+
+        $("#no-equip-btn").click(function(e){
+          e.preventDefault();
+          socket.emit("equipment",{
+            equipment : null
+          });
+        });
+
+        $("#shield-btn").click(function(e){
+          e.preventDefault();
+          let shield = parseInt($("#shield-eq").val());
+          console.log(shield);
+          socket.emit("shield",{
+            equipment : shield
+          });
+        });
+
+
 
 
   });

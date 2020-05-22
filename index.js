@@ -20,6 +20,7 @@ const delayLength = config.delay;
 const timeoutLength = config.timeout;
 const answerTimeoutLength = config.answer_timeout
 const treasureAnswerTimeoutLength = config.treasure_timeout;
+const equipmentTimeoutLength = config.equipment_use_timeout;
 const treasure = require("./assets/treasure.json");
 const validState = validConstants.validState;
 const validSquare = validConstants.validSquare;
@@ -160,9 +161,9 @@ app.post('/test',(req,res)=>{
         createnewroom(roomname);
     }
     
-    var id = crypto.randomBytes(20).toString('hex');
+    var id = crypto.randomBytes(1).toString('hex');
     while(userInfo.hasOwnProperty(id)){
-        id = crypto.randomBytes(20).toString('hex');
+        id = crypto.randomBytes(1).toString('hex');
     }
     
     userInfo[id] = {
@@ -256,6 +257,8 @@ function registerNewPlayer(socket,token){
     addnewplayertoroom(room,token);
     gameState[room].player_status[token] =
         serviceHandler.addFieldToPlayer(gameState[room].player_status[token]);
+    gameState[room].player_status[token] = 
+        eventHandler.addFieldToPlayer(gameState[room].player_status[token]);
     gameState[room].player_ready.add(token);
     registerPlayerEvent(socket,token);
 }
@@ -280,9 +283,15 @@ function registerPlayerEvent(socket,token){
     socket.on("treasure answer",function(msg){
         handleTreasureAnswerEvent(room,token,msg);
     });
+    socket.on("equipment",function(msg){
+        handleEquipmentUseEvent(room,token,msg);
+    });
     socket.on("disconnect",function(msg){
         handleDisconnectEvent(room,token,msg);
     });
+    socket.on("shield",function(msg){
+        handleShieldEvent(room,token,msg);
+    })
 
     sendcurrentstatedata(room,validContext.player_join);
 
@@ -346,10 +355,7 @@ function addnewplayertoroom(room,token){
         money : 150,
         square : 0,
         held_question : null,
-        questions_answered : [],
-        equipment : [],
-        reflector : [],
-        nullifier : []
+        questions_answered : []
     }
 }
 
@@ -371,8 +377,6 @@ function deleteroomifempty(room){
 function sendcurrentstatedata(room,context){
     let timeout = gameState[room].timeout_id;
     delete gameState[room].timeout_id;
-    console.log(context + "==============");
-    console.log(gameState[room]);
     io.to(room).emit("update",{
         context : context,
         game_status : gameState[room]
@@ -386,45 +390,41 @@ function activatesquare(room,token){
         switch(board[position]){
             case validSquare.question :
                 gameState[room] = questionHandler.handle(gameState[room]);
-                console.log(gameState[room]);
-                addTimeout(finishturn,delayLength,room,token);
+                addTimeout(useEquipment,delayLength,room,token);
                 break;
 
             case validSquare.key :
                 gameState[room] = answerHandler.handle(gameState[room]);
                 if(isRoomState(room,validState.answer_wait)){
                     addTimeout(answerTimeout,answerTimeoutLength,room,token);
-                } else if(isRoomState(room,validState.finished)) {
-                    addTimeout(finishturn,delayLength,room,token);
+                } else if(isRoomState(room,validState.equipment_use)) {
+                    addTimeout(useEquipment,delayLength,room,token);
                 }
                 break;
 
             case validSquare.reward :
                 gameState[room] = rewardHandler.handle(gameState[room]);
-                addTimeout(finishturn,delayLength,room,token);
+                addTimeout(useEquipment,delayLength,room,token);
                 break;
 
             case validSquare.event :
                 gameState[room] = eventHandler.handle(gameState[room]);
-                console.log(gameState[room].state);
-                if(isRoomState(room,validState.finished)){
-                    addTimeout(finishturn,delayLength,room,token);
+                if(isRoomState(room,validState.equipment_use)){
+                    addTimeout(useEquipment,delayLength,room,token);
                     break;
-
-                } else if(isRoomState(room,validState.rolling)){
-                    addTimeout(timeout,timeoutLength,room,token);
-                
+                } else if(isRoomState(room,validState.roll_again)){
+                    setTimeout(rollAgain,delayLength,room,token);
+                    break;
                 } else {
                     addTimeout(finishturn,delayLength,room,token);
                 }
 
                 break;
 
-
             case validSquare.treasure :
                 gameState[room] = treasureHandler.handle(gameState[room]);
-                if(isRoomState(room,validState.finished)){
-                    addTimeout(finishturn,delayLength,room,token);
+                if(isRoomState(room,validState.equipment_use)){
+                    addTimeout(useEquipment,delayLength,room,token);
                 } else if (isRoomState(room,validState.treasure_wait)){
                     addTimeout(treasureFail,treasureAnswerTimeoutLength,room,token);
                 }
@@ -433,13 +433,14 @@ function activatesquare(room,token){
             case validSquare.service :
 
                 gameState[room] = serviceHandler.handle(gameState[room]);
-                addTimeout(finishturn,delayLength,room,token);
+                // Either coupon or not, this player shall be skipped
+                setTimeout(finishturn,delayLength,room,token);
                 break;
 
             case validSquare.start :
             case validSquare.empty :
-                gameState[room].state = validState.finished;
-                finishturn(room,token);
+                gameState[room].state = validState.equipment_use;
+                useEquipment(room,token);
                 break;
         }
     }
@@ -461,13 +462,12 @@ function changetonextplayer(room){
 
 function finishturn(room,token){
     let next_token;
-    if(isRoomState(room,validState.finished)){
-        gameState[room].current_player = changetonextplayer(room);
-        next_token = gameState[room].player_order[gameState[room].current_player];
-        gameState[room].state = validState.rolling;
-        sendcurrentstatedata(room,validContext.turn);
-        addTimeout(timeout,timeoutLength,room,next_token);
-    }
+    gameState[room].is_equipment_used = false;
+    gameState[room].current_player = changetonextplayer(room);
+    next_token = gameState[room].player_order[gameState[room].current_player];
+    gameState[room].state = validState.rolling;
+    sendcurrentstatedata(room,validContext.turn);
+    addTimeout(timeout,timeoutLength,room,next_token);
 }
 
 function handleReadyEvent(room,token,msg){
@@ -501,24 +501,35 @@ function handleFirstRollEvent(room,token,msg){
 }
 
 function handleRollEvent(room,token,msg){
+    /** TODO : Postpone call of handling after rolling, preferably using another state */
     if(rollHandler.validRollEvent(gameState[room],token,msg)){
         clearTimeout(gameState[room].timeout_id);
-        gameState[room] = rollHandler.handleRollEvent(gameState[room],token,msg);
-        if(isRoomState(room,validState.activation)){
-            addTimeout(activatesquare,delayLength,room,token);
-        } else if (isRoomState(room,validState.rolling)){
-            addTimeout(timeout,timeoutLength,room,token);
-        }
+        gameState[room].state = validState.roll_received;
+        setTimeout(delayedRollEventHandling,delayLength,room,token,msg);
     }
+}
+
+function delayedRollEventHandling(room,token,msg){
+    gameState[room] = rollHandler.handleRollEvent(gameState[room],token,msg);
+    if(isRoomState(room,validState.activation)){
+        addTimeout(activatesquare,delayLength,room,token);
+    } else if (isRoomState(room,validState.roll_again)){
+        setTimeout(rollAgain,delayLength,room,token);
+    }
+}
+
+function rollAgain(room,token){
+    gameState[room].state = validState.rolling;
+    sendcurrentstatedata(room,validContext.roll_again);
+    addTimeout(timeout,timeoutLength,room,token);
 }
 
 function handleAnswerEvent(room,token,msg){
     if(answerHandler.validAnswerEvent(gameState[room],token,msg)){
         clearTimeout(gameState[room].timeout_id);
-        gameState[room].answer = msg.selected;
-        gameState[room] = answerHandler.handleAnswerEvent(gameState[room]);
-        if(isRoomState(room,validState.finished)){
-            addTimeout(finishturn,delayLength,room,token);
+        gameState[room] = answerHandler.handleAnswerEvent(gameState[room],token,msg);
+        if(isRoomState(room,validState.equipment_use)){
+            addTimeout(useEquipment,delayLength,room,token);
         } else if(isRoomState(room,validState.answer_wait)){
             addTimeout(answerTimeout,answerTimeoutLength,room,token);
         }
@@ -540,6 +551,48 @@ function handleTreasureAnswerEvent(room,token,msg){
     }
 }
 
+function handleEquipmentUseEvent(room,token,msg){
+    if(eventHandler.validEquipmentUseEvent(gameState[room],token,msg)){
+        gameState[room].state = validState.equipment_activate;
+        clearTimeout(gameState[room].timeout_id);
+        setTimeout(deferredHandleEquipmentUseEvent,delayLength,room,token,msg);
+    }
+}
+function deferredHandleEquipmentUseEvent(room,token,msg){
+    gameState[room] = eventHandler.handleEquipmentUseEvent(gameState[room],token,msg);
+    transitionAfterEquipment(room,token);
+}
+
+function handleShieldEvent(room,token,msg){
+    if(eventHandler.validShieldEvent(gameState[room],token,msg)){
+        console.log(msg);
+        clearTimeout(gameState[room].timeout_id);
+        gameState[room].state = validState.equipment_activate;
+        sendcurrentstatedata(room,validContext.shield_activated);
+        let playing_token = gameState[room].player_order[gameState[room].current_player];
+        setTimeout(deferredHandleShieldEvent,delayLength,room,playing_token,msg);
+    }
+}
+
+function deferredHandleShieldEvent(room,token,msg){
+    gameState[room] = eventHandler.handleShieldEvent(gameState[room],token,msg);
+    transitionAfterEquipment(room,token,msg);
+}
+
+function transitionAfterEquipment(room,token){
+    if(isRoomState(room,validState.finished)){
+        setTimeout(finishturn,delayLength,room,token);
+    } else if (isRoomState(room,validState.roll_again)){
+        setTimeout(rollAgain,delayLength,room,token);
+    } else if (isRoomState(room,validState.answer_wait)){
+        addTimeout(answerTimeout,answerTimeoutLength,room,token);
+    } else if (isRoomState(room,validState.shield_offer)){
+        addTimeout(shieldTimeout,timeoutLength,room,token);
+    } else {
+        setTimeout(finishturn,delayLength,room,token);
+    }
+}
+
 function finishGame(room){
     sendcurrentstatedata(room,validContext.finish);
     deleteroomifempty(room);
@@ -547,16 +600,33 @@ function finishGame(room){
 
 /** TIMEOUTS */
 function treasureFail(room,token){
-    gameState[room].state = validState.finished;
+    gameState[room].state = validState.equipment_use;
     gameState[room] = question_module.releaseAnsweredQuestions(gameState[room],token);
     sendcurrentstatedata(room,validContext.treasure_failed);
-    addTimeout(finishturn,delayLength,room,token);
+    addTimeout(useEquipment,delayLength,room,token);
 }
 
 function answerTimeout(room,token){
     gameState[room].answers_drawed = 0;
     gameState[room].answer = null;
-    timeout(room,token);
+    gameState[room].state = validState.equipment_use;
+    sendcurrentstatedata(room,validContext.answer_timeout);
+    addTimeout(useEquipment,delayLength,room,token);
+
+}
+
+function shieldTimeout(room,token){
+    sendcurrentstatedata(room,validContext.timeout);
+    gameState[room].state = validState.equipment_activate;
+    setTimeout(deferredShieldTimeout,delayLength,room);
+}
+
+function deferredShieldTimeout(room){
+    let msg = {};
+    let playing_token = gameState[room].player_order[gameState[room].current_player];
+    msg.equipment = null;
+    gameState[room] = eventHandler.handleShieldEvent(gameState[room],playing_token,msg);
+    transitionAfterEquipment(room,playing_token);
 }
 
 function timeout(room,token){
@@ -584,5 +654,13 @@ function addTimeout(timeout_func,delay,room,token){
 }
 
 function useEquipment(room,token){
-
+    if((gameState[room].player_status[token].equipment.length > 0)&&
+    !gameState[room].is_equipment_used){
+        gameState[room].state = validState.equipment_offer;
+        sendcurrentstatedata(room,validContext.equipment_offer);
+        addTimeout(timeout,equipmentTimeoutLength,room,token);
+    } else {
+        gameState[room].state = validState.finished;
+        finishturn(room,token);
+    }
 }

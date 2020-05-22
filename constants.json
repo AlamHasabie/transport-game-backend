@@ -7,11 +7,17 @@
         "answer_wait" : 4,
         "treasure_wait" : 5,
         "equipment_use" : 6,
-        "reflect" : 7,
-        "equipment_activate" : 8,
-        "finished" : 9,
-        "ended" : 10,
-        "player_empty" : 11
+        "equipment_offer" : 7,
+        "reflect" : 8,
+        "equipment_activate" : 9,
+        "finished" : 10,
+        "skipeed" : 11,
+        "ended" : 12,
+        "player_empty" : 13,
+        "roll_received" : 14,
+        "roll_again" : 15,
+        "equipment_answer" : 16,
+        "shield_offer" : 17
     },
     
     "validSquare" : {
@@ -51,7 +57,14 @@
         "answer_false" : "answer_false",
         "no_answer" : "no_answer",
         "finish" : "finish",
-        "teleportOffer" : "teleportOffer",
-        "equipmentOffer" : "equipmentOffer"
+        "answer_timeout" : "answer_timeout",
+        "equipment_offer" : "equipment_offer",
+        "equipment_full" : "equipment_full",
+        "equipment_use" : "equipment_use",
+        "no_equipment" : "no_equipment",
+        "shield_offer" : "shield_offer",
+        "shield_activated" : "shield_activated",
+        "cancel" :"cancel",
+        "reverse" : "reverse"
     }
 }

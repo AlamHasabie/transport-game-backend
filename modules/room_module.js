@@ -19,9 +19,6 @@ function newRoom(){
         taken_questions : new Set(),
         taken_event_cards : new Set(),
         skipped : new Set(), 
-        challenged_token : null,
-        activated_equipment : null,
-        barrier_equipment : null,
         first_roll : [],
         player_order : [],
         offered_answer : null,
@@ -32,7 +29,12 @@ function newRoom(){
         answers_drawed: 0,
         key_pointer : 0,
         question_pointer : 0,
-        player_status : {}
+        player_status : {},
+        from_token : null,
+        target_token : null,
+        equipment_used : null,
+        reply_equipment : null,
+        is_equipment_used : false
     }
 }
 
@@ -55,7 +57,7 @@ function buildTurnOrder(room){
 
     let current_max_dice,current_index,token;
 
-    for(var i = 0 ; i < room.player ; i++){
+    while(room.first_roll.length > 0){
         current_max_dice = 0;
         current_index = 0;
         for(var k = 0; k < room.first_roll.length ; k++){

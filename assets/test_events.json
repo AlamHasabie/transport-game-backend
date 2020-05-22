@@ -1,8 +1,17 @@
 [
     {
-        "title" : "Event",
-        "text" : "Your suitcase is stolen ! You lose all your questions.",
-        "effect" : "stolen",
-        "type" : "event"
+        "title" : "Mirror of Reflection [Equipment]",
+        "text" : "Returns the equipment effect received to the sender",
+        "type" : "equipment",
+        "effect" : "reverse",
+        "toOther" : true
+    },
+    {
+        "title" : "Mantle of Invisibility [Equipment]",
+        "text" : "Take $20 off another player",
+        "type" : "equipment",
+        "effect" : "rob",
+        "nominal" : 20,
+        "toOther" : true
     }
 ]
