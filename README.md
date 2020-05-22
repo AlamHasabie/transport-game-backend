@@ -163,6 +163,8 @@ Note that contexts are registered within every "update" event emit of the socket
 - equipment_used : id of the card of used equipment in execution
 - reply_equipment : id of the card of the shield equipment in execution
 - is_equipment_used : used just for indicator for rolling and answer_wait state after equipment execution
+- start_time : time when the game starts
+- game_timeout : game finish timeout
 
 ### player_status
 - money : money
@@ -198,6 +200,8 @@ Examples :
     equipment_used : null,
     reply_equipment : null,
     is_equipment_used : false,
+    start_time : Date(),
+    game_timeout : 5000000,
     player_status : {
         "PFFWFBH3333" : {
             username : "Kucing",
