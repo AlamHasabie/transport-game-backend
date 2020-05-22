@@ -98,12 +98,10 @@ function handle_event_event(room,event,token){
                 emitter.sendstate(room,constants.validContext.equipment_full);
             }
             break;
-
         default :
             break;
     
     }
-    
     return room;
 }
 
@@ -149,19 +147,15 @@ function validEquipmentUseEvent(room,token,msg){
     if(token!=playing_token){
         return false;
     }
-
     if(!(room.state==constants.validState.equipment_offer)){
         return false;
     }
-
     if(equipment==null){
         return true;
     }
-
     if(!room.player_status[token].equipment.includes(equipment)){
         return false;
     }
-
     let card = event_cards[equipment%event_cards.length];
     if(!(card.type == event_types.equipment)){
         return false;
@@ -169,15 +163,12 @@ function validEquipmentUseEvent(room,token,msg){
     if (!card.toOther){
         return true;
     }
-
     if(target_token==null){
         return false;
     }
-
     if(!room.player_status.hasOwnProperty(target_token)){
         return false;
     }
-
     return true;
 }
 
