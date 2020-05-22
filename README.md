@@ -69,7 +69,7 @@ io.emit("treasure answer",{
 After each turn (except when landed in service), player would be offered a chance to use their equipment, if there is any.
 There will be **equipment_offer** context sent. To use an equipment, the player sends the following emit :
 ```js
-io.emit("treasure answer",{
+io.emit("equipment",{
     equipment : 3,
     target_token : "abe62910f"
 })
