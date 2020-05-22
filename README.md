@@ -21,13 +21,14 @@ Response
 
 ## Connection
 After receiving the token, client should directly connect with the received token. Connect to the url with path (for example , 132.423.422.1:3000 or just pass an empty string should the server is hosted locally.
-'''js
+```js
 var socket = io('',{
     query : {
         token : token
         }
     });
-'''
+```
+
 ## Events
 ### Event by Clients
 Client should send the following emits :
