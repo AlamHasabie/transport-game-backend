@@ -10,6 +10,12 @@ function init(io_in){
 
 function sendstate(room,context){
 
+    if(room.start_time!=null){
+        let current_time = new Date();
+        let diff = current_time - room.start_time;
+        room.time_left 
+    }
+
     let timeout = room.timeout_id;
     let roomname = room.roomname;
 

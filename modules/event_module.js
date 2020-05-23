@@ -1,5 +1,5 @@
 const event_data = require("../assets/events.json")
-const event_cards = require("../assets/events.json");
+const event_cards = event_data.cards;
 const event_types = event_data.type;
 const event_effects = event_data.effect;
 const question_module = require("./question_module");

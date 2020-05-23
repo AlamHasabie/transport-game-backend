@@ -37,7 +37,8 @@ function newRoom(){
         reply_equipment : null,
         is_equipment_used : false,
         game_timeout : config.default_game_length,
-        start_time : null
+        start_time : null,
+        time_left : null
     }
 }
 
