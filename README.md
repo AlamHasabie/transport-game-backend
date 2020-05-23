@@ -109,24 +109,24 @@ In either case(s), there will be emitted update with player_leave context. Howev
 Given below is the structure of data used in the socket:
 
 ## States
-"prepare" : 0, Players are preparing
-"ready" : 1, Game is ready, waiting for first roll
-"rolling" : 2, The current player rolls
-"activation" : 3, Activating thr current square
-"answer_wait" : 4, Waiting for answer
-"treasure_wait" : 5, Waiting to answer treasure
-"equipment_use" : 6, After activation, check if player has equipment
-"equipment_offer" : 7, Waiting for player to activate its equipment
-"reflect" : 8, **Deprecated**
-"equipment_activate" : 9, Activate equipment
-"finished" : 10, Turn finished.
-"skipeed" : 11, Skipped player.**Deprecated**.
-"ended" : 12, game ended
-"player_empty" : 13, there's no more player in the game.
-"roll_received" : 14, Roll received, deferred roll handling
-"roll_again" : 15, Roll again
-"equipment_answer" : 16, **Deprecated**
-"shield_offer" : 17 , waiting for targeted player to use his shield.
+"prepare" : 0, Players are preparing <br>
+"ready" : 1, Game is ready, waiting for first roll <br>
+"rolling" : 2, The current player rolls <br>
+"activation" : 3, Activating thr current square <br>
+"answer_wait" : 4, Waiting for answer <br>
+"treasure_wait" : 5, Waiting to answer treasure <br>
+"equipment_use" : 6, After activation, check if player has equipment <br>
+"equipment_offer" : 7, Waiting for player to activate its equipment <br>
+"reflect" : 8, **Deprecated** <br>
+"equipment_activate" : 9, Activate equipment <br>
+"finished" : 10, Turn finished. <br>
+"skipeed" : 11, Skipped player.**Deprecated**.<br>
+"ended" : 12, game ended.<br>
+"player_empty" : 13, there's no more player in the game.<br>
+"roll_received" : 14, Roll received, deferred roll handling.<br>
+"roll_again" : 15, Roll again.<br>
+"equipment_answer" : 16, **Deprecated**.<br>
+"shield_offer" : 17 , waiting for targeted player to use his shield.<br>
 
 ### Context
 Context sent by server can be seen in the constans.json file, and can be one of the following :
