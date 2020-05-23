@@ -278,11 +278,11 @@ function registerPlayerEvent(socket,token){
         handleTreasureAnswerEvent(room,token,msg);
     });
     socket.on("equipment",function(msg){
-        console.log(gameState[room],token,"equipment received");
+        console.log(gameState[room],token,"equipment emit received");
         handleEquipmentUseEvent(room,token,msg);
     });
     socket.on("disconnect",function(msg){
-        console.log(gameState[room],token,"disconnet emit received");
+        console.log(gameState[room],token,"disconnect emit received");
         handleDisconnectEvent(room,token,msg);
     });
     socket.on("shield",function(msg){
