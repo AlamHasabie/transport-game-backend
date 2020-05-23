@@ -203,12 +203,6 @@
         },
         {
             "title" : "Event",
-            "text" : "Free holiday ! Move to a square you want.",
-            "effect" : "teleport",
-            "type" : "event"
-        },
-        {
-            "title" : "Event",
             "text" : "You got an extra ticket. Roll once more",
             "effect" : "roll",
             "type" : "event"
@@ -248,7 +242,6 @@
         "reverse" : "reverse",
         "skip" : "skip",
         "rob" : "rob",
-        "teleport" : "teleport",
         "roll" : "roll",
         "cancel" : "cancel",
         "service" : "service",
