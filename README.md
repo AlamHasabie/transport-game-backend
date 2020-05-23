@@ -20,14 +20,15 @@ Response
 
 
 ## Connection
-After receiving the token, client should directly connect with the received token. 
-'''js
+After receiving the token, client should directly connect with the received token. Connect to the url with path (for example , 132.423.422.1:3000 or just pass an empty string should the server is hosted locally.
+```js
 var socket = io('',{
     query : {
         token : token
         }
     });
-'''
+```
+
 ## Events
 ### Event by Clients
 Client should send the following emits :
@@ -69,7 +70,7 @@ io.emit("treasure answer",{
 After each turn (except when landed in service), player would be offered a chance to use their equipment, if there is any.
 There will be **equipment_offer** context sent. To use an equipment, the player sends the following emit :
 ```js
-io.emit("treasure answer",{
+io.emit("equipment",{
     equipment : 3,
     target_token : "abe62910f"
 })
@@ -209,8 +210,7 @@ Examples :
             square : 25,
             coupons : [0]
             equipment : [],
-            nullifier : [],
-            reflector : [],
+            shield : [],
             questions_answered : [0]
             held_question : null
         "P35252" : {
@@ -239,7 +239,7 @@ Examples :
 
 
 ## Game Master
-Game Master should be registered before being able to change game state, with the following post request :
+Game Master should be registered before being able to change game state, with the following post request to /gm path.
 ```json
 {
     "username" : "username",
@@ -255,7 +255,7 @@ The following are event valid for the game master :
 io.emit("finish");
 ```
 
-2. Change the timeout
+2. Change the timeout. Put the new timeout in milliseconds unit.
 ```js
 io.emit("timeout change",{
     timeout : 45000000
