@@ -108,6 +108,26 @@ In either case(s), there will be emitted update with player_leave context. Howev
 ## Structs
 Given below is the structure of data used in the socket:
 
+## States
+"prepare" : 0, Players are preparing <br>
+"ready" : 1, Game is ready, waiting for first roll <br>
+"rolling" : 2, The current player rolls <br>
+"activation" : 3, Activating thr current square <br>
+"answer_wait" : 4, Waiting for answer <br>
+"treasure_wait" : 5, Waiting to answer treasure <br>
+"equipment_use" : 6, After activation, check if player has equipment <br>
+"equipment_offer" : 7, Waiting for player to activate its equipment <br>
+"reflect" : 8, **Deprecated** <br>
+"equipment_activate" : 9, Activate equipment <br>
+"finished" : 10, Turn finished. <br>
+"skipeed" : 11, Skipped player.**Deprecated**.<br>
+"ended" : 12, game ended.<br>
+"player_empty" : 13, there's no more player in the game.<br>
+"roll_received" : 14, Roll received, deferred roll handling.<br>
+"roll_again" : 15, Roll again.<br>
+"equipment_answer" : 16, **Deprecated**.<br>
+"shield_offer" : 17 , waiting for targeted player to use his shield.<br>
+
 ### Context
 Context sent by server can be seen in the constans.json file, and can be one of the following :
 1. spectator_join : sent when a spectator joins
@@ -160,7 +180,7 @@ Note that contexts are registered within every "update" event emit of the socket
 - answer : answer by the player during answer_wait state. null in other state.
 - player_status : object of player status. Accessible with player token (player_status[token])
 - from_token : owner of the executed equipment
-- to_token : target of the executed equipment
+- target_token : target of the executed equipment
 - equipment_used : id of the card of used equipment in execution
 - reply_equipment : id of the card of the shield equipment in execution
 - is_equipment_used : used just for indicator for rolling and answer_wait state after equipment execution
