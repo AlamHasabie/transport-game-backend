@@ -186,6 +186,7 @@ Note that contexts are registered within every "update" event emit of the socket
 - is_equipment_used : used just for indicator for rolling and answer_wait state after equipment execution
 - start_time : time when the game starts
 - game_timeout : game finish timeout
+- time_left : time left of the game , in milliseconds
 
 ### player_status
 - money : money
@@ -223,6 +224,7 @@ Examples :
     is_equipment_used : false,
     start_time : Date(),
     game_timeout : 5000000,
+    time_left : 40000,
     player_status : {
         "PFFWFBH3333" : {
             username : "Kucing",

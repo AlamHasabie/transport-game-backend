@@ -367,6 +367,12 @@ function deleteroomifempty(room){
 }
 
 function sendcurrentstatedata(room,context){
+
+    if(gameState[room].start_time!=null){
+        let current_time = new Date();
+        let diff = current_time - gameState[room].start_time;
+        gameState[room].time_left = gameState[room].game_timeout - diff;
+    }
     let timeout = gameState[room].timeout_id;
     delete gameState[room].timeout_id;
     io.to(room).emit("update",{
