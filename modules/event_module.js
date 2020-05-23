@@ -270,13 +270,13 @@ function executeEquipment(room){
 
     if(reply_card!=null){
         if(reply_card.effect==event_effects.cancel){
-            Logger.log(room,token,"cancel equipment due to shield");
+            Logger.log(room,room.from_token,"cancel equipment due to shield");
             room = resetCardsAfterEquipmentUse(room);
             emitter.sendstate(room,constants.validContext.cancel);
             room.state = constants.validState.finished;
             return room;
         } else if(reply_card.effect==event_effects.reverse){
-            Logger.log(room,token,"reverse equipment effect");
+            Logger.log(room,room.from_token,"reverse equipment effect");
             let temp = execute_from;
             execute_from = execute_to;
             execute_to = temp;
@@ -285,14 +285,14 @@ function executeEquipment(room){
     switch(card.effect){
         
         case event_effects.roll:
-            Logger.log(room,token,"roll again equipment");
+            Logger.log(room,room.from_token,"roll again equipment");
             emitter.sendstate(room,constants.validContext.equipment_use);
             room.state = constants.validState.roll_again;
             room.repeated_roll = 1;
             break;
 
         case event_effects.take_question:
-            Logger.log(room,token,"take question equipment");
+            Logger.log(room,room.from_token,"take question equipment");
             if(!question_module.playerHasQuestion(room,execute_from)){
                 room = question_module.givequestion(room,execute_from);
             }
@@ -301,17 +301,17 @@ function executeEquipment(room){
             break;
 
         case event_effects.take_answer:
-            Logger.log(room,token,"take answer equipment");
+            Logger.log(room,room.from_token,"take answer equipment");
             room.answers_drawed = 1;
             room = answer_module.handle(room);
             if(!(room.state==constants.validState.answer_wait)){
-                Logger.log(room,token,"no question held for answer equipment");
+                Logger.log(room,room.from_token,"no question held for answer equipment");
                 room.state = constants.validState.finished;
             } 
             break;
 
         case event_effects.rob : 
-            Logger.log(room,token,"rob equipment");
+            Logger.log(room,room.from_token,"rob equipment");
             room.player_status[execute_from].money+=card.nominal;
             room.player_status[execute_to].money-=card.nominal;
             emitter.sendstate(room,constants.validContext.equipment_use);
@@ -319,23 +319,23 @@ function executeEquipment(room){
             break;
 
         case event_effects.remove_question :
-            Logger.log(room,token,"remove question equipment");
+            Logger.log(room,room.from_token,"remove question equipment");
             room = question_module.releaseHeldQuestion(room,execute_to);
             emitter.sendstate(room,constants.validContext.equipment_use);
             room.state = constants.validState.finished;
             break;
         case event_effects.skip:
             room.skipped.add(execute_to);
-            Logger.log(room,token,"skip equipment");
+            Logger.log(room,room.from_token,"skip equipment");
             emitter.sendstate(room,constants.validContext.equipment_use);
             room.state = constants.validState.finished;
         default :
-            Logger.log(room,token,"unknown equipment");
+            Logger.log(room,room.from_token,"unknown equipment");
             room.state = constants.validState.finished;
             break;
     }
 
-    Logger.log(room,token,"remove used equipments");
+    Logger.log(room,room.from_token,"remove used equipments");
     room = resetCardsAfterEquipmentUse(room);
     return room;
 }

@@ -258,27 +258,35 @@ function registerPlayerEvent(socket,token){
 
     socket.join(room);
     socket.on('ready',function(msg){
+        console.log(gameState[room],token,"ready emit received");
         handleReadyEvent(room,token,msg);
     });
     socket.on("first roll",function(msg){
+        console.log(gameState[room],token,"first roll emit received");
         handleFirstRollEvent(room,token,msg);
     });
     socket.on("roll",function(msg){
+        console.log(gameState[room],token,"roll emit received");
         handleRollEvent(room,token,msg);
     });
     socket.on("answer",function(msg){
+        console.log(gameState[room],token,"answer emit received");
         handleAnswerEvent(room,token,msg);
     });
     socket.on("treasure answer",function(msg){
+        console.log(gameState[room],token,"treasure answer emit received");
         handleTreasureAnswerEvent(room,token,msg);
     });
     socket.on("equipment",function(msg){
+        console.log(gameState[room],token,"equipment received");
         handleEquipmentUseEvent(room,token,msg);
     });
     socket.on("disconnect",function(msg){
+        console.log(gameState[room],token,"disconnet emit received");
         handleDisconnectEvent(room,token,msg);
     });
     socket.on("shield",function(msg){
+        console.log(gameState[room],token,"shield emit received");
         handleShieldEvent(room,token,msg);
     })
 
