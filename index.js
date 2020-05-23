@@ -25,6 +25,7 @@ const treasure = require("./assets/treasure.json");
 const validState = validConstants.validState;
 const validSquare = validConstants.validSquare;
 const validContext = validConstants.validContext;
+const Logger = require("./modules/logger");
 
 global.gameState = {};
 global.userInfo = {};
@@ -406,17 +407,18 @@ function activatesquare(room,token){
                 break;
 
             case validSquare.event :
+                Logger.log(gameState[room],token,"event square");
                 gameState[room] = eventHandler.handle(gameState[room]);
                 if(isRoomState(room,validState.equipment_use)){
+                    Logger.log(gameState[room],token,"go to use equipment ");
                     addTimeout(useEquipment,delayLength,room,token);
-                    break;
                 } else if(isRoomState(room,validState.roll_again)){
+                    Logger.log(gameState[room],token,"go to roll again");
                     setTimeout(rollAgain,delayLength,room,token);
-                    break;
                 } else {
+                    Logger.log(gameState[room],token,"finishturn");
                     addTimeout(finishturn,delayLength,room,token);
                 }
-
                 break;
 
             case validSquare.treasure :
@@ -553,19 +555,20 @@ function handleTreasureAnswerEvent(room,token,msg){
 
 function handleEquipmentUseEvent(room,token,msg){
     if(eventHandler.validEquipmentUseEvent(gameState[room],token,msg)){
+        Logger.log(gameState[room],token,"equipment use, going to activate the card...");
         gameState[room].state = validState.equipment_activate;
         clearTimeout(gameState[room].timeout_id);
         setTimeout(deferredHandleEquipmentUseEvent,delayLength,room,token,msg);
     }
 }
 function deferredHandleEquipmentUseEvent(room,token,msg){
+    Logger.log(gameState[room],token,"deferred equipment handling called");
     gameState[room] = eventHandler.handleEquipmentUseEvent(gameState[room],token,msg);
     transitionAfterEquipment(room,token);
 }
 
 function handleShieldEvent(room,token,msg){
     if(eventHandler.validShieldEvent(gameState[room],token,msg)){
-        console.log(msg);
         clearTimeout(gameState[room].timeout_id);
         gameState[room].state = validState.equipment_activate;
         sendcurrentstatedata(room,validContext.shield_activated);
@@ -631,6 +634,7 @@ function deferredShieldTimeout(room){
 }
 
 function timeout(room,token){
+    Logger.log(gameState[room],token,"timeout of state : " + toString(gameState[room].state));
     gameState[room].state = validState.finished;
     sendcurrentstatedata(room,validContext.timeout);
     finishturn(room,token);
@@ -656,16 +660,17 @@ function addTimeout(timeout_func,delay,room,token){
 
 function useEquipment(room,token){
     if((gameState[room].player_status[token].equipment.length > 0)&&
-    !gameState[room].is_equipment_used){
+    (!gameState[room].is_equipment_used)){
+        Logger.log(gameState[room],token," player has equipment. Offering...");
         gameState[room].state = validState.equipment_offer;
         sendcurrentstatedata(room,validContext.equipment_offer);
         addTimeout(timeout,equipmentTimeoutLength,room,token);
     } else {
+        Logger.log(gameState[room],token," player has no equipment");
         gameState[room].state = validState.finished;
         finishturn(room,token);
     }
 }
-
 
 function gameTimeoutHandle(room){
     sendcurrentstatedata(room,validContext.game_timeout);
