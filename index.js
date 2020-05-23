@@ -499,7 +499,7 @@ function handleRollEvent(room,token,msg){
     if(rollHandler.validRollEvent(gameState[room],token,msg)){
         clearTimeout(gameState[room].timeout_id);
         gameState[room].state = validState.roll_received;
-        setTimeout(delayedRollEventHandling,delayLength,room,token,msg);
+        setTimeout(delayedRollEventHandling,0,room,token,msg);
     }
 }
 
