@@ -180,7 +180,7 @@ Note that contexts are registered within every "update" event emit of the socket
 - answer : answer by the player during answer_wait state. null in other state.
 - player_status : object of player status. Accessible with player token (player_status[token])
 - from_token : owner of the executed equipment
-- to_token : target of the executed equipment
+- target_token : target of the executed equipment
 - equipment_used : id of the card of used equipment in execution
 - reply_equipment : id of the card of the shield equipment in execution
 - is_equipment_used : used just for indicator for rolling and answer_wait state after equipment execution
