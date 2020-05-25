@@ -1,7 +1,17 @@
 const express = require('express');
 const app = express();
 var http = require('http').createServer(app);
-var io = require('socket.io')(http);
+var io = require('socket.io')(http,{
+    handlePreflightRequest: (req, res) => {
+        const headers = {
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+            "Access-Control-Allow-Origin": req.headers.origin, //or the specific origin you want to give access to,
+            "Access-Control-Allow-Credentials": true
+        };
+        res.writeHead(200, headers);
+        res.end();
+    }
+});
 var bodyParser = require('body-parser');
 var crypto = require("crypto");
 
@@ -30,15 +40,6 @@ const Logger = require("./modules/logger");
 global.gameState = {};
 global.userInfo = {};
 global.gameTimeout = {};
-
-
-app.use(function(req, res, next) {
-
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    next();
-  
-});
 
 /** This is for testing purpose only */
 app.use(bodyParser());
