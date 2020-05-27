@@ -137,7 +137,7 @@
 
         $("#timeout-btn").click(function(e){
           e.preventDefault();
-          let timeout = parseInt($("timeout").val());
+          let timeout = parseInt($("#timeout").val());
           console.log(timeout);
           socket.emit("timeout change",{
             timeout : timeout

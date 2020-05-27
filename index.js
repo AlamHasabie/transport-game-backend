@@ -59,6 +59,43 @@ app.get('/',(req,res)=>{
 app.get('/gm',(req,res)=>{
     res.render('gm-index.ejs');
 });
+app.post('/gm-test',(req,res)=>{
+    var username = req.body["username"];
+    var password = req.body["password"];
+    var roomname = req.body["room"];
+
+    if(gamemaster.password==password){
+
+        // Generate
+        if(!gameState.hasOwnProperty(roomname)){
+
+            createnewroom(roomname);
+        }
+
+        // Generate token
+        var id = crypto.randomBytes(20).toString('hex');
+        while(userInfo.hasOwnProperty(id)){
+            id = crypto.randomBytes(20).toString('hex');
+        }
+        
+        // Add user info
+        userInfo[id] = {
+            roomname : roomname,
+            role : "gamemaster",
+            username : username
+        }
+
+        res.statusCode = 200;
+        res.render('game',{
+            token : id
+        });
+    } else {
+        res.status(403);
+    }
+
+
+
+})
 app.post('/gm',(req,res)=>{
 
     var username = req.body["username"];
@@ -650,7 +687,7 @@ function deferredShieldTimeout(room){
 }
 
 function timeout(room,token){
-    Logger.log(gameState[room],token,"timeout of state : " + toString(gameState[room].state));
+    Logger.log(gameState[room],token,"timeout of state : " + gameState[room].state.toString());
     gameState[room].state = validState.finished;
     sendcurrentstatedata(room,validContext.timeout);
     finishturn(room,token);
@@ -699,15 +736,16 @@ function gameTimeoutHandle(room){
 
 function handleTimeoutChangeEvent(room,msg){
     if(msg.timeout!=null){
-        if(gameTimeout(room)!=null){
+        if(gameTimeout[room]!=null){
             let current_time = new Date();
             let time_diff = current_time - gameState[room].start_time;
             if(msg.timeout >= time_diff){
                 clearTimeout(gameTimeout[room]);
                 gameState[room].game_timeout = msg.timeout;
+                console.log(time_diff);
                 gameTimeout[room] = setTimeout(
                     gameTimeoutHandle,
-                    gameState[room].gameTimeout - time_diff,
+                    gameState[room].game_timeout - time_diff,
                     room
                 );
                 sendcurrentstatedata(room,validContext.game_timeout_change);
