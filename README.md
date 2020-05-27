@@ -160,6 +160,8 @@ Note that contexts are registered within every "update" event emit of the socket
 
 ### gameState
 - state : one of the state in the constant.json valid state
+- dice_1 : the first dice rolled
+- dice_2 : the second dice rolled
 - player : number of player
 - spectator : Set of spectators
 - player_ready : Set of player not ready yet
