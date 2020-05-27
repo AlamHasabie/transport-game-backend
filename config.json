@@ -3,7 +3,7 @@
     "minimal_player" : 1,
     "answer_timeout" : 5000,
     "delay" : 1000,
-    "timeout" : 10000,
+    "timeout" : 15000,
     "treasure_timeout" : 10000,
     "answer_reward" : 50,
     "treasure_reward" : 150,
