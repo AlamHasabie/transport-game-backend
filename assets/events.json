@@ -9,6 +9,18 @@
             "toOther" : false
         },
         {
+            "title" : "Event",
+            "text" : "You are lost. Get back to start.",
+            "type" : "event",
+            "effect" : "start"
+        },
+        {
+            "title" : "Event",
+            "text" : "Your suitcase is stolen ! You lose all your questions.",
+            "effect" : "stolen",
+            "type" : "event"
+        },
+        {
             "title" : "Mask of Hypnotize [Equipment]",
             "text" : "Can be used to take one question or key card",
             "type" : "equipment",
@@ -17,34 +29,12 @@
  
         },
         {
-            "title" : "Staff of Electricity [Equipment]",
-            "text" : "Can be used to make another player skip a turn",
-            "type" : "equipment",
-            "effect" : "skip",
-            "toOther" : true
-        },
-        {
             "title" : "Mantle of Invisibility [Equipment]",
             "text" : "Take $20 off another player",
             "type" : "equipment",
             "effect" : "rob",
             "nominal" : 20,
             "toOther" : true
-        },
-        {
-            "title" : "Slinger [Equipment]",
-            "text" : "Can be used to make another player skip a turn",
-            "type" : "equipment",
-            "effect" : "skip",
-            "toOther" : true
-        },
-        {
-            "title" : "Mirror of Reflection [Equipment]",
-            "text" : "Returns the equipment effect received to the sender",
-            "type" : "equipment",
-            "effect" : "reverse",
-            "toOther" : true
-
         },
         {
             "title" : "Gloves of Thief [Equipment]",
@@ -62,18 +52,10 @@
             "toOther" : true
         },
         {
-            "title" : "Boots of Speed [Equipment]",
-            "text" : "Roll again",
-            "type" : "equipment",
-            "effect" : "roll",
-            "toOther" : false
-        },
-        {
-            "title" : "Ball of Smoke [Equipment]",
-            "text" : "Cancel the equipment effect",
-            "type" : "equipment",
-            "effect" : "cancel",
-            "toOther" : false
+            "title" : "Coupon",
+            "text" : "Free service",
+            "effect" : "service",
+            "type" : "event"
         },
         {
             "title" : "Boots of Evasion [Equipment]",
@@ -105,6 +87,12 @@
         },
         {
             "title" : "Event",
+            "text" : "There's a problem with your car. Skip a turn.",
+            "type" : "event",
+            "effect" : "skip"
+        },
+        {
+            "title" : "Event",
             "text" : "Travel scam ! Lose $10",
             "type" : "event",
             "effect" : "cash",
@@ -122,6 +110,13 @@
             "text" : "There's a problem with your car. Skip a turn.",
             "type" : "event",
             "effect" : "skip"
+        },
+        {
+            "title" : "Slinger [Equipment]",
+            "text" : "Can be used to make another player skip a turn",
+            "type" : "equipment",
+            "effect" : "skip",
+            "toOther" : true
         },
         {
             "title" : "Event",
@@ -142,6 +137,21 @@
             "type" : "event",
             "effect" : "cash",
             "nominal" : -4
+        },
+        {
+            "title" : "Ball of Smoke [Equipment]",
+            "text" : "Cancel the equipment effect",
+            "type" : "equipment",
+            "effect" : "cancel",
+            "toOther" : false
+        },
+        {
+            "title" : "Mirror of Reflection [Equipment]",
+            "text" : "Returns the equipment effect received to the sender",
+            "type" : "equipment",
+            "effect" : "reverse",
+            "toOther" : true
+
         },
         {
             "title" : "Event",
@@ -172,16 +182,17 @@
         },
         {
             "title" : "Event",
-            "text" : "You are lost. Get back to start.",
-            "type" : "event",
-            "effect" : "start"
-        },
-        {
-            "title" : "Event",
             "text" : "Pay $10 for hotel bill.",
             "type" : "event",
             "effect" : "cash",
             "nominal" : -10
+        },
+        {
+            "title" : "Boots of Speed [Equipment]",
+            "text" : "Roll again",
+            "type" : "equipment",
+            "effect" : "roll",
+            "toOther" : false
         },
         {
             "title" : "Event",
@@ -197,12 +208,6 @@
         },
         {
             "title" : "Event",
-            "text" : "Your suitcase is stolen ! You lose all your questions.",
-            "effect" : "stolen",
-            "type" : "event"
-        },
-        {
-            "title" : "Event",
             "text" : "You got an extra ticket. Roll once more",
             "effect" : "roll",
             "type" : "event"
@@ -214,22 +219,17 @@
             "type" : "event"
         },
         {
-            "title" : "Coupon",
-            "text" : "Free service",
-            "effect" : "service",
-            "type" : "event"
+            "title" : "Slinger [Equipment]",
+            "text" : "Can be used to make another player skip a turn",
+            "type" : "equipment",
+            "effect" : "skip",
+            "toOther" : true
         },
         {
             "title" : "Coupon",
             "text" : "Free service",
             "effect" : "service",
             "type" : "event"
-        },
-        {
-            "title" : "Event",
-            "text" : "There's a problem with your car. Skip a turn.",
-            "type" : "event",
-            "effect" : "skip"
         }
     ],
     "type" : {
