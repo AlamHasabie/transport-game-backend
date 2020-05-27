@@ -25,6 +25,9 @@ function handleRollEvent(room,token,msg){
     let dice_2 = msg.dice_2;
     let rolled = room.repeated_roll;
 
+    room.dice_1 = dice_1;
+    room.dice_2 = dice_2;
+    
     let movement = dice_1 + dice_2;
     let current_square = room.player_status[token].square
     let to_square = (movement + current_square)%board_length;

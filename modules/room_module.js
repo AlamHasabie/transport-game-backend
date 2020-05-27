@@ -13,6 +13,8 @@ function newRoom(){
     return {
         state : constants.validState.prepare,
         player : 0,
+        dice_1 : null,
+        dice_2: null,
         gamemaster : new Set(),
         spectator : new Set(),
         player_ready : new Set(),
