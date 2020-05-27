@@ -293,7 +293,10 @@ function registerNewPlayer(socket,token){
         serviceHandler.addFieldToPlayer(gameState[room].player_status[token]);
     gameState[room].player_status[token] = 
         eventHandler.addFieldToPlayer(gameState[room].player_status[token]);
+    
+    // Add to state
     gameState[room].player_ready.add(token);
+    gameState[room].preparing_players.push(token);
     registerPlayerEvent(socket,token);
 }
 
@@ -526,8 +529,14 @@ function finishturn(room,token){
 function handleReadyEvent(room,token,msg){
     if(isRoomState(room,validState.prepare)){
         gameState[room].player_ready.delete(token);
-        sendcurrentstatedata(room,validContext.player_ready);
+        gameState[room].preparing_players = 
+            gameState[room].preparing_players.filter(function(el){
+                return el!=token
+            });
+        gameState[room].ready_players.push(token);
         gameState[room].roll_wait.add(token);
+        sendcurrentstatedata(room,validContext.player_ready);
+
 
         if(gameState[room].player_ready.size==0&&gameState[room].player>=config.minimal_player){
             delete gameState[room].player_ready;

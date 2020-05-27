@@ -9,6 +9,6 @@
     "treasure_reward" : 150,
     "equipment_use_timeout" : 10000,
     "reflect_timeout" : 20000,
-    "max_allowed_equipments" : 1,
+    "max_allowed_equipments" : 6,
     "default_game_length" : 2700000
 }

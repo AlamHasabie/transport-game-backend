@@ -164,6 +164,8 @@ Note that contexts are registered within every "update" event emit of the socket
 - dice_2 : the second dice rolled
 - player : number of player
 - spectator : Set of spectators
+- preparing_players : Players preparing
+- ready_players : ready players
 - player_ready : Set of player not ready yet
 - roll_wait : Set of player who hasn't rolled the first dice
 - taken_questions : Set of taken questions
