@@ -21,11 +21,6 @@
     <input type="text" id="treasure-answer" name="treasure-answer"><br>
     <button type="submit" id="treasure-btn" name="treasure-btn">Treasure!</button>
     <br>
-    <br>
-    <label for="teleport">Teleport ke kotak</label>
-    <input type="number" id="teleport" name="teleport" min="0" max="40"><br>
-    <button type="submit" id="teleport-btn" name="teleport-btn">Teleport</button>
-    <br><br><br>
     <label for="target-token">Target token</label>
     <input type="text" id="target-token" name="target-token"><br>
     <label for="equipment-id">Eq id</label>
@@ -34,7 +29,11 @@
     <button type="submit" id="no-equip-btn" name="no-equip-btn">Use No Equipment</button>
     <label for="shield-eq">Shield</label>
     <input type="text" id="shield-eq" name="shield-eq"><br>
-    <button type="submit" id="shield-btn" name="shield-btn">Use Shield</button>
+    <button type="submit" id="shield-btn" name="shield-btn">Use Shield</button><br>
+    <label for="target-token">Change timeout to (ms)</label>
+    <input type="text" id="timeout" name="timeout"><br>
+    <button type="submit" id="timeout-btn" name="timeout-btn">Change</button><br>
+
     
   </body>
   <script src="/socket.io/socket.io.js"></script>
@@ -47,36 +46,9 @@
             token : token
           }
         });
-
-        socket.on("player join",function(msg){
-          console.log(msg);
-        });
-
-        socket.on("spectator join",function(msg){
-          console.log("Spectator join");
-        })
-
-        socket.on("player ready",function(msg){
-          console.log(msg.token + " ready");
-        });
-
-        socket.on("game ready",function(msg){
-          console.log("game ready");
-        });
-
-        socket.on("cash change",function(msg){
-          console.log(msg);
-        });
-
         socket.on("update",function(msg){
           console.log(msg);
         })
-
-
-        socket.on("game start",function(msg){
-          console.log("Game started");
-        });
-
         $('#ready-btn').click(function(e){
           e.preventDefault();
           socket.emit("ready");
@@ -136,14 +108,6 @@
             answer : $("#treasure-answer").val()
           });
         })
-
-        $("#teleport-btn").click(function(e){
-          e.preventDefault();
-          socket.emit("teleport",{
-            to : parseInt($("#teleport").val())
-          });
-        })
-
         $("#equip-btn").click(function(e){
           e.preventDefault();
           let target = $("#target-token").val();
@@ -171,9 +135,14 @@
           });
         });
 
-
-
-
+        $("#timeout-btn").click(function(e){
+          e.preventDefault();
+          let timeout = parseInt($("timeout").val());
+          console.log(timeout);
+          socket.emit("timeout change",{
+            timeout : timeout
+          })
+        })
   });
   </script>
 </html>
