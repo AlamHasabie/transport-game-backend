@@ -15,10 +15,11 @@ function handle(room){
     let reward = rewards[room.reward_pointer];
 
     room.player_status[token].money += reward.nominal;
-    room.reward_pointer = (room.reward_pointer+1)%rewards.length;
+
 
     room = emitter.sendstate(room,constants.validContext.reward);
 
+    room.reward_pointer = (room.reward_pointer+1)%rewards.length;
     room.state = constants.validState.equipment_use;
 
     return room;
