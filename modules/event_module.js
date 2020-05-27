@@ -50,6 +50,7 @@ function handle(room){
             room = handle_equipment_event(room,event,token);
             break;
     }
+    room.event_pointer++;
     return room;
 }
 
