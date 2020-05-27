@@ -206,6 +206,8 @@ Examples :
 {
     state : 1,
     player : 3,
+    dice_1 : 3
+    dice_2 : 4,
     spectator : Set{"SFWWFWG2352", "SFDFR54634EGE", "SFWFER674"},
     taken_questions : Set{0,4,5},
     skipped : Set{"PFFWFBH3333"},
