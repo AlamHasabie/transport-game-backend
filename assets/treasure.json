@@ -1,11 +1,10 @@
 {
-    "question" : "Which of the following is not one of the factors driving an emphasis on supply chain management?",
+    "question" : "Which of the following best illustrates what is meant by an effective cost trade- off within logistics?",
     "choices" : {
-        "A" : "An increasing emphasis on domestic sourcing due to the longer lead times and higher levels of pipeline inventories associated with global sourcing.",
-        "B" : "The cost and availability of information resources among entities in the supply chain that allow easy linkages that eliminate time delays in the network.",
-        "C" : "The level of competition in both domestic and international markets requires organizations to be fast, agile, and flexible.",
-        "D" : "Customer expectations and requirements that are becoming much more demanding.",
-        "E" : "The ability of an organization's supply chain to identify and mitigate risk minimizes disruptions in both supply and downstream product or services to mitigate the impact on lost sales"
+        "A" : "Transportation switches from trucking to rail carriers and moving freight in intermodal shipping containers to reduce freight expenses for the firm",
+        "B" : "The adoption of an inventory consolidation strategy where several field distribution warehouses are eliminated resulting in the company holding less inventory and operating fewer warehouses",
+        "C" : "Transportation switches from trucking to more expensive air carriers to transport highly expensive electronics goods resulting in lower inventory carrying cost and overall total cost for the firm",
+        "D" : "A reduction in inventory carrying cost resulting from placing orders more frequently from supplier and a drop in the average inventory levels held by the firm"
     },
-    "answer" : "B"
+    "answer" : "C"
 }
