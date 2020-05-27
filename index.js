@@ -65,7 +65,7 @@ app.post('/gm',(req,res)=>{
     var password = req.body["password"];
     var roomname = req.body["room"];
 
-    if(gamemaster.username==username&&gamemaster.password==password){
+    if(gamemaster.password==password){
 
         // Generate
         if(!gameState.hasOwnProperty(roomname)){
