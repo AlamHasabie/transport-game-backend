@@ -59,6 +59,9 @@ function handleAnswerEvent(room,token,msg){
             return giveKey(room);
         }
     } else {
+        room.answers_drawed = 0;
+        room.answer = null;
+        room.state = constants.validState.equipment_use;
         if(questions[no].answer.includes(answer)){
             room = question_module.addAnsweredQuestion(room,token);
             room.player_status[token].money+=config.answer_reward;
@@ -66,10 +69,6 @@ function handleAnswerEvent(room,token,msg){
         } else {
             room = emitter.sendstate(room,constants.validContext.answer_false);
         }
-
-        room.answers_drawed = 0;
-        room.answer = null;
-        room.state = constants.validState.equipment_use;
         return room;
     }
 }

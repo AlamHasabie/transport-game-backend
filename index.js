@@ -593,7 +593,7 @@ function handleAnswerEvent(room,token,msg){
         clearTimeout(gameState[room].timeout_id);
         gameState[room] = answerHandler.handleAnswerEvent(gameState[room],token,msg);
         if(isRoomState(room,validState.equipment_use)){
-            addTimeout(useEquipment,delayLength,room,token);
+            addTimeout(useEquipment,0,room,token);
         } else if(isRoomState(room,validState.answer_wait)){
             addTimeout(answerTimeout,answerTimeoutLength,room,token);
         }

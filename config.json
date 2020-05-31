@@ -2,7 +2,7 @@
     "treasure_minimal_questions" : 3,
     "minimal_player" : 1,
     "answer_timeout" : 5000,
-    "delay" : 5000,
+    "delay" : 3000,
     "timeout" : 15000,
     "treasure_timeout" : 10000,
     "answer_reward" : 50,
@@ -10,5 +10,5 @@
     "equipment_use_timeout" : 10000,
     "reflect_timeout" : 20000,
     "max_allowed_equipments" : 6,
-    "default_game_length" : 2700000
+    "default_game_length" : 3600000
 }
