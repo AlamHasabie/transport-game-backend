@@ -406,10 +406,10 @@ function addnewplayertoroom(room,token){
 }
 
 function deleteroomifempty(room){
-    if(gameState.hasOwnProperty(room)){
-        if(gameState.hasOwnProperty("player_order")&&
-        gameState.hasOwnProperty("spectator")&&
-        gameState.hasOwnProperty("gamemaster")){
+    if(gameState.hasOwnProperty(room)&&gameTimeout.hasOwnProperty(room)){
+        if(gameState[room].hasOwnProperty("player_order")&&
+        gameState[room].hasOwnProperty("spectator")&&
+        gameState[room].hasOwnProperty("gamemaster")){
             if(gameState[room].player_order.length==0&&
                 gameState[room].spectator.size==0&&
                 gameState[room].gamemaster.size==0){
@@ -659,6 +659,8 @@ function transitionAfterEquipment(room,token){
 }
 
 function finishGame(room){
+    clearTimeout(gameState[room].timeout_id);
+    clearTimeout(gameTimeout[room]);
     gameState[room].state = validState.ended;
     sendcurrentstatedata(room,validContext.finish);
     deleteroomifempty(room);
