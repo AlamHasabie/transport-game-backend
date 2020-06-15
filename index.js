@@ -204,9 +204,9 @@ app.post('/test',(req,res)=>{
         createnewroom(roomname);
     }
     
-    var id = crypto.randomBytes(1).toString('hex');
+    var id = crypto.randomBytes(20).toString('hex');
     while(userInfo.hasOwnProperty(id)){
-        id = crypto.randomBytes(1).toString('hex');
+        id = crypto.randomBytes(20).toString('hex');
     }
     
     userInfo[id] = {
