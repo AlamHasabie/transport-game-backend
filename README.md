@@ -53,10 +53,10 @@ io.emit("roll",{
 })
 ```
 
-4. Answer. Selected should be a boolean
+4. Answer. Selected should be an integer, an element of the keys in the game state. Put null if the player is not answering.
 ```js
 io.emit("answer",{
-    selected : true
+    selected : 2
 });
 ```
 
@@ -180,7 +180,7 @@ Note that contexts are registered within every "update" event emit of the socket
 - key_pointer : points to the key card drawed
 - question_pointer : points to question card drawed
 - repeated_roll : number of consecutive roll-agains. set to 0 by default
-- answer_drawed : number of consecutive drawn answers, used during answer_wait state.
+- answer_draw : number of answers that should be drawn (2 default, 1 for event card)
 - answer : answer by the player during answer_wait state. null in other state.
 - player_status : object of player status. Accessible with player token (player_status[token])
 - from_token : owner of the executed equipment
@@ -191,6 +191,8 @@ Note that contexts are registered within every "update" event emit of the socket
 - start_time : time when the game starts
 - game_timeout : game finish timeout
 - time_left : time left of the game , in milliseconds
+- keys : array of offered answer(s)
+- answer : index of answer by player. Null if not answering.
 
 ### player_status
 - money : money
@@ -221,7 +223,8 @@ Examples :
     key_pointer : 8,
     question_pointer : 9,
     repeated_roll : 0,
-    answers_drawed : 0,
+    answers_draw : 2,
+    key : [4,5],
     answer : null,
     from_token : null,
     target_token : null,
