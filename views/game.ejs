@@ -14,8 +14,13 @@
     <input type="number" id="dice-2" name="dice-2" min="1" max="6"><br>
     <button type="submit" id="first-dice-btn" name="first-dice-btn">Draw first dice</button>
     <button type="submit" id="dice-btn" name="dice-btn">Roll dice !</button>
+    <br>
+    <br>
+    <input type="number" id="answer-field" name="answer-field">
     <button type="submit" id="answer-btn" name="answer-btn">Answer</button>
     <button type="submit" id="no-answer-btn" name="no-answer-btn">Not Answering</button>
+    <br>
+    <br>
     <button type="submit" id="finish-btn" name="finish-btn">Finish</button><br>
     <label for="treasure-answer">Jawaban Treasure</label>
     <input type="text" id="treasure-answer" name="treasure-answer"><br>
@@ -85,15 +90,16 @@
 
         $("#answer-btn").click(function(e){
           e.preventDefault();
+          var answer = parseInt($('#answer-field').val());
           socket.emit("answer",{
-            selected : true
+            selected : answer
           });
         });
 
         $("#no-answer-btn").click(function(e){
           e.preventDefault();
           socket.emit("answer",{
-            selected : false
+            selected : null,
           })
         })
 
