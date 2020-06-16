@@ -223,7 +223,7 @@ Examples :
     key_pointer : 8,
     question_pointer : 9,
     repeated_roll : 0,
-    answers_draw : 0,
+    answers_draw : 2,
     answer : null,
     from_token : null,
     target_token : null,
