@@ -15,7 +15,7 @@ function newRoom(){
         player : 0,
         dice_1 : null,
         dice_2: null,
-        keys : [],
+        answer_keys : [],
         preparing_players : [],
         ready_players : [],
         gamemaster : new Set(),

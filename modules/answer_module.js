@@ -25,10 +25,10 @@ function handle(room){
 
 function giveKey(room){
 
-    room.keys = [];
+    room.answer_keys = [];
     room.state = constants.validState.answer_wait;
     for(i = 0 ; i < room.answers_draw ; i++){
-        room.keys.push(room.key_pointer);
+        room.answer_keys.push(room.key_pointer);
         room.key_pointer = (room.key_pointer+1)%answers.length;
     }
     room = emitter.sendstate(room,constants.validContext.key);
@@ -37,7 +37,7 @@ function giveKey(room){
 
 function validAnswerEvent(room,token,msg){
     let playing_token = room.player_order[room.current_player];
-    if(room.keys.length==0){
+    if(room.answer_keys.length==0){
         return false;
     }
     if(!room.state==constants.validState.answer_wait){
@@ -54,7 +54,7 @@ function validAnswerEvent(room,token,msg){
         return true;
     }
 
-    if(!room.keys.includes(msg.selected)){
+    if(!room.answer_keys.includes(msg.selected)){
         return false;
     }
 
@@ -80,7 +80,7 @@ function handleAnswerEvent(room,token,msg){
             room = emitter.sendstate(room,constants.validContext.answer_false);
         }
     }
-    room.keys = []
+    room.answer_keys = []
     return room;
 }
 
