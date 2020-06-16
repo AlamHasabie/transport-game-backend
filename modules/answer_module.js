@@ -13,6 +13,7 @@ function init(emitter_in){
 
 function handle(room){
 
+    room.answers_draw = 2;
     let token = room.player_order[room.current_player];
     if(question_module.playerHasQuestion(room,token)){
         room = giveKey(room); 
@@ -24,53 +25,63 @@ function handle(room){
 
 function giveKey(room){
 
+    room.answer_keys = [];
     room.state = constants.validState.answer_wait;
-    room.key_pointer = (room.key_pointer+1)%answers.length;
-    room.answers_drawed++;
-
+    for(i = 0 ; i < room.answers_draw ; i++){
+        room.answer_keys.push(room.key_pointer);
+        room.key_pointer = (room.key_pointer+1)%answers.length;
+    }
     room = emitter.sendstate(room,constants.validContext.key);
-
     return room;
 }
 
 function validAnswerEvent(room,token,msg){
     let playing_token = room.player_order[room.current_player];
-    return ( 
-        (playing_token==token)&&
-        (room.state==constants.validState.answer_wait)&&
-        (question_module.playerHasQuestion(room,token))
-    );
+    if(room.answer_keys.length==0){
+        return false;
+    }
+    if(!room.state==constants.validState.answer_wait){
+        return false;
+    }
+    if(playing_token!=token){
+        return false;
+    }
+    if(!question_module.playerHasQuestion(room,token)){
+        return false;
+    }
+
+    if(msg.selected==null){
+        return true;
+    }
+
+    if(!room.answer_keys.includes(msg.selected)){
+        return false;
+    }
+
+    return true;
 }
 
 function handleAnswerEvent(room,token,msg){
 
     let no = room.player_status[token].held_question;
-    let is_answer = msg.selected;
-    let answer = answers[room.key_pointer];
-
-    if(!is_answer){
-        if(room.answers_drawed>=2){
-            room = emitter.sendstate(room,constants.validContext.no_answer);
-            room.answers_drawed = 0;
-            room.answer = null;
-            room.state = constants.validState.equipment_use;
-            return room;
-        } else {
-            return giveKey(room);
-        }
-    } else {
-        room.answers_drawed = 0;
-        room.answer = null;
+    let answer = msg.selected;
+    room.answer = answer;
+    if(room.answer == null){
+        room = emitter.sendstate(room,constants.validContext.no_answer);
         room.state = constants.validState.equipment_use;
-        if(questions[no].answer.includes(answer)){
+    } else {
+        let answer_text = answers[room.answer];
+        room.state = constants.validState.equipment_use;
+        if(questions[no].answer.includes(answer_text)){
             room = question_module.addAnsweredQuestion(room,token);
             room.player_status[token].money+=config.answer_reward;
             room = emitter.sendstate(room,constants.validContext.answer_true);
         } else {
             room = emitter.sendstate(room,constants.validContext.answer_false);
         }
-        return room;
     }
+    room.answer_keys = []
+    return room;
 }
 
 module.exports = {
