@@ -10,5 +10,6 @@
     "equipment_use_timeout" : 10000,
     "reflect_timeout" : 20000,
     "max_allowed_equipments" : 6,
-    "default_game_length" : 5400000
+    "default_game_length" : 5400000,
+    "max_double_roll" : 0
 }

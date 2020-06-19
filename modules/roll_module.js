@@ -1,5 +1,6 @@
 var emitter;
 var constants = require('../constants.json');
+var config = require('../config.json');
 var board_length = require('../assets/board.json').length;
 
 
@@ -35,7 +36,7 @@ function handleRollEvent(room,token,msg){
     room.player_status[token].square = to_square;
     
     room = emitter.sendstate(room,constants.validContext.move);
-    if(dice_1==dice_2&&rolled<2){
+    if(dice_1==dice_2&&rolled<config.max_double_roll){
         room.repeated_roll++;
         room.state = constants.validState.roll_again;
     } else {
