@@ -25,6 +25,8 @@
     <label for="treasure-answer">Jawaban Treasure</label>
     <input type="text" id="treasure-answer" name="treasure-answer"><br>
     <button type="submit" id="treasure-btn" name="treasure-btn">Treasure!</button>
+    <button type="submit" id="yes-treasure-btn" name="yes-treasure-btn">Yes Treasure</button>
+    <button type="submit" id="no-treasure-btn" name="no-treasure-btn">No Treasure</button>
     <br>
     <label for="target-token">Target token</label>
     <input type="text" id="target-token" name="target-token"><br>
@@ -38,6 +40,7 @@
     <label for="target-token">Change timeout to (ms)</label>
     <input type="text" id="timeout" name="timeout"><br>
     <button type="submit" id="timeout-btn" name="timeout-btn">Change</button><br>
+    <br><br>
 
     
   </body>
@@ -148,7 +151,21 @@
           socket.emit("timeout change",{
             timeout : timeout
           })
-        })
+        });
+
+        $("#yes-treasure-btn").click(function(e){
+          e.preventDefault();
+          socket.emit("treasure offer", {
+            selected : true
+          });
+        });
+
+        $("#no-treasure-btn").click(function(e){
+          e.preventDefault();
+          socket.emit("treasure offer", {
+            selected : false
+          });
+        });
   });
   </script>
 </html>

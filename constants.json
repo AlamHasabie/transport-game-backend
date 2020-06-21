@@ -69,6 +69,7 @@
         "reverse" : "reverse",
         "game_timeout" : "game_timeout",
         "game_timeout_change" : "game_timeout_change",
-        "treasure_offer" : "treasure_offer"
+        "treasure_offer" : "treasure_offer",
+        "no_treasure" : "no_treasure"
     }
 }

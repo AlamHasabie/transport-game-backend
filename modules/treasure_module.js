@@ -36,7 +36,7 @@ function validTreasureOfferEvent(room,token, msg){
     if(playing_token!=token){
         return false;
     }
-    if(msg.selected==null){
+    if(!(typeof msg.selected == "boolean")){
         return false;
     }
 
@@ -44,10 +44,14 @@ function validTreasureOfferEvent(room,token, msg){
 
 }
 
-function handleTreasureOfferEvent(room){
-    room.state = constants.validState.treasure_wait;
-    room = emitter.sendstate(room,constants.validContext.treasure_wait);
-
+function handleTreasureOfferEvent(room, token , msg){
+    if(msg.selected){
+        room.state = constants.validState.treasure_wait;
+        room = emitter.sendstate(room, constants.validContext.treasure);
+    } else {
+        room.state = constants.validState.equipment_use;
+        room = emitter.sendstate(room,constants.validContext.no_treasure);
+    }
     return room;
 
 }

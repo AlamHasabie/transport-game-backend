@@ -752,7 +752,13 @@ function gameTimeoutHandle(room){
 
 function handleTreasureOfferEvent(room,token, msg){
     if(treasureHandler.validTreasureOfferEvent(gameState[room],token,msg)){
-        addTimeout(treasureFail, treasureAnswerTimeoutLength, room, token);
+        clearTimeout(gameState[room].timeout_id);
+        gameState[room] = treasureHandler.handleTreasureOfferEvent(gameState[room], token, msg);
+        if(isRoomState(room, validState.treasure_wait)){
+            addTimeout(treasureFail, treasureAnswerTimeoutLength, room, token);
+        } else {
+            addTimeout(useEquipment, delayLength,room, token);
+        }
     }
 }
 
