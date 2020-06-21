@@ -60,7 +60,13 @@ io.emit("answer",{
 });
 ```
 
-4. Treasure answer. Answer is between [A,E]
+5. Treasure offer. Between true or false. True if the user wants to use his chance to claim the treasure
+```js
+io.emit("treasure offer",{
+    selected : true
+})
+```
+6. Treasure answer. Answer is between [A,E]
 ```js
 io.emit("treasure answer",{
     answer : "B"
@@ -127,6 +133,7 @@ Given below is the structure of data used in the socket:
 "roll_again" : 15, Roll again.<br>
 "equipment_answer" : 16, **Deprecated**.<br>
 "shield_offer" : 17 , waiting for targeted player to use his shield.<br>
+"treasure_offer" : 18, waiting for player to use his treasure chance <br>
 
 ### Context
 Context sent by server can be seen in the constans.json file, and can be one of the following :
@@ -155,6 +162,8 @@ Context sent by server can be seen in the constans.json file, and can be one of 
 24. shield_activated : sent when a targeted player activates its shield
 25. cancel : notifies that current used equipment effect is cancelled due to the shield
 26. no_equipment : sent when the offered player does not use his equipment
+27. treasure_offer : sent when the playing  player is offered a treasure
+28. no_treasure: sent when the playing player declines his offer to use treasure
 
 Note that contexts are registered within every "update" event emit of the socket.
 
