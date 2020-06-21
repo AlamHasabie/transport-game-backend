@@ -16,8 +16,8 @@ function handle(room){
     let n_questions = room.player_status[token].questions_answered.length;
     if(n_questions >= config.treasure_minimal_questions){
 
-        room.state = constants.validState.treasure_wait;
-        room = emitter.sendstate(room,constants.validContext.treasure);
+        room.state = constants.validState.treasure_offer;
+        room = emitter.sendstate(room,constants.validContext.treasure_offer);
 
     } else {
 
@@ -28,7 +28,33 @@ function handle(room){
     return room;
 }
 
+function validTreasureOfferEvent(room,token, msg){
+    let playing_token = room.player_order[room.current_player];
+    if(!room.state==constants.validState.treasure_offer){
+        return false;
+    }
+    if(playing_token!=token){
+        return false;
+    }
+    if(msg.selected==null){
+        return false;
+    }
+
+    return true;
+
+}
+
+function handleTreasureOfferEvent(room){
+    room.state = constants.validState.treasure_wait;
+    room = emitter.sendstate(room,constants.validContext.treasure_wait);
+
+    return room;
+
+}
+
 module.exports = {
     init : init,
-    handle : handle
+    handle : handle,
+    validTreasureOfferEvent : validTreasureOfferEvent,
+    handleTreasureOfferEvent : handleTreasureOfferEvent
 }

@@ -5,6 +5,7 @@
     "delay" : 3000,
     "timeout" : 15000,
     "treasure_timeout" : 10000,
+    "treasure_timeout_offer" : 15000,
     "answer_reward" : 50,
     "treasure_reward" : 150,
     "equipment_use_timeout" : 10000,

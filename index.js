@@ -269,6 +269,7 @@ const treasureHandler = require("./modules/treasure_module");
 const playerLeaveHandler = require("./modules/player_leaves_module");
 const eventHandler = require("./modules/event_module");
 const serviceHandler = require("./modules/service_module");
+const { constants } = require('buffer');
 
 
 emitter.init(io);
@@ -320,6 +321,10 @@ function registerPlayerEvent(socket,token){
     socket.on("answer",function(msg){
         Logger.log(gameState[room],token,"answer emit received");
         handleAnswerEvent(room,token,msg);
+    });
+    socket.on("treasure offer", function(msg){
+        Logger.log(gameState[room],token, "treasure offer emit received");
+        handleTreasureOfferEvent(room, token, msg);
     });
     socket.on("treasure answer",function(msg){
         Logger.log(gameState[room],token,"treasure answer emit received");
@@ -481,8 +486,8 @@ function activatesquare(room,token){
                 gameState[room] = treasureHandler.handle(gameState[room]);
                 if(isRoomState(room,validState.equipment_use)){
                     addTimeout(useEquipment,delayLength,room,token);
-                } else if (isRoomState(room,validState.treasure_wait)){
-                    addTimeout(treasureFail,treasureAnswerTimeoutLength,room,token);
+                } else if (isRoomState(room,validState.treasure_offer)){
+                    addTimeout(timeout, config.treasure_timeout_offer,room, token);
                 }
                 break;
 
@@ -743,6 +748,12 @@ function gameTimeoutHandle(room){
     }
     gameState[room].state = validState.ended;
     setTimeout(finishGame,delayLength,room);
+}
+
+function handleTreasureOfferEvent(room,token, msg){
+    if(treasureHandler.validTreasureOfferEvent(gameState[room],token,msg)){
+        addTimeout(treasureFail, treasureAnswerTimeoutLength, room, token);
+    }
 }
 
 function handleTimeoutChangeEvent(room,msg){

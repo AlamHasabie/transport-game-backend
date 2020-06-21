@@ -17,7 +17,8 @@
         "roll_received" : 14,
         "roll_again" : 15,
         "equipment_answer" : 16,
-        "shield_offer" : 17
+        "shield_offer" : 17,
+        "treasure_offer" : 18
     },
     
     "validSquare" : {
@@ -67,6 +68,7 @@
         "cancel" :"cancel",
         "reverse" : "reverse",
         "game_timeout" : "game_timeout",
-        "game_timeout_change" : "game_timeout_change"
+        "game_timeout_change" : "game_timeout_change",
+        "treasure_offer" : "treasure_offer"
     }
 }
