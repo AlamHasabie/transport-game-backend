@@ -304,7 +304,7 @@ function executeEquipment(room){
         case event_effects.take_answer:
             emitter.sendstate(room,constants.validContext.equipment_use);
             Logger.log(room,room.from_token,"take answer equipment");
-            room.answers_drawed = 1;
+            room.answers_draw = 1;
             room = answer_module.handle(room);
             if(!(room.state==constants.validState.answer_wait)){
                 Logger.log(room,room.from_token,"no question held for answer equipment");
