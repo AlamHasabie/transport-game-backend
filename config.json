@@ -1,7 +1,7 @@
 {
     "treasure_minimal_questions" : 3,
     "minimal_player" : 1,
-    "answer_timeout" : 5000,
+    "answer_timeout" : 20000,
     "delay" : 3000,
     "timeout" : 15000,
     "treasure_timeout" : 10000,
