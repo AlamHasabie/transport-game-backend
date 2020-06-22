@@ -265,7 +265,7 @@ function executeEquipment(room){
     let execute_to = room.target_token;
     let card = event_cards[room.equipment_used%event_cards.length];
     if(room.reply_equipment!=null){
-        Logger.log(room,token,"reply equipment not empty, init reply");
+        Logger.log(room,room.from_token,"reply equipment not empty, init reply");
         reply_card = event_cards[room.reply_equipment%event_cards.length];
     }
 
