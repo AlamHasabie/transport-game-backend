@@ -292,3 +292,9 @@ io.emit("timeout change",{
 })
 ```
 Note that timeout will be change only when the new timeout is bigger than current gametime or the game has not started yet. An emit with game_timeout_change context will be sent.
+
+## Issues and Future Development
+
+1. Room deletion after a game ends is still not handled yet.
+2. Inconsistent flow for when a player accidentally/purposefully leave a room, mainly due to incomplete specification. 
+3. Error handling. When a request is made, there should be a try catch block.
